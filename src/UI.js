@@ -98,7 +98,7 @@ export const injectStyledCSS = (
       width: calc(100% - 40px);
       max-width: 400px;
       position: fixed;
-      z-index: ${zIndexBase + 31};
+      z-index: ${zIndexBase + 51};
       visibility: visible;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
       border-radius: ${containerRadius}px;
