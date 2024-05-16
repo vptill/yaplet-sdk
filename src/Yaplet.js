@@ -607,7 +607,8 @@ class Yaplet {
     borderRadius = 20,
     buttonX = 20,
     buttonY = 20,
-    buttonStyle = FeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
+    buttonStyle = FeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT,
+    zIndexBase = 2147483600
   ) {
     runFunctionWhenDomIsReady(() => {
       injectStyledCSS(
@@ -618,7 +619,8 @@ class Yaplet {
         backgroundColor,
         buttonX,
         buttonY,
-        buttonStyle
+        buttonStyle,
+        zIndexBase
       );
     });
   }
@@ -1058,6 +1060,10 @@ class Yaplet {
     );
 
     FrameManager.getInstance().showWidget();
+  }
+
+  static setFlowConfig(flowConfig) {
+    ConfigManager.getInstance().setFlowConfig(flowConfig);
   }
 
   isLiveMode() {

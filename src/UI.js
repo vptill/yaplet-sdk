@@ -41,7 +41,8 @@ export const injectStyledCSS = (
   backgroundColor,
   buttonX,
   buttonY,
-  buttonStyle
+  buttonStyle,
+  zIndexBase = 2147483600
 ) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastButtonColor = calculateContrast(buttonColor);
@@ -68,7 +69,6 @@ export const injectStyledCSS = (
   const chatRadius = Math.round(borderRadius * 0.6);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
-  const zIndexBase = 2147483600;
 
   var bottomInfoOffset = 57 + buttonY;
   if (buttonStyle === FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {

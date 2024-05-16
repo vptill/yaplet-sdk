@@ -48,6 +48,13 @@ export default class ConfigManager {
     return this.flowConfig;
   }
 
+  setFlowConfig(flowConfig) {
+    this.flowConfig = { ...this.flowConfig, ...flowConfig };
+    this.applyStylesFromConfig();
+    FeedbackButtonManager.getInstance().refresh();
+    NotificationManager.getInstance().updateContainerStyle();
+  }
+
   setAiTools = (aiTools) => {
     this.aiTools = aiTools;
   };
@@ -118,8 +125,12 @@ export default class ConfigManager {
       parseIntWithDefault(flowConfig.borderRadius, 20),
       parseIntWithDefault(flowConfig.buttonX, 20),
       parseIntWithDefault(flowConfig.buttonY, 20),
-      flowConfig.feedbackButtonPosition
+      flowConfig.feedbackButtonPosition,
+      flowConfig.zIndexBase || 2147483600
     );
+
+    FeedbackButtonManager.getInstance().updateFeedbackButtonState();
+    NotificationManager.getInstance().updateContainerStyle();
   }
 
   notifyConfigLoaded() {
