@@ -203,7 +203,7 @@ class Yaplet {
             });
           })
           .catch(function (err) {
-            console.warn("Failed to initialize Yaplet.");
+            console.warn("Failed to initialize Yaplet.", err);
           });
       }, 0);
     });
