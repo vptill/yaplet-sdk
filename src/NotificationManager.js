@@ -83,9 +83,9 @@ export default class NotificationManager {
     }
 
     const notificationsForOutbound = this.notifications.find(
-      (e) => notification.outbound === e.outbound
+      (e) => notification.payload.outbound === e.outbound
     );
-    if (!notificationsForOutbound && notification.visibility === "PUBLIC") {
+    if (!notificationsForOutbound) {
       this.notifications.push(notification);
 
       // Play sound only when no existing already.
