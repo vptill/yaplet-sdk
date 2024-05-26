@@ -161,7 +161,11 @@ export default class FrameManager {
         elem.className =
           "yaplet-frame-container yaplet-frame-container--hidden gl-block";
         elem.innerHTML = `<div class="yaplet-frame-container-inner"><iframe src="${
-          this.frameUrl + "/widget/" + Session.getInstance().sdkKey
+          this.frameUrl +
+          "/widget/" +
+          Session.getInstance().sdkKey +
+          "?access_token=" +
+          Session.getInstance().session.yapletHash
         }" class="yaplet-frame" scrolling="yes" title="yaplet Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
         document.body.appendChild(elem);
 
@@ -582,6 +586,7 @@ export default class FrameManager {
             EventManager.notifyEvent("feedback-sent", formData);
           })
           .catch((error) => {
+            console.log("Error sending feedback", error);
             this.sendMessage({
               name: "feedback-sending-failed",
               data: "Something went wrong, please try again.",
