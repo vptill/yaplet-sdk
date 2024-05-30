@@ -19,6 +19,7 @@ const parseIntWithDefault = (val, def) => {
 
 export default class ConfigManager {
   flowConfig = null;
+  flowConfigOverride = {};
   projectActions = null;
   onConfigLoadedListener = [];
   aiTools = [];
@@ -49,7 +50,7 @@ export default class ConfigManager {
   }
 
   setFlowConfig(flowConfig) {
-    this.flowConfig = { ...this.flowConfig, ...flowConfig };
+    this.flowConfigOverride = flowConfig;
     this.applyStylesFromConfig();
     FeedbackButtonManager.getInstance().refresh();
     NotificationManager.getInstance().updateContainerStyle();
@@ -115,7 +116,7 @@ export default class ConfigManager {
   };
 
   applyStylesFromConfig() {
-    const flowConfig = this.flowConfig;
+    const flowConfig = { ...this.flowConfig, ...this.flowConfigOverride };
 
     Yaplet.setStyles(
       flowConfig.primaryColor ? flowConfig.primaryColor : "#485BFF",
