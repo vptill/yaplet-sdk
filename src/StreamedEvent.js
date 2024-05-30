@@ -92,6 +92,14 @@ export default class StreamedEvent {
             ref: 0,
           })
         );
+        this.socket.send(
+          JSON.stringify({
+            topic: "visitor:" + Session.getInstance().session.yapletId,
+            event: "ping",
+            payload: {},
+            ref: 0,
+          })
+        );
       }
     }, 10000);
 
