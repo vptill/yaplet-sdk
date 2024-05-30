@@ -116,7 +116,7 @@ export default class ConfigManager {
   };
 
   applyStylesFromConfig() {
-    const flowConfig = { ...this.flowConfig, ...this.flowConfigOverride };
+    const flowConfig = this.flowConfig;
 
     Yaplet.setStyles(
       flowConfig.primaryColor ? flowConfig.primaryColor : "#485BFF",
@@ -149,7 +149,7 @@ export default class ConfigManager {
    */
   applyConfig(config) {
     try {
-      const flowConfig = config.flowConfig;
+      const flowConfig = { ...config.flowConfig, ...this.flowConfigOverride };
       this.flowConfig = flowConfig;
 
       // Update styles.
