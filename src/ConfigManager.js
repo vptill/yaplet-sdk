@@ -50,7 +50,10 @@ export default class ConfigManager {
   }
 
   setFlowConfig(flowConfig) {
-    this.flowConfigOverride = flowConfig;
+    console.log("setFlowConfig", flowConfig);
+    console.log("flowConfigOverride1", this.flowConfigOverride);
+    this.flowConfigOverride = { ...flowConfig };
+    console.log("flowConfigOverride2", this.flowConfigOverride);
     this.applyStylesFromConfig();
     FeedbackButtonManager.getInstance().refresh();
     NotificationManager.getInstance().updateContainerStyle();
@@ -116,7 +119,7 @@ export default class ConfigManager {
   };
 
   applyStylesFromConfig() {
-    const flowConfig = this.flowConfig;
+    const flowConfig = { ...this.flowConfig, ...this.flowConfigOverride };
 
     Yaplet.setStyles(
       flowConfig.primaryColor ? flowConfig.primaryColor : "#485BFF",
