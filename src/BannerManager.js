@@ -1,7 +1,7 @@
 import Yaplet from "./Yaplet";
 
 export default class BannerManager {
-  bannerUrl = "https://outboundmedia.gleap.io";
+  bannerUrl = "http://localhost:5173";
   bannerContainer = null;
   bannerData = null;
 
@@ -97,7 +97,7 @@ export default class BannerManager {
 
     var elem = document.createElement("div");
     elem.className = "yaplet-b";
-    elem.innerHTML = `<iframe src="${this.bannerUrl}" class="yaplet-b-frame" scrolling="no" title="Yaplet Banner" role="dialog" frameborder="0"></iframe>`;
+    elem.innerHTML = `<iframe src="${this.bannerUrl}/banner" class="yaplet-b-frame" scrolling="no" title="Yaplet Banner" role="dialog" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
     this.bannerContainer = elem;
   }

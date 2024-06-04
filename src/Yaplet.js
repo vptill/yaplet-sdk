@@ -1111,7 +1111,7 @@ class Yaplet {
             Yaplet.showNotification(action);
           }
         } else if (action.event === "banner") {
-          Yaplet.showBanner(action);
+          Yaplet.showBanner(action.payload.data);
         } else if (action.event === "tour") {
           Yaplet.startProductTourWithConfig(action.outbound, action.data);
         } else if (action.event === "survey") {
