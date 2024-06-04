@@ -1114,8 +1114,8 @@ class Yaplet {
           Yaplet.showBanner(action);
         } else if (action.event === "tour") {
           Yaplet.startProductTourWithConfig(action.outbound, action.data);
-        } else {
-          Yaplet.showSurvey(action.event, action.format);
+        } else if (action.event === "survey") {
+          Yaplet.showSurvey(action.payload.data.action.flow, "survey");
         }
       }
     }

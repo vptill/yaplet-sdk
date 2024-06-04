@@ -132,15 +132,19 @@ export default class StreamedEvent {
 
   processMessage(message) {
     try {
-      if (message.event === "NEW_MESSAGE") {
-        if (!FrameManager.getInstance().isOpened()) {
-          if (message.event === "NEW_MESSAGE") {
-            Yaplet.getInstance().performActions([message]);
-          }
-          /*if (u != null) {
+      if (!FrameManager.getInstance().isOpened()) {
+        if (
+          message.event === "NEW_MESSAGE" ||
+          message.event === "survey" ||
+          message.event === "banner"
+        ) {
+          Yaplet.getInstance().performActions([message]);
+        }
+        /*if (u != null) {
             NotificationManager.getInstance().setNotificationCount(u);
           }*/
-        }
+      } else if (["survey", "banner"].includes(message.event)) {
+        Yaplet.getInstance().performActions([message]);
       }
     } catch (exp) {
       console.log("Error processing message", exp);

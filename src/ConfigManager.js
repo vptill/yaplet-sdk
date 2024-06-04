@@ -50,10 +50,7 @@ export default class ConfigManager {
   }
 
   setFlowConfig(flowConfig) {
-    console.log("setFlowConfig", flowConfig);
-    console.log("flowConfigOverride1", this.flowConfigOverride);
     this.flowConfigOverride = { ...flowConfig };
-    console.log("flowConfigOverride2", this.flowConfigOverride);
     this.applyStylesFromConfig();
     FeedbackButtonManager.getInstance().refresh();
     NotificationManager.getInstance().updateContainerStyle();
