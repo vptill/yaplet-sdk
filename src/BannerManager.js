@@ -1,7 +1,7 @@
 import Yaplet from "./Yaplet";
 
 export default class BannerManager {
-  bannerUrl = "http://localhost:5173";
+  bannerUrl = "https://yaplet.io";
   bannerContainer = null;
   bannerData = null;
 
