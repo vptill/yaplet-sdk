@@ -734,11 +734,7 @@ class Yaplet {
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlowWithOptions(
-    feedbackFlow,
-    options = {},
-    isSurvey = false
-  ) {
+  static startFeedbackFlowWithOptions(id, options = {}, isSurvey = false) {
     const { autostartDrawing, hideBackButton, format } = options;
     const sessionInstance = Session.getInstance();
     if (!sessionInstance.ready) {
@@ -762,7 +758,7 @@ class Yaplet {
       {
         name: action,
         data: {
-          flow: feedbackFlow,
+          id: id,
           hideBackButton: hideBackButton,
           format,
         },
