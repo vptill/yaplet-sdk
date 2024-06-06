@@ -1106,7 +1106,7 @@ class Yaplet {
       const action = actions[i];
       console.log("Performing action", action);
       if (action && action.event) {
-        if (action.event === "NEW_MESSAGE") {
+        if (action.event === "NEW_MESSAGE" || action.event === "message") {
           if (!this.disableInAppNotifications) {
             Yaplet.showNotification(action);
           }
