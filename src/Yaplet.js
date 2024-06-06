@@ -1115,7 +1115,7 @@ class Yaplet {
         } else if (action.event === "tour") {
           Yaplet.startProductTourWithConfig(action.outbound, action.data);
         } else if (action.event === "survey") {
-          Yaplet.showSurvey(action.payload.data.action.flow, "survey");
+          Yaplet.showSurvey(action.payload.id, "survey");
         }
       }
     }
