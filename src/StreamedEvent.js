@@ -135,6 +135,7 @@ export default class StreamedEvent {
       if (!FrameManager.getInstance().isOpened()) {
         if (
           message.event === "NEW_MESSAGE" ||
+          message.event === "message" ||
           message.event === "survey" ||
           message.event === "banner"
         ) {
@@ -143,7 +144,7 @@ export default class StreamedEvent {
         /*if (u != null) {
             NotificationManager.getInstance().setNotificationCount(u);
           }*/
-      } else if (["survey", "banner"].includes(message.event)) {
+      } else if (["message", "survey", "banner"].includes(message.event)) {
         Yaplet.getInstance().performActions([message]);
       }
     } catch (exp) {
