@@ -296,7 +296,7 @@ export const injectStyledCSS = (
       position: absolute;
       top: calc(-1 * var(--yaplet-margin-top));
       left: 0px;
-      width: 100vw;
+      width: 100%;
       height: var(--yaplet-margin-top);
     }
 
