@@ -398,7 +398,7 @@ export default class Session {
         }
 
         const http = new XMLHttpRequest();
-        http.open("POST", self.apiUrl + "/sessions/identify");
+        http.open("POST", self.apiUrl + "/sdk/identify");
         http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         http.setRequestHeader("Api-Token", self.sdkKey);
         try {

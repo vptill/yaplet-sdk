@@ -7,3 +7,10 @@ Yaplet.setBannerUrl("http://localhost:5173");
 //Yaplet.setWSApiUrl("ws://localhost:4000/socket/websocket");
 
 Yaplet.initialize("345fa619-c4d0-4893-8b1c-547808fe044f");
+
+Yaplet.identify("6969", {
+  name: "asd",
+  email: "asd",
+  value: "asd",
+  plan: "asd",
+});
