@@ -46,7 +46,7 @@ export default class BannerManager {
         if (data.name === "banner-data-set") {
           document.body.classList.add("yaplet-b-shown");
 
-          if (this.bannerData?.format === "floating") {
+          if (this.bannerData?.action?.style === "FLOATING") {
             document.body.classList.add("yaplet-b-f");
           }
         }
