@@ -73,7 +73,7 @@ const commonConfig = (isDevelopment, plugins = []) => {
     config.mode = "development";
     config.devServer = {
       compress: true,
-      open: true,
+      open: false,
       hot: true,
       host: "localhost",
       static: [
