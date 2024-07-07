@@ -121,6 +121,7 @@ export default class AdminManager {
             this.sendMessageToTourBuilder({
               name: "data",
               data: self.configData,
+              url: window.location.href,
             });
           }
 
