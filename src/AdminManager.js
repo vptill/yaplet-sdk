@@ -95,7 +95,7 @@ export default class AdminManager {
 
     // Add window message listener.
     window.addEventListener("message", (event) => {
-      if (!event.origin || !event.origin === "https://yaplet.com") {
+      if (!event.origin /*|| !event.origin === "https://yaplet.com"*/) {
         return;
       }
 
@@ -105,6 +105,7 @@ export default class AdminManager {
           if (data.name === "load") {
             self.configData = data.data;
             self.initAdminHelper();
+            this.sendMessage({ name: "builder-init" });
           }
 
           if (data.name === "smartlink-search-result") {
@@ -148,7 +149,6 @@ export default class AdminManager {
           if (data.name === "status-changed") {
             self.status = data.data;
             this.setFrameHeight(self.status);
-            this.sendMessage({ name: "builder-init" });
             self.adminHelper.stopPicker();
 
             if (self.status === "picker") {
@@ -250,7 +250,7 @@ export default class AdminManager {
     // Inject widget HTML.
     var elem = document.createElement("div");
     elem.className = "yaplet-admin-frame-container";
-    elem.innerHTML = `<iframe src="https://yaplet.com/${
+    elem.innerHTML = `<iframe src="http://localhost:3000/${
       this?.configData?.type === "tooltips" ? "tooltipbuilder" : "tourbuilder"
     }" class="yaplet-admin-frame" scrolling="no" title="yaplet Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
