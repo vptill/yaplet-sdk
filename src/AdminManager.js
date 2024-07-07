@@ -250,7 +250,7 @@ export default class AdminManager {
     // Inject widget HTML.
     var elem = document.createElement("div");
     elem.className = "yaplet-admin-frame-container";
-    elem.innerHTML = `<iframe src="http://localhost:3000/${
+    elem.innerHTML = `<iframe src="https://yaplet.com/${
       this?.configData?.type === "tooltips" ? "tooltipbuilder" : "tourbuilder"
     }" class="yaplet-admin-frame" scrolling="no" title="yaplet Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
