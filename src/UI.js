@@ -2027,7 +2027,7 @@ export const injectStyledCSS = (
       position: fixed;
       top: 0;
       right: 0;
-      background-color: #fff;
+      background-color: ${backgroundColor};
     }
     
     .yaplet-tour-popover * {
@@ -2153,7 +2153,7 @@ export const injectStyledCSS = (
     .yaplet-tour-popover-arrow {
       content: "";
       position: absolute;
-      border: 5px solid #fff;
+      border: 5px solid ${backgroundColor};
     }
     
     .yaplet-tour-popover-arrow-side-over {

@@ -1109,7 +1109,10 @@ class Yaplet {
         } else if (action.event === "banner") {
           Yaplet.showBanner(action.payload.data);
         } else if (action.event === "tour") {
-          Yaplet.startProductTourWithConfig(action.outbound, action.data);
+          Yaplet.startProductTourWithConfig(
+            action.payload.id,
+            action.payload.data
+          );
         } else if (action.event === "survey") {
           Yaplet.showSurvey(action.payload.id, "survey");
         }

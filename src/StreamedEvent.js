@@ -137,14 +137,17 @@ export default class StreamedEvent {
           message.event === "NEW_MESSAGE" ||
           message.event === "message" ||
           message.event === "survey" ||
-          message.event === "banner"
+          message.event === "banner" ||
+          message.event === "tour"
         ) {
           Yaplet.getInstance().performActions([message]);
         }
         /*if (u != null) {
             NotificationManager.getInstance().setNotificationCount(u);
           }*/
-      } else if (["message", "survey", "banner"].includes(message.event)) {
+      } else if (
+        ["message", "survey", "banner", "tour"].includes(message.event)
+      ) {
         Yaplet.getInstance().performActions([message]);
       }
     } catch (exp) {
