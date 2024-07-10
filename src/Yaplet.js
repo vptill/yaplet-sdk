@@ -501,6 +501,14 @@ class Yaplet {
   }
 
   /**
+   * Set a custom tour builder url.
+   * @param {string} builderUrl
+   */
+  static setAdminUrl(builderUrl) {
+    AdminManager.getInstance().frameUrl = builderUrl;
+  }
+
+  /**
    * This method is used to set ticket attributes programmatically.
    * @param {*} key The key of the attribute you want to add.
    * @param {*} value The value to set.
@@ -1101,13 +1109,51 @@ class Yaplet {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
       console.log("Performing action", action);
+
+      if (action.payload?.trigger) {
+        if (action.payload.trigger.pageQuery.children.length) {
+          const pageQuery = action.payload.trigger.pageQuery.children[0].value;
+          const pageQueryValue = pageQuery[1];
+          const operator = pageQuery[0];
+          let isValid = false;
+          switch (operator) {
+            case "is":
+              isValid = window.location.href === pageQueryValue;
+              break;
+            case "isNot":
+              isValid = window.location.href !== pageQueryValue;
+              break;
+            case "contains":
+              isValid = window.location.href.includes(pageQueryValue);
+              break;
+            case "doesNotContain":
+              isValid = !window.location.href.includes(pageQueryValue);
+              break;
+            case "startsWith":
+              isValid = window.location.href.startsWith(pageQueryValue);
+              break;
+            case "endsWith":
+              isValid = window.location.href.endsWith(pageQueryValue);
+              break;
+            default:
+              isValid = false;
+              break;
+          }
+
+          if (!isValid) {
+            console.log("Invalid page query", pageQuery, window.location.href);
+            continue;
+          }
+        }
+      }
+
       if (action && action.event) {
         if (action.event === "NEW_MESSAGE" || action.event === "message") {
           if (!this.disableInAppNotifications) {
             Yaplet.showNotification(action);
           }
         } else if (action.event === "banner") {
-          Yaplet.showBanner(action.payload.data);
+          Yaplet.showBanner(action.payload);
         } else if (action.event === "tour") {
           Yaplet.startProductTourWithConfig(
             action.payload.id,

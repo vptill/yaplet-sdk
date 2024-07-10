@@ -1,5 +1,6 @@
 import { loadIcon } from "./UI";
 import Tours from "./Tours";
+import AdminManager from "./AdminManager";
 
 export default class ProductTours {
   productTourData = undefined;
@@ -30,7 +31,7 @@ export default class ProductTours {
 
   start() {
     const config = this.productTourData;
-    if (!config) {
+    if (!config || AdminManager.getInstance().adminHelper) {
       return;
     }
 
@@ -84,6 +85,7 @@ export default class ProductTours {
               }
             : {}),
         },
+        url: step.url,
       };
       if (step.selector && step.selector.length > 0) {
         driverStep.element = step.selector;
