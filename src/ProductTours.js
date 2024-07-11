@@ -81,7 +81,10 @@ export default class ProductTours {
           } ${config.allowClose && "yaplet-tour-popover-can-close"}`,
           ...(isClickMode
             ? {
-                //showButtons: [],
+                showButtons: [
+                  ...(config.backButton ? ["previous"] : []),
+                  ...(config.allowClose ? ["close"] : []),
+                ],
               }
             : {}),
         },
