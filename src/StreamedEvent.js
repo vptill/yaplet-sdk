@@ -1,4 +1,5 @@
 import Yaplet, {
+  BannerManager,
   FrameManager,
   MetaDataManager,
   NotificationManager,
@@ -210,6 +211,43 @@ export default class StreamedEvent {
       this.logEvent("pageView", {
         url: currentUrl,
       });
+
+      const bannerData = BannerManager.getInstance().bannerData;
+      if (bannerData && bannerData?.trigger) {
+        if (bannerData?.trigger.pageQuery.children.length) {
+          const pageQuery = bannerData?.trigger.pageQuery.children[0].value;
+          const pageQueryValue = pageQuery[1];
+          const operator = pageQuery[0];
+          let isValid = false;
+          switch (operator) {
+            case "is":
+              isValid = currentUrl === pageQueryValue;
+              break;
+            case "isNot":
+              isValid = currentUrl !== pageQueryValue;
+              break;
+            case "contains":
+              isValid = currentUrl.includes(pageQueryValue);
+              break;
+            case "doesNotContain":
+              isValid = !currentUrl.includes(pageQueryValue);
+              break;
+            case "startsWith":
+              isValid = currentUrl.startsWith(pageQueryValue);
+              break;
+            case "endsWith":
+              isValid = currentUrl.endsWith(pageQueryValue);
+              break;
+            default:
+              isValid = false;
+              break;
+          }
+
+          if (!isValid) {
+            BannerManager.getInstance().removeBannerUI();
+          }
+        }
+      }
     }
   }
 

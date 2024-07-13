@@ -467,7 +467,7 @@ export default class Session {
         }
 
         const http = new XMLHttpRequest();
-        http.open("POST", self.apiUrl + "/outbound/producttours");
+        http.open("POST", self.apiUrl + "/sdk/tours");
         http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         http.setRequestHeader("Api-Token", self.sdkKey);
         try {

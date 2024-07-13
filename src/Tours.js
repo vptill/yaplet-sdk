@@ -1233,6 +1233,11 @@ const Tours = (function () {
         destroy();
         return;
       }
+      if (steps[stepIndex].url) {
+        window.location.href = steps[stepIndex].url;
+        destroy();
+        return;
+      }
       setState("__activeOnDestroyed", document.activeElement);
       setState("activeIndex", stepIndex);
       const currentStep = steps[stepIndex];

@@ -34,7 +34,7 @@ export default class BannerManager {
         if (data.name === "banner-loaded" && this.bannerData) {
           this.sendMessage({
             name: "banner-data",
-            data: this.bannerData,
+            data: this.bannerData.data,
           });
         }
         if (data.name === "banner-height") {
@@ -46,7 +46,7 @@ export default class BannerManager {
         if (data.name === "banner-data-set") {
           document.body.classList.add("yaplet-b-shown");
 
-          if (this.bannerData?.action?.style === "FLOATING") {
+          if (this.bannerData?.data?.style === "FLOATING") {
             document.body.classList.add("yaplet-b-f");
           }
         }

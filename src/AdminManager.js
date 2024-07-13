@@ -9,6 +9,7 @@ export default class AdminManager {
   yapletCollapseUI = null;
   injectedCollapseUI = false;
   yapletFrame = null;
+  frameUrl = "https://yaplet.com";
   configData = null;
   adminHelper = null;
   status = "navigate";
@@ -251,7 +252,7 @@ export default class AdminManager {
     // Inject widget HTML.
     var elem = document.createElement("div");
     elem.className = "yaplet-admin-frame-container";
-    elem.innerHTML = `<iframe src="https://yaplet.com/${
+    elem.innerHTML = `<iframe src="${this.frameUrl}/${
       this?.configData?.type === "tooltips" ? "tooltipbuilder" : "tourbuilder"
     }" class="yaplet-admin-frame" scrolling="no" title="yaplet Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
