@@ -276,6 +276,7 @@ export default class Session {
     http.send(
       JSON.stringify({
         lang: TranslationManager.getInstance().getActiveLanguage(),
+        url: window.location.href,
       })
     );
   };
@@ -377,6 +378,7 @@ export default class Session {
             type: "js",
             sdkVersion: SDK_VERSION,
             ws: true,
+            url: window.location.href,
           })
         );
       });
