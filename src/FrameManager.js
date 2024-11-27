@@ -562,6 +562,7 @@ export default class FrameManager {
       }
 
       if (data.name === "send-feedback") {
+        const formId = data.data.formId;
         const formData = data.data.formData;
         const action = data.data.action;
         const outboundId = data.data.outboundId;
@@ -570,6 +571,7 @@ export default class FrameManager {
         const feedback = new Feedback(
           action.feedbackType,
           "MEDIUM",
+          formId,
           formData,
           false,
           action.excludeData,

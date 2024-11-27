@@ -20,6 +20,7 @@ export default class Feedback {
   consoleLog = [];
   networkLogs = [];
   customEventLog = [];
+  formId = undefined;
   formData = {};
   isSilent = false;
   outboundId = undefined;
@@ -31,6 +32,7 @@ export default class Feedback {
   constructor(
     type,
     priority,
+    formId,
     formData,
     isSilent,
     excludeData,
@@ -39,6 +41,7 @@ export default class Feedback {
   ) {
     this.type = type;
     this.priority = priority;
+    this.formId = formId;
     this.formData = formData;
     this.isSilent = isSilent;
     this.excludeData = excludeData;
@@ -107,6 +110,7 @@ export default class Feedback {
       consoleLog: this.consoleLog,
       networkLogs: this.networkLogs,
       customEventLog: this.customEventLog,
+      formId: this.formId,
       // Merge ticket attributes and form data.
       formData: {
         ...this.ticketAttributes,
