@@ -141,11 +141,11 @@ export default class NotificationManager {
 			const elem = document.createElement("div");
 			elem.onclick = () => {
 				if (notification.payload.chat) {
-					Yaplet.openConversation(notification.payload.chat.id);
+					Yaplet.openConversation(notification.payload.chat.id, true);
 				} else if (notification.payload.news) {
-					Yaplet.openNewsArticle(notification.data.news.id);
+					Yaplet.openNewsArticle(notification.data.news.id, true);
 				} else if (notification.payload.checklist) {
-					Yaplet.openChecklist(notification.data.checklist.id);
+					Yaplet.openChecklist(notification.data.checklist.id, true);
 				} else {
 					Yaplet.open();
 				}

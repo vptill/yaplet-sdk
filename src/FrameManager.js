@@ -565,7 +565,9 @@ export default class FrameManager {
 			}
 
 			if (data.name === "run-custom-action") {
-				CustomActionManager.triggerCustomAction(data.data);
+				CustomActionManager.triggerCustomAction(data.data, {
+					shareToken: data.shareToken,
+				});
 			}
 
 			if (data.name === "close-widget") {

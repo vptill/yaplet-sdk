@@ -77,6 +77,7 @@ export default class ProductTours {
 
 			var driverStep = {
 				disableActiveInteraction: disableInteraction,
+				mode: step.mode,
 				popover: {
 					description: message,
 					popoverClass: `yaplet-tour-popover-${step.type} ${
@@ -111,6 +112,15 @@ export default class ProductTours {
 				const stepIndex = yapletTourObj.getActiveIndex();
 				const step = steps[stepIndex];
 				const element = yapletTourObj.getActiveElement();
+
+				if (step?.mode === "CLICK" && evnt?.target !== element) {
+					const isInsideElement = element.contains(evnt?.target);
+
+					if (!isInsideElement) {
+						// Ignore clicks outside of the actual element.
+						return;
+					}
+				}
 
 				if (
 					(element && element.tagName === "INPUT") ||

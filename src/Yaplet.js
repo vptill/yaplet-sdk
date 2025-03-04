@@ -976,9 +976,7 @@ class Yaplet {
 		FrameManager.getInstance().sendMessage(
 			{
 				name: "open-checklists",
-				data: {
-					hideBackButton: !showBackButton,
-				},
+				data: {},
 			},
 			true
 		);
@@ -1000,7 +998,6 @@ class Yaplet {
 				name: "start-checklist",
 				data: {
 					outboundId: outboundId,
-					hideBackButton: !showBackButton,
 				},
 			},
 			true
@@ -1062,9 +1059,7 @@ class Yaplet {
 		FrameManager.getInstance().sendMessage(
 			{
 				name: "open-feature-requests",
-				data: {
-					hideBackButton: !showBackButton,
-				},
+				data: {},
 			},
 			true
 		);
@@ -1114,7 +1109,6 @@ class Yaplet {
 	performActions(actions) {
 		for (let i = 0; i < actions.length; i++) {
 			const action = actions[i];
-			console.log("Performing action", action);
 
 			if (action.payload?.trigger) {
 				if (action.payload.trigger.pageQuery.children.length) {
@@ -1155,8 +1149,12 @@ class Yaplet {
 
 			if (action && action.event) {
 				if (action.event === "NEW_MESSAGE" || action.event === "message") {
-					if (!this.disableInAppNotifications) {
-						Yaplet.showNotification(action);
+					if (action?.data?.checklist?.popupType === "widget") {
+						Yaplet.openChecklist(action.data.checklist.id, true);
+					} else {
+						if (!this.disableInAppNotifications) {
+							Yaplet.showNotification(action);
+						}
 					}
 				} else if (action.event === "banner") {
 					Yaplet.showBanner(action.payload);

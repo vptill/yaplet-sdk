@@ -345,8 +345,11 @@ export default class TooltipManager {
 			var range = document.createRange();
 			range.selectNodeContents(element);
 			const style = window.getComputedStyle(element);
-			elementRect.width =
+			const fixedWidth =
 				range.getBoundingClientRect().width + parseFloat(style.paddingLeft);
+			if (fixedWidth < elementRect.width) {
+				elementRect.width = fixedWidth;
+			}
 		} catch (exp) {}
 
 		const anchorElement = document.querySelector(

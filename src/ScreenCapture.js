@@ -351,18 +351,51 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
 	}
 };
 
-const deepClone = (host) => {
+const extractFinalCSSState = (element) => {
+	if (element && typeof element.getAnimations === "function") {
+		const animations = element.getAnimations();
+		const finalCSSState = {};
+
+		animations.forEach((animation) => {
+			const keyframes = animation.effect?.getKeyframes() || [];
+			const finalKeyframe = keyframes[keyframes.length - 1] || {};
+
+			// Extract only the keys (CSS properties) from the final keyframe
+			Object.keys(finalKeyframe).forEach((property) => {
+				if (property !== "offset") {
+					// Store the computed style for each animated property
+					finalCSSState[property] = getComputedStyle(element)[property];
+				}
+			});
+		});
+
+		if (Object.keys(finalCSSState).length === 0) {
+			return null;
+		}
+
+		return JSON.stringify(finalCSSState);
+	}
+
+	return null;
+};
+
+const deepClone = async (host) => {
 	let shadowNodeId = 1;
 
 	const cloneNode = async (node, parent, shadowRoot) => {
-		const walkTree = (nextn, nextp, innerShadowRoot) => {
+		const walkTree = async (nextn, nextp, innerShadowRoot) => {
 			while (nextn) {
-				cloneNode(nextn, nextp, innerShadowRoot);
+				await cloneNode(nextn, nextp, innerShadowRoot);
 				nextn = nextn.nextSibling;
 			}
 		};
 
 		const clone = node.cloneNode();
+
+		const webAnimations = extractFinalCSSState(node);
+		if (webAnimations != null) {
+			clone.setAttribute("yy-web-animations", webAnimations);
+		}
 
 		if (typeof clone.setAttribute !== "undefined") {
 			if (shadowRoot) {
@@ -372,7 +405,7 @@ const deepClone = (host) => {
 			if (node instanceof HTMLCanvasElement) {
 				try {
 					const boundingRect = node.getBoundingClientRect();
-					const resizedImage = await resizeImage(node.toDataURL(), 900, 900);
+					const resizedImage = await resizeImage(node.toDataURL(), 1400, 1400);
 
 					clone.setAttribute("yy-canvas-data", resizedImage);
 					clone.setAttribute("yy-canvas-height", boundingRect.height);
@@ -440,7 +473,7 @@ const deepClone = (host) => {
 		if (node.shadowRoot) {
 			var rootShadowNodeId = shadowNodeId;
 			shadowNodeId++;
-			walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
+			await walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
 			handleAdoptedStyleSheets(node.shadowRoot, clone, rootShadowNodeId);
 
 			if (typeof clone.setAttribute !== "undefined") {
@@ -448,11 +481,11 @@ const deepClone = (host) => {
 			}
 		}
 
-		walkTree(node.firstChild, clone);
+		await walkTree(node.firstChild, clone);
 	};
 
 	const fragment = document.createDocumentFragment();
-	cloneNode(host, fragment);
+	await cloneNode(host, fragment);
 
 	// Work on adopted stylesheets.
 	var clonedHead = fragment.querySelector("head");
@@ -465,13 +498,13 @@ const deepClone = (host) => {
 };
 
 const prepareScreenshotData = (remote) => {
-	return new Promise((resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		const styleTags = window.document.querySelectorAll("style, link");
 		for (var i = 0; i < styleTags.length; ++i) {
 			styleTags[i].setAttribute("yy-styleid", i);
 		}
 
-		const clone = deepClone(window.document.documentElement);
+		const clone = await deepClone(window.document.documentElement);
 
 		// Fix for web imports (depracted).
 		const linkImportElems = clone.querySelectorAll("link[rel=import]");
