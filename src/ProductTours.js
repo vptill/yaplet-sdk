@@ -3,226 +3,252 @@ import Tours from "./Tours";
 import AdminManager from "./AdminManager";
 
 export default class ProductTours {
-  productTourData = undefined;
-  productTourId = undefined;
-  onCompletion = undefined;
-  unmuted = false;
+	productTourData = undefined;
+	productTourId = undefined;
+	onCompletion = undefined;
+	unmuted = false;
 
-  // ReplayRecorder singleton
-  static instance;
-  static getInstance() {
-    if (!this.instance) {
-      this.instance = new ProductTours();
-      return this.instance;
-    } else {
-      return this.instance;
-    }
-  }
+	// ReplayRecorder singleton
+	static instance;
+	static getInstance() {
+		if (!this.instance) {
+			this.instance = new ProductTours();
+			return this.instance;
+		} else {
+			return this.instance;
+		}
+	}
 
-  constructor() {}
+	constructor() {}
 
-  startWithConfig(tourId, config, onCompletion) {
-    this.productTourId = tourId;
-    this.productTourData = config;
-    this.onCompletion = onCompletion;
+	startWithConfig(tourId, config, onCompletion) {
+		this.productTourId = tourId;
+		this.productTourData = config;
+		this.onCompletion = onCompletion;
 
-    return this.start();
-  }
+		return this.start();
+	}
 
-  start() {
-    const config = this.productTourData;
-    if (!config || AdminManager.getInstance().adminHelper) {
-      return;
-    }
+	start() {
+		const config = this.productTourData;
+		if (!config || AdminManager.getInstance().adminHelper) {
+			return;
+		}
 
-    this.unmuted = false;
-    const steps = config.steps;
-    const self = this;
+		this.unmuted = false;
+		const steps = config.steps;
+		const self = this;
 
-    var driverSteps = [];
+		var driverSteps = [];
 
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
+		for (let i = 0; i < steps.length; i++) {
+			const step = steps[i];
 
-      const isClickMode = step.mode === "CLICK";
+			const isClickMode = step.mode === "CLICK";
+			const isInputMode = step.mode === "INPUT";
 
-      var message = "";
-      var hasSender = false;
+			var message = "";
+			var hasSender = false;
 
-      if (step.type === "video-pointer") {
-        message = `<div class="yaplet-tour-video">
+			if (step.type === "video-pointer") {
+				message = `<div class="yaplet-tour-video">
               <video class="yaplet-tour-video-obj" muted autoplay>
                 <source src="${step.videoUrl}" type="video/mp4">
               </video>
               <div class="yaplet-tour-video-playpause">${loadIcon(
-                "unmute"
-              )}</div>
+								"unmute"
+							)}</div>
             </div>`;
-      } else {
-        var senderHTML = ``;
+			} else {
+				var senderHTML = ``;
 
-        if (config.sender && config.sender.firstName) {
-          hasSender = true;
-          senderHTML = `<div class="yaplet-tour-sender">
+				if (config.sender && config.sender.firstName) {
+					hasSender = true;
+					senderHTML = `<div class="yaplet-tour-sender">
                 <div class="yaplet-tour-sender-image" style="background-image: url('${config.sender.profileImageUrl}');"></div>
                 <div class="yaplet-tour-sender-name">${config.sender.firstName}</div>
               </div>`;
-        }
+				}
 
-        message = `${senderHTML}<div class="yaplet-tour-message">${step.message}</div>`;
-      }
+				message = `${senderHTML}<div class="yaplet-tour-message">${step.message}</div>`;
+			}
 
-      var driverStep = {
-        disableActiveInteraction: !isClickMode,
-        popover: {
-          description: message,
-          popoverClass: `yaplet-tour-popover-${step.type} ${
-            !hasSender && "yaplet-tour-popover-no-sender"
-          } ${config.allowClose && "yaplet-tour-popover-can-close"}`,
-          ...(isClickMode
-            ? {
-                showButtons: [
-                  ...(config.backButton ? ["previous"] : []),
-                  ...(config.allowClose ? ["close"] : []),
-                ],
-              }
-            : {}),
-        },
-        url: step.url,
-      };
-      if (step.selector && step.selector.length > 0) {
-        driverStep.element = step.selector;
-      }
-      driverSteps.push(driverStep);
-    }
+			const disableInteraction = !isClickMode && !isInputMode;
 
-    var buttons = ["next", "close"];
+			var driverStep = {
+				disableActiveInteraction: disableInteraction,
+				popover: {
+					description: message,
+					popoverClass: `yaplet-tour-popover-${step.type} ${
+						!hasSender && "yaplet-tour-popover-no-sender"
+					} ${config.allowClose && "yaplet-tour-popover-can-close"}`,
+					...(isClickMode
+						? {
+								showButtons: [
+									...(config.backButton ? ["previous"] : []),
+									...(config.allowClose ? ["close"] : []),
+								],
+						  }
+						: {}),
+				},
+				url: step.url,
+			};
+			if (step.selector && step.selector.length > 0) {
+				driverStep.element = step.selector;
+			}
+			driverSteps.push(driverStep);
+		}
 
-    if (config.backButton) {
-      buttons.push("previous");
-    }
+		var buttons = ["next", "close"];
 
-    function onDocumentClick(evnt) {
-      var yapletTourPopover = document.querySelector(".yaplet-tour-popover");
-      if (!yapletTourPopover.contains(evnt.target)) {
-        yapletTourObj.moveNext();
-      }
-    }
+		if (config.backButton) {
+			buttons.push("previous");
+		}
 
-    const yapletTourObj = Tours({
-      showProgress: true,
-      steps: driverSteps,
-      showProgress: steps.length > 1,
-      allowClose: config.allowClose,
-      nextBtnText: config.nextText,
-      doneBtnText: config.doneText,
-      prevBtnText: config.prevText,
-      showButtons: buttons,
-      onDestroyStarted: () => {
-        if (!yapletTourObj.hasNextStep()) {
-          yapletTourObj.destroy();
+		function onDocumentClick(evnt) {
+			var yapletTourPopover = document.querySelector(".yaplet-tour-popover");
+			if (!yapletTourPopover.contains(evnt.target)) {
+				const stepIndex = yapletTourObj.getActiveIndex();
+				const step = steps[stepIndex];
+				const element = yapletTourObj.getActiveElement();
 
-          if (self.onCompletion) {
-            self.onCompletion({
-              tourId: self.productTourId,
-            });
-          }
-        } else {
-          yapletTourObj.destroy();
-        }
+				if (
+					(element && element.tagName === "INPUT") ||
+					step.mode === "INPUT" ||
+					evnt?.target?.id.includes("tooltip-svg")
+				) {
+					// Prevent.
+				} else {
+					yapletTourObj.moveNext();
+				}
+			}
+		}
 
-        document.removeEventListener("click", onDocumentClick);
-      },
-      onPopoverRender: (popoverElement) => {
-        // Fix for images and videos.
-        if (popoverElement) {
-          const mediaElements = document.querySelectorAll(
-            ".yaplet-tour-popover-description img, .yaplet-tour-popover-description video"
-          );
+		const yapletTourObj = Tours({
+			showProgress: true,
+			steps: driverSteps,
+			showProgress: steps.length > 1,
+			allowClose: config.allowClose,
+			nextBtnText: config.nextText,
+			doneBtnText: config.doneText,
+			prevBtnText: config.prevText,
+			showButtons: buttons,
+			onDestroyStarted: () => {
+				if (!yapletTourObj.hasNextStep()) {
+					yapletTourObj.destroy();
 
-          const performRequentialRefresh = () => {
-            setTimeout(() => {
-              yapletTourObj.refresh();
-            }, 500);
-            setTimeout(() => {
-              yapletTourObj.refresh();
-            }, 750);
-          };
+					if (self.onCompletion) {
+						self.onCompletion({
+							tourId: self.productTourId,
+						});
+					}
+				} else {
+					yapletTourObj.destroy();
+				}
 
-          for (let i = 0; i < mediaElements.length; i++) {
-            const mediaElement = mediaElements[i];
-            if (mediaElement.tagName === "IMG") {
-              mediaElement.addEventListener("load", () => {
-                performRequentialRefresh();
-              });
-              mediaElement.addEventListener("error", () => {
-                performRequentialRefresh();
-              });
-            } else if (mediaElement.tagName === "VIDEO") {
-              mediaElement.addEventListener("canplaythrough", () => {
-                performRequentialRefresh();
-              });
-              mediaElement.addEventListener("error", () => {
-                performRequentialRefresh();
-              });
-            }
-          }
-        }
+				document.removeEventListener("click", onDocumentClick);
+			},
+			onPopoverRender: (popoverElement) => {
+				// Fix for images and videos.
+				if (popoverElement) {
+					const mediaElements = document.querySelectorAll(
+						".yaplet-tour-popover-description img, .yaplet-tour-popover-description video"
+					);
 
-        const playingClass = "yaplet-tour-video--playing";
+					const performRequentialRefresh = () => {
+						setTimeout(() => {
+							yapletTourObj.refresh();
+						}, 500);
+						setTimeout(() => {
+							yapletTourObj.refresh();
+						}, 750);
+					};
 
-        const videoElement = document.querySelector(".yaplet-tour-video-obj");
-        if (videoElement) {
-          const videoContainer = videoElement.closest(".yaplet-tour-video");
+					for (let i = 0; i < mediaElements.length; i++) {
+						const mediaElement = mediaElements[i];
+						if (mediaElement.tagName === "IMG") {
+							mediaElement.addEventListener("load", () => {
+								performRequentialRefresh();
+							});
+							mediaElement.addEventListener("error", () => {
+								performRequentialRefresh();
+							});
+						} else if (mediaElement.tagName === "VIDEO") {
+							mediaElement.addEventListener("canplaythrough", () => {
+								performRequentialRefresh();
+							});
+							mediaElement.addEventListener("error", () => {
+								performRequentialRefresh();
+							});
+						}
+					}
+				}
 
-          if (self.unmuted) {
-            if (videoElement) {
-              videoElement.pause();
-              videoElement.muted = false;
-              videoElement.play();
-              videoContainer.classList.add(playingClass);
-            }
-          }
+				const playingClass = "yaplet-tour-video--playing";
+				const playPauseContainer = document.querySelector(
+					".yaplet-tour-video-playpause"
+				);
 
-          videoElement.addEventListener("ended", function () {
-            playButtonElem.innerHTML = loadIcon("replay");
-            videoContainer.classList.remove(playingClass);
-          });
+				const videoElement = document.querySelector(".yaplet-tour-video-obj");
+				if (videoElement) {
+					const videoContainer = videoElement.closest(".yaplet-tour-video");
 
-          // Video player controller.
-          const playButtonElem = document.querySelector(
-            ".yaplet-tour-video-playpause"
-          );
-          if (playButtonElem) {
-            playButtonElem.addEventListener("click", () => {
-              if (videoElement.muted) {
-                self.unmuted = true;
+					if (self.unmuted) {
+						if (videoElement) {
+							videoElement.pause();
+							videoElement.muted = false;
+							videoElement.play();
+							videoContainer.classList.add(playingClass);
+						}
+					}
 
-                videoElement.pause();
-                videoElement.currentTime = 0;
-                videoElement.muted = false;
-                videoElement.play();
+					videoElement.addEventListener("ended", function () {
+						playButtonElem.innerHTML = loadIcon("replay");
+						playPauseContainer.classList.add(
+							"yaplet-tour-video-svg--fullscreen"
+						);
+						videoContainer.classList.remove(playingClass);
+					});
 
-                playButtonElem.innerHTML = loadIcon("mute");
-                videoContainer.classList.add(playingClass);
-              } else if (videoElement.paused) {
-                videoElement.muted = false;
-                videoElement.play();
+					videoElement.addEventListener("play", function () {
+						console.log("Video started");
+						playPauseContainer.classList.remove(
+							"yaplet-tour-video-svg--fullscreen"
+						);
+					});
 
-                playButtonElem.innerHTML = loadIcon("mute");
-                videoContainer.classList.add(playingClass);
-              } else {
-                videoElement.pause();
-                playButtonElem.innerHTML = loadIcon("unmute");
-                videoContainer.classList.remove(playingClass);
-              }
-            });
-          }
-        }
-      },
-    });
-    yapletTourObj.drive();
+					if (playPauseContainer) {
+						playPauseContainer.addEventListener("click", () => clickVideo());
+					}
 
-    document.addEventListener("click", onDocumentClick);
-  }
+					const clickVideo = () => {
+						if (videoElement.muted) {
+							self.unmuted = true;
+
+							videoElement.pause();
+							videoElement.currentTime = 0;
+							videoElement.muted = false;
+							videoElement.play();
+
+							playPauseContainer.innerHTML = loadIcon("mute");
+							videoContainer.classList.add(playingClass);
+						} else if (videoElement.paused) {
+							videoElement.muted = false;
+							videoElement.play();
+
+							playPauseContainer.innerHTML = loadIcon("mute");
+							videoContainer.classList.add(playingClass);
+						} else {
+							videoElement.pause();
+							playPauseContainer.innerHTML = loadIcon("unmute");
+							videoContainer.classList.remove(playingClass);
+						}
+					};
+				}
+			},
+		});
+		yapletTourObj.drive();
+
+		document.addEventListener("click", onDocumentClick);
+	}
 }

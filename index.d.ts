@@ -38,6 +38,8 @@ export namespace Yaplet {
     function startConversation(showBackButton?: boolean): void;
     function attachCustomData(customData: any): void;
     function setTicketAttribute(key: string, value: string): void;
+    function unsetTicketAttribute(key: string): void;
+    function clearTicketAttributes(): void;
     function setCustomData(key: string, value: string): void;
     function removeCustomData(key: string): void;
     function clearCustomData(): void;
@@ -82,7 +84,8 @@ export namespace Yaplet {
     function setAiTools(tools: {
       name: string;
       description: string;
-      response: string;
+      executionType?: 'button' | 'auto';
+      response?: string;
       parameters: {
         name: string;
         description: string;
@@ -104,28 +107,30 @@ export namespace Yaplet {
     function identify(
       userId: string,
       customerData: {
-        name?: string;
-        email?: string;
-        phone?: string;
-        value?: number;
-        companyId?: string;
-        companyName?: string;
-        plan?: string;
-        customData?: object;
-        createdAt?: Date;
+        name?: string | null;
+        email?: string | null;
+        phone?: string | null;
+        value?: number | null;
+        companyId?: string | null;
+        companyName?: string | null;
+        sla?: number | null;
+        plan?: string | null;
+        customData?: object | null;
+        createdAt?: Date | null;
       },
       userHash?: string
     ): void;
     function updateContact(
       customerData: {
-        name?: string;
-        email?: string;
-        phone?: string;
-        value?: number;
-        companyId?: string;
-        companyName?: string;
-        plan?: string;
-        customData?: object;
+        name?: string | null;
+        email?: string | null;
+        phone?: string | null;
+        value?: number | null;
+        companyId?: string | null;
+        companyName?: string | null;
+        sla?: number | null;
+        plan?: string | null;
+        customData?: object | null;
       }
     ): void;
     function getInstance(): any;
