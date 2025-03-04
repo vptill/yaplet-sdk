@@ -753,6 +753,7 @@ export const injectStyledCSS = (
     .yaplet-notification-item-news-image {
       background-color: ${subTextColor};
       height: 170px;
+      max-height: 170px;
       object-fit: cover;
       width: 100%;
     }
@@ -1788,6 +1789,15 @@ export const injectStyledCSS = (
     .yaplet-tour-message p,
     .yaplet-tour-message ul {
       color: ${contrastBackgroundColor};
+    }
+
+    .yaplet-tour-message h2 {
+      font-weight: 600;
+      font-size: 22px;
+    }
+    .yaplet-tour-message h3 {
+      font-weight: 600;
+      font-size: 18px;
     }
 
     .yaplet-tour-message p {
