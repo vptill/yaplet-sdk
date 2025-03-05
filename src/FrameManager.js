@@ -486,9 +486,11 @@ export default class FrameManager {
 				this.sendConfigUpdate();
 				this.sendSessionUpdate();
 				this.workThroughQueue();
-				setTimeout(() => {
-					this.runWidgetShouldOpenCallback();
-				}, 300);
+				if (data.shouldOpen) {
+					setTimeout(() => {
+						this.runWidgetShouldOpenCallback();
+					}, 300);
+				}
 			}
 
 			if (data.name === "play-ping") {
