@@ -93,6 +93,8 @@ export default class NotificationManager {
 			(e) => notification.payload.outbound === e.outbound
 		);
 		if (!notificationsForOutbound) {
+			// Add timestamp when notification is first shown
+			notification.shownAt = Date.now();
 			this.notifications.push(notification);
 
 			// Play sound only when no existing already.
@@ -133,6 +135,11 @@ export default class NotificationManager {
 		for (var i = 0; i < this.notifications.length; i++) {
 			const notification = this.notifications[i];
 
+			// Add timestamp when notification is rendered if not already set
+			if (!notification.shownAt) {
+				notification.shownAt = Date.now();
+			}
+
 			var content = notification.payload.message;
 
 			// Try replacing the session name.
@@ -140,6 +147,17 @@ export default class NotificationManager {
 
 			const elem = document.createElement("div");
 			elem.onclick = () => {
+				const timeToClick = Date.now() - notification.shownAt;
+				FrameManager.getInstance().sendMessage(
+					{
+						name: "notification-clicked",
+						data: {
+							time_to_click: timeToClick,
+							id: notification.payload.id,
+						},
+					},
+					true
+				);
 				if (notification.payload.chat) {
 					Yaplet.openConversation(notification.payload.chat.id, true);
 				} else if (notification.payload.news) {

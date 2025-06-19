@@ -818,7 +818,6 @@ export const injectStyledCSS = (
     .yaplet-notification-item-content {
       line-height: 20px;
       color: ${contrastBackgroundColor};
-      margin-top: 4px;
       min-width: min(200px, 50vw);
       word-wrap: break-word;
       word-break: break-word;

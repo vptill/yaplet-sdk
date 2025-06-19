@@ -1117,23 +1117,41 @@ class Yaplet {
 					const operator = pageQuery[0];
 					let isValid = false;
 					switch (operator) {
-						case "is":
+						case "equals":
 							isValid = window.location.href === pageQueryValue;
 							break;
-						case "isNot":
+						case "not_equals":
 							isValid = window.location.href !== pageQueryValue;
 							break;
-						case "contains":
-							isValid = window.location.href.includes(pageQueryValue);
+						case "ilike":
+							isValid = window.location.href
+								.toLowerCase()
+								.includes(pageQueryValue.toLowerCase());
 							break;
-						case "doesNotContain":
-							isValid = !window.location.href.includes(pageQueryValue);
+						case "not_ilike":
+							isValid = !window.location.href
+								.toLowerCase()
+								.includes(pageQueryValue.toLowerCase());
 							break;
-						case "startsWith":
-							isValid = window.location.href.startsWith(pageQueryValue);
+						case "start_ilike":
+							isValid = window.location.href
+								.toLowerCase()
+								.startsWith(pageQueryValue.toLowerCase());
 							break;
-						case "endsWith":
-							isValid = window.location.href.endsWith(pageQueryValue);
+						case "not_start_ilike":
+							isValid = !window.location.href
+								.toLowerCase()
+								.startsWith(pageQueryValue.toLowerCase());
+							break;
+						case "end_ilike":
+							isValid = window.location.href
+								.toLowerCase()
+								.endsWith(pageQueryValue.toLowerCase());
+							break;
+						case "not_end_ilike":
+							isValid = !window.location.href
+								.toLowerCase()
+								.endsWith(pageQueryValue.toLowerCase());
 							break;
 						default:
 							isValid = false;
