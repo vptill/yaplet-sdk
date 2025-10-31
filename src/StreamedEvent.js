@@ -303,11 +303,6 @@ export default class StreamedEvent {
 			return;
 		}
 
-		// Sockets not connected.
-		if (!this.socket || this.socket.readyState !== this.socket.OPEN) {
-			return;
-		}
-
 		const self = this;
 		this.streamingEvents = true;
 
