@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Yaplet - Advanced Widget Solutions</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="build/cjs/index.js"></script>
+		<script src="main.js"></script>
+		<style>
+			:root {
+				--color-primaryBlue: oklch(45.35% 0.2416 264.11);
+				--color-primaryOrange: oklch(71.24% 0.1858 41.88);
+				--color-secondaryBlue: oklch(61.94% 0.1837 253.18);
+				--color-secondaryPurple: oklch(0.66 0.16 272.97 / 1);
+				--color-secondaryRose: oklch(0.6 0.18 12.66 / 1);
+				--color-secondaryYellow: oklch(0.84 0.17 84.93 / 1);
+				--color-lightBlue: oklch(0.9 0.05 255.65 / 1);
+				--color-background: oklch(0.98 0.01 59.65 / 1);
+				--color-black: oklch(0.12 0 245.47 / 1);
+				--color-stroke: oklch(0.94 0 197.14 / 1);
+				--color-lightStroke: oklch(0.69 0 286.36 / 1);
+			}
+
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+					Roboto, sans-serif;
+				line-height: 1.6;
+				color: var(--color-black);
+				background: var(--color-background);
+			}
+
+			.hero {
+				background: linear-gradient(
+					135deg,
+					var(--color-lightBlue) 0%,
+					var(--color-background) 100%
+				);
+				color: var(--color-black);
+				padding: 120px 20px 100px;
+				text-align: center;
+				position: relative;
+				overflow: hidden;
+			}
+
+			.hero-content {
+				position: relative;
+				z-index: 1;
+				max-width: 1200px;
+				margin: 0 auto;
+			}
+
+			.hero h1 {
+				font-size: clamp(2.5rem, 5vw, 4rem);
+				font-weight: 700;
+				margin-bottom: 1rem;
+				background: linear-gradient(
+					45deg,
+					var(--color-primaryBlue),
+					var(--color-secondaryBlue)
+				);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+
+			.hero p {
+				font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+				opacity: 0.9;
+				margin-bottom: 2rem;
+				max-width: 600px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			.cta-button {
+				display: inline-block;
+				background: var(--color-primaryOrange);
+				color: white;
+				padding: 16px 32px;
+				border-radius: 50px;
+				text-decoration: none;
+				font-weight: 600;
+				font-size: 1.1rem;
+				transition: all 0.3s ease;
+				box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+			}
+
+			.cta-button:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+			}
+
+			.features {
+				padding: 80px 20px;
+				max-width: 1200px;
+				margin: 0 auto;
+			}
+
+			.features h2 {
+				text-align: center;
+				font-size: clamp(2rem, 4vw, 3rem);
+				color: var(--color-black);
+				margin-bottom: 60px;
+				font-weight: 700;
+			}
+
+			.features-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+				gap: 40px;
+				margin-bottom: 60px;
+			}
+
+			.feature-card {
+				background: white;
+				border-radius: 20px;
+				padding: 40px 30px;
+				text-align: center;
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+				border: 1px solid var(--color-stroke);
+				transition: all 0.3s ease;
+				position: relative;
+				overflow: hidden;
+			}
+
+			.demo-blur .feature-card {
+				box-shadow: none;
+				border-color: transparent;
+			}
+
+			.feature-card::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: 4px;
+				background: linear-gradient(
+					90deg,
+					var(--color-primaryBlue),
+					var(--color-secondaryPurple),
+					var(--color-primaryOrange)
+				);
+			}
+
+			.feature-card:hover {
+				transform: translateY(-10px);
+				box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+			}
+
+			.feature-icon {
+				width: 80px;
+				height: 80px;
+				background: linear-gradient(
+					135deg,
+					var(--color-primaryBlue),
+					var(--color-secondaryBlue)
+				);
+				border-radius: 20px;
+				margin: 0 auto 20px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 2rem;
+				color: white;
+			}
+
+			.feature-card h3 {
+				font-size: 1.5rem;
+				margin-bottom: 15px;
+				color: var(--color-black);
+				font-weight: 600;
+			}
+
+			.feature-card p {
+				color: #666;
+				line-height: 1.6;
+			}
+
+			.showcase {
+				background: linear-gradient(
+					135deg,
+					var(--color-lightBlue) 0%,
+					var(--color-background) 100%
+				);
+				padding: 80px 20px;
+			}
+
+			.showcase-content {
+				max-width: 1200px;
+				margin: 0 auto;
+				text-align: center;
+			}
+
+			.showcase h2 {
+				font-size: clamp(2rem, 4vw, 3rem);
+				color: var(--color-black);
+				margin-bottom: 20px;
+				font-weight: 700;
+			}
+
+			.showcase p {
+				font-size: 1.2rem;
+				color: #666;
+				margin-bottom: 60px;
+				max-width: 600px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			.screenshot-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+				gap: 30px;
+				margin-bottom: 60px;
+			}
+
+			.screenshot-card {
+				background: white;
+				border-radius: 15px;
+				overflow: hidden;
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+				transition: all 0.3s ease;
+				border: 1px solid var(--color-stroke);
+			}
+
+			.screenshot-card:hover {
+				transform: translateY(-5px);
+				box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+			}
+
+			.screenshot-placeholder {
+				height: 200px;
+				background: linear-gradient(
+					135deg,
+					var(--color-lightStroke) 0%,
+					var(--color-stroke) 100%
+				);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: var(--color-black);
+				font-weight: 600;
+				font-size: 1.1rem;
+				position: relative;
+			}
+
+			.screenshot-placeholder::after {
+				content: "📱";
+				font-size: 3rem;
+				opacity: 0.3;
+			}
+
+			.screenshot-card h4 {
+				padding: 20px;
+				font-size: 1.2rem;
+				font-weight: 600;
+				color: var(--color-black);
+				margin: 0;
+			}
+
+			.stats {
+				background: var(--color-black);
+				color: white;
+				padding: 80px 20px;
+			}
+
+			.stats-content {
+				max-width: 1200px;
+				margin: 0 auto;
+				text-align: center;
+			}
+
+			.stats h2 {
+				font-size: clamp(2rem, 4vw, 3rem);
+				margin-bottom: 60px;
+				font-weight: 700;
+			}
+
+			.stats-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+				gap: 40px;
+			}
+
+			.stat-item {
+				text-align: center;
+			}
+
+			.stat-number {
+				font-size: clamp(2.5rem, 5vw, 4rem);
+				font-weight: 700;
+				color: var(--color-primaryOrange);
+				margin-bottom: 10px;
+			}
+
+			.stat-label {
+				font-size: 1.1rem;
+				opacity: 0.8;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+			}
+
+			.cta-section {
+				background: linear-gradient(
+					135deg,
+					var(--color-primaryBlue) 0%,
+					var(--color-secondaryPurple) 100%
+				);
+				color: white;
+				padding: 80px 20px;
+				text-align: center;
+			}
+
+			.cta-section h2 {
+				font-size: clamp(2rem, 4vw, 3rem);
+				margin-bottom: 20px;
+				font-weight: 700;
+			}
+
+			.cta-section p {
+				font-size: 1.2rem;
+				margin-bottom: 40px;
+				opacity: 0.9;
+				max-width: 600px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			@media (max-width: 768px) {
+				.hero {
+					padding: 80px 20px 60px;
+				}
+
+				.features {
+					padding: 60px 20px;
+				}
+
+				.features-grid {
+					grid-template-columns: 1fr;
+					gap: 30px;
+				}
+
+				.screenshot-grid {
+					grid-template-columns: 1fr;
+				}
+
+				.stats-grid {
+					grid-template-columns: repeat(2, 1fr);
+					gap: 30px;
+				}
+
+				.feature-card,
+				.screenshot-card {
+					margin: 0 10px;
+				}
+			}
+
+			.top-nav {
+				background: rgba(255, 255, 255, 0.95);
+				backdrop-filter: blur(10px);
+				border-bottom: 1px solid var(--color-stroke);
+				transition: all 0.3s ease;
+			}
+
+			.top-nav.demo-blur {
+				backdrop-filter: none;
+				background: transparent;
+				border-bottom: none;
+			}
+
+			.nav-container {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 0 20px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				height: 100px;
+			}
+
+			.logo {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+
+			.logo-icon {
+				width: 55px;
+				height: 55px;
+				background: linear-gradient(
+					135deg,
+					var(--color-primaryBlue),
+					var(--color-secondaryPurple)
+				);
+				border-radius: 15px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 1.5rem;
+				color: white;
+				box-shadow: 0 4px 15px rgba(29, 85, 232, 0.3);
+			}
+
+			.company-name {
+				font-size: 1.8rem;
+				font-weight: 700;
+				color: var(--color-black);
+				background: linear-gradient(
+					45deg,
+					var(--color-primaryBlue),
+					var(--color-secondaryBlue)
+				);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+
+			.nav-menu {
+				display: flex;
+				align-items: center;
+				gap: 2rem;
+			}
+
+			.nav-link {
+				color: var(--color-black);
+				text-decoration: none;
+				font-weight: 500;
+				font-size: 0.95rem;
+				padding: 8px 16px;
+				border-radius: 8px;
+				transition: all 0.3s ease;
+				position: relative;
+			}
+
+			.nav-link:hover {
+				background: var(--color-lightStroke);
+				color: var(--color-primaryBlue);
+			}
+
+			.nav-link.cta-nav {
+				background: var(--color-primaryOrange);
+				color: white;
+				font-weight: 600;
+				padding: 10px 20px;
+				box-shadow: 0 4px 15px rgba(113, 36, 0, 0.3);
+			}
+
+			.nav-link.cta-nav:hover {
+				background: var(--color-primaryOrange);
+				transform: translateY(-1px);
+				box-shadow: 0 6px 20px rgba(113, 36, 0, 0.4);
+			}
+
+			.mobile-menu-toggle {
+				display: none;
+				flex-direction: column;
+				cursor: pointer;
+				gap: 4px;
+			}
+
+			.mobile-menu-toggle span {
+				width: 25px;
+				height: 3px;
+				background: var(--color-black);
+				transition: all 0.3s ease;
+				border-radius: 2px;
+			}
+
+			@media (max-width: 768px) {
+				.nav-menu {
+					display: none;
+				}
+
+				.mobile-menu-toggle {
+					display: flex;
+				}
+
+				.hero {
+					padding: 120px 20px 60px;
+				}
+			}
+
+			/* Demo Blur Effect */
+			.demo-blur {
+				filter: blur(8px) brightness(0.8);
+				transition: filter 0.3s ease;
+				pointer-events: none;
+			}
+
+			@media (max-width: 480px) {
+				.stats-grid {
+					grid-template-columns: 1fr;
+				}
+
+				.hero h1 {
+					font-size: 2rem;
+				}
+
+				.hero p {
+					font-size: 1rem;
+				}
+
+				.nav-container {
+					padding: 0 15px;
+				}
+
+				.company-name {
+					font-size: 1.5rem;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header class="top-nav">
+			<div class="nav-container">
+				<div class="logo">
+					<div class="logo-icon">⚡</div>
+					<span class="company-name">NexaWidgets</span>
+				</div>
+				<nav class="nav-menu">
+					<a href="#" class="nav-link">Products</a>
+					<a href="#" class="nav-link">Solutions</a>
+					<a href="#" class="nav-link">Pricing</a>
+					<a href="#" class="nav-link">Resources</a>
+					<a href="#" class="nav-link">Support</a>
+					<a href="#" class="nav-link cta-nav">Get Demo</a>
+				</nav>
+				<div class="mobile-menu-toggle">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+			</div>
+		</header>
+
+		<section class="hero">
+			<div class="hero-content">
+				<h1>Advanced Widget Solutions</h1>
+				<p>
+					Transform your user experience with our powerful, customizable widget
+					platform. Built for performance, designed for excellence.
+				</p>
+				<a href="#" class="cta-button">Get Started Today</a>
+			</div>
+		</section>
+
+		<section class="features">
+			<h2>Powerful Features</h2>
+			<div class="features-grid">
+				<div class="feature-card">
+					<div class="feature-icon">🚀</div>
+					<h3>Lightning Fast</h3>
+					<p>
+						Optimized performance with minimal impact on your app's loading
+						times. Experience blazing-fast widget rendering.
+					</p>
+				</div>
+				<div class="feature-card">
+					<div class="feature-icon">🎨</div>
+					<h3>Fully Customizable</h3>
+					<p>
+						Tailor every aspect of your widgets to match your brand perfectly.
+						Complete control over styling and behavior.
+					</p>
+				</div>
+				<div class="feature-card">
+					<div class="feature-icon">📱</div>
+					<h3>Mobile Optimized</h3>
+					<p>
+						Seamlessly adapts to all screen sizes. Perfect user experience
+						across desktop, tablet, and mobile devices.
+					</p>
+				</div>
+				<div class="feature-card">
+					<div class="feature-icon">🔒</div>
+					<h3>Secure & Reliable</h3>
+					<p>
+						Enterprise-grade security with robust error handling. Your data
+						stays safe with our comprehensive protection.
+					</p>
+				</div>
+				<div class="feature-card">
+					<div class="feature-icon">⚡</div>
+					<h3>Real-time Updates</h3>
+					<p>
+						Live data synchronization and instant user feedback. Keep your
+						widgets fresh and engaging.
+					</p>
+				</div>
+				<div class="feature-card">
+					<div class="feature-icon">🔧</div>
+					<h3>Easy Integration</h3>
+					<p>
+						Simple SDK integration with comprehensive documentation. Get up and
+						running in minutes.
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="showcase">
+			<div class="showcase-content">
+				<h2>Widget Showcase</h2>
+				<p>
+					Explore our diverse range of widget types designed to enhance user
+					engagement and drive conversions.
+				</p>
+
+				<div class="screenshot-grid">
+					<div class="screenshot-card">
+						<div class="screenshot-placeholder">Survey Widget</div>
+						<h4>Interactive Surveys</h4>
+					</div>
+					<div class="screenshot-card">
+						<div class="screenshot-placeholder">Feedback Widget</div>
+						<h4>User Feedback Collection</h4>
+					</div>
+					<div class="screenshot-card">
+						<div class="screenshot-placeholder">Notification Widget</div>
+						<h4>Smart Notifications</h4>
+					</div>
+					<div class="screenshot-card">
+						<div class="screenshot-placeholder">Tour Widget</div>
+						<h4>Product Tours</h4>
+					</div>
+					<div class="screenshot-card">
+						<div class="screenshot-placeholder">Banner Widget</div>
+						<h4>Promotional Banners</h4>
+					</div>
+					<div class="screenshot-card">
+						<div class="screenshot-placeholder">Chat Widget</div>
+						<h4>Live Chat Integration</h4>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="stats">
+			<div class="stats-content">
+				<h2>Trusted by Developers Worldwide</h2>
+				<div class="stats-grid">
+					<div class="stat-item">
+						<div class="stat-number">50K+</div>
+						<div class="stat-label">Active Users</div>
+					</div>
+					<div class="stat-item">
+						<div class="stat-number">1M+</div>
+						<div class="stat-label">Widgets Deployed</div>
+					</div>
+					<div class="stat-item">
+						<div class="stat-number">99.9%</div>
+						<div class="stat-label">Uptime</div>
+					</div>
+					<div class="stat-item">
+						<div class="stat-number">24/7</div>
+						<div class="stat-label">Support</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="cta-section">
+			<h2>Ready to Get Started?</h2>
+			<p>
+				Join thousands of developers who trust Yaplet for their widget
+				solutions. Start building amazing user experiences today.
+			</p>
+			<a href="#" class="cta-button">Start Your Free Trial</a>
+		</section>
+
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				const demoBtn = document.querySelector(".cta-nav");
+				let demoActive = false;
+
+				demoBtn.addEventListener("click", function (e) {
+					e.preventDefault();
+
+					demoActive = !demoActive;
+
+					if (demoActive) {
+						// Apply blur to specific sections
+						document
+							.querySelectorAll(
+								".top-nav, .hero, .features, .showcase, .stats, .cta-section"
+							)
+							.forEach((section) => {
+								section.classList.add("demo-blur");
+							});
+					} else {
+						// Remove blur from sections
+						document
+							.querySelectorAll(
+								".top-nav, .hero, .features, .showcase, .stats, .cta-section"
+							)
+							.forEach((section) => {
+								section.classList.remove("demo-blur");
+							});
+					}
+				});
+			});
+		</script>
+	</body>
+</html>

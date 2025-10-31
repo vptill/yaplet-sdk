@@ -9,5 +9,6 @@ Yaplet.setAdminUrl("http://localhost:3000");
 
 // Yaplet.initialize("a22e7df8-7329-458a-ac18-16970543ff73"); // IG
 Yaplet.initialize("3528f1f0-33a7-43d3-b334-c61ee682447c"); // TEST
+// Yaplet.initialize("26930a7f-fa2b-4094-85c8-d583aa20c76e"); // Yaplet display
 
 //Yaplet.showSurvey("241d5cd9-9e35-47e9-88fb-34943656832c", "survey_full");
