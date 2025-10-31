@@ -1167,14 +1167,11 @@ class Yaplet {
 
 			if (action && action.event) {
 				if (action.event === "NEW_MESSAGE" || action.event === "message") {
-					// Only show notifications for public messages
-					if (action.visibility === "PUBLIC") {
-						if (action?.data?.checklist?.popupType === "widget") {
-							Yaplet.openChecklist(action.data.checklist.id, true);
-						} else {
-							if (!this.disableInAppNotifications) {
-								Yaplet.showNotification(action);
-							}
+					if (action?.data?.checklist?.popupType === "widget") {
+						Yaplet.openChecklist(action.data.checklist.id, true);
+					} else {
+						if (!this.disableInAppNotifications) {
+							Yaplet.showNotification(action);
 						}
 					}
 				} else if (action.event === "banner") {
