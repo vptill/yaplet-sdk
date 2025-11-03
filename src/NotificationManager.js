@@ -148,16 +148,18 @@ export default class NotificationManager {
 			const elem = document.createElement("div");
 			elem.onclick = () => {
 				const timeToClick = Date.now() - notification.shownAt;
-				FrameManager.getInstance().sendMessage(
-					{
-						name: "notification-clicked",
-						data: {
-							time_to_click: timeToClick,
-							id: notification.payload.id,
+				if (notification.event === "message" && notification.payload.id) {
+					FrameManager.getInstance().sendMessage(
+						{
+							name: "notification-clicked",
+							data: {
+								time_to_click: timeToClick,
+								id: notification.payload.id,
+							},
 						},
-					},
-					true
-				);
+						true
+					);
+				}
 				if (notification.payload.chat) {
 					Yaplet.openConversation(notification.payload.chat.id, true);
 				} else if (notification.payload.news) {
