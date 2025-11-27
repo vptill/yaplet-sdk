@@ -23,6 +23,8 @@ export default class StreamedEvent {
 	handleErrorBound = null;
 	handleMessageBound = null;
 	handleCloseBound = null;
+	heartbeatTimeout = null;
+	stopHeartbeatAfterNextCheck = false;
 
 	// StreamedEvent singleton
 	static instance;
@@ -50,7 +52,10 @@ export default class StreamedEvent {
 
 		if (this.pingWS) {
 			clearInterval(this.pingWS);
+			this.pingWS = null;
 		}
+
+		this.stopHeartbeat();
 
 		if (this.socket) {
 			this.socket.removeEventListener("open", this.handleOpenBound);
@@ -83,20 +88,13 @@ export default class StreamedEvent {
 	}
 
 	handleOpen(event) {
+		// Only send Phoenix heartbeat, not outreach ping (handled via HTTP now)
 		this.pingWS = setInterval(() => {
 			if (this.socket.readyState === this.socket.OPEN) {
 				this.socket.send(
 					JSON.stringify({
 						topic: "phoenix",
 						event: "heartbeat",
-						payload: {},
-						ref: 0,
-					})
-				);
-				this.socket.send(
-					JSON.stringify({
-						topic: "visitor:" + Session.getInstance().session.yapletId,
-						event: "ping",
 						payload: {},
 						ref: 0,
 					})
@@ -162,6 +160,7 @@ export default class StreamedEvent {
 
 	stop() {
 		this.cleanupMainLoop();
+		this.stopHeartbeat();
 	}
 
 	resetErrorCountLoop() {
@@ -318,6 +317,16 @@ export default class StreamedEvent {
 			if (http.readyState === 4) {
 				if (http.status === 200 || http.status === 201) {
 					self.errorCount = 0;
+
+					// Parse response to check for hasQueuedItems
+					try {
+						const response = JSON.parse(http.responseText);
+						if (response && typeof response.hasQueuedItems === "boolean") {
+							self.handlePingResponse(response);
+						}
+					} catch (e) {
+						// Response might not be JSON or might be empty - ignore
+					}
 				} else {
 					self.errorCount++;
 				}
@@ -340,4 +349,94 @@ export default class StreamedEvent {
 
 		this.streamedEventArray = [];
 	};
+
+	handlePingResponse(response) {
+		const hasQueuedItems =
+			typeof response === "boolean" ? response : response.hasQueuedItems;
+		const pollInMs = response?.pollInMs || 10000;
+
+		if (hasQueuedItems) {
+			this.scheduleHeartbeat(pollInMs);
+			this.stopHeartbeatAfterNextCheck = false;
+		} else if (this.heartbeatTimeout) {
+			if (this.stopHeartbeatAfterNextCheck) {
+				this.stopHeartbeat();
+			} else {
+				this.stopHeartbeatAfterNextCheck = true;
+				this.scheduleHeartbeat(10000); // One more check
+			}
+		}
+	}
+
+	scheduleHeartbeat(delayMs = 10000) {
+		// Clear any existing timeout
+		if (this.heartbeatTimeout) {
+			clearTimeout(this.heartbeatTimeout);
+			this.heartbeatTimeout = null;
+		}
+
+		const self = this;
+		this.heartbeatTimeout = setTimeout(() => {
+			self.callHeartbeatEndpoint();
+		}, delayMs);
+	}
+
+	callHeartbeatEndpoint() {
+		if (!Session.getInstance().ready) {
+			return;
+		}
+
+		const self = this;
+		const http = new XMLHttpRequest();
+		http.open("POST", Session.getInstance().apiUrl + "/sdk/heartbeat");
+		http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		Session.getInstance().injectSession(http);
+
+		http.onerror = () => {
+			// On error, schedule retry
+			self.scheduleHeartbeat(10000);
+		};
+
+		http.onreadystatechange = function () {
+			if (http.readyState === 4) {
+				if (http.status === 200 || http.status === 201) {
+					try {
+						const response = JSON.parse(http.responseText);
+						if (response && typeof response.hasQueuedItems === "boolean") {
+							const pollInMs = response.pollInMs || 10000;
+
+							if (!response.hasQueuedItems) {
+								if (self.stopHeartbeatAfterNextCheck) {
+									self.stopHeartbeat();
+								} else {
+									self.stopHeartbeatAfterNextCheck = true;
+									self.scheduleHeartbeat(10000); // One more check
+								}
+							} else {
+								// Schedule next heartbeat based on server response
+								self.scheduleHeartbeat(pollInMs);
+								self.stopHeartbeatAfterNextCheck = false;
+							}
+						}
+					} catch (e) {
+						// Response might not be JSON - schedule retry
+						self.scheduleHeartbeat(10000);
+					}
+				} else {
+					// Error status - schedule retry
+					self.scheduleHeartbeat(10000);
+				}
+			}
+		};
+
+		http.send(JSON.stringify({}));
+	}
+
+	stopHeartbeat() {
+		if (this.heartbeatTimeout) {
+			clearTimeout(this.heartbeatTimeout);
+			this.heartbeatTimeout = null;
+		}
+		this.stopHeartbeatAfterNextCheck = false;
+	}
 }

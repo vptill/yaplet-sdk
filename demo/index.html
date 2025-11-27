@@ -15,6 +15,12 @@
 		<!-- index.js as found in build/index.js -->
 		<script src="build/cjs/index.js"></script>
 		<script src="main.js"></script>
+		<script>
+			function clearAllCookies() {
+				localStorage.clear();
+				console.log("Local storage cleared");
+			}
+		</script>
 	</head>
 
 	<body>
@@ -44,6 +50,24 @@
 			<a href="#" style="color: #fff; text-decoration: none; margin: 0 15px"
 				>Contact</a
 			>
+			<button
+				onclick="Yaplet.trackEvent('customEvent', { name: 'custom-event' });">
+				Track Event
+			</button>
+			<button
+				onclick="clearAllCookies()"
+				style="
+					background-color: #dc3545;
+					color: #fff;
+					border: none;
+					padding: 8px 16px;
+					margin: 0 15px;
+					cursor: pointer;
+					border-radius: 4px;
+					font-size: 14px;
+				">
+				Clear Storage
+			</button>
 		</nav>
 
 		<main style="max-width: 800px; margin: 0 auto; padding: 20px">
