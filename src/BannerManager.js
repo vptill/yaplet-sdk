@@ -95,6 +95,7 @@ export default class BannerManager {
 		document.body.classList.remove("yaplet-b-shown");
 		document.body.classList.remove("yaplet-b-f");
 		document.documentElement.style.removeProperty("--yaplet-banner-radius");
+		document.documentElement.style.removeProperty("--yaplet-margin-top"); // Add this
 	}
 
 	/**
