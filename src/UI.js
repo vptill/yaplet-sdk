@@ -318,7 +318,7 @@ export const injectStyledCSS = (
       left: 50%;
       z-index: ${zIndexBase + 99};
       transform: translateX(-50%);
-      border-radius: ${formItemBorderRadius}px;
+      border-radius: var(--yaplet-banner-radius, ${formItemBorderRadius}px);
       overflow: hidden;
       box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15), 0px 5px 5px rgba(0, 0, 0, 0.05);
     }
