@@ -821,6 +821,10 @@ export const injectStyledCSS = (
       min-width: min(200px, 50vw);
       word-wrap: break-word;
       word-break: break-word;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
     }
 
     .yaplet-frame-container-inner {
