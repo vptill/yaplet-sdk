@@ -291,6 +291,10 @@ export const injectStyledCSS = (
       margin-top: 0px;
     }
 
+    .yaplet-b-fi {
+      margin-top: 0px;
+    }
+
     .yaplet-b {
       display: none;
       position: absolute;
@@ -309,6 +313,15 @@ export const injectStyledCSS = (
       }
     }
 
+    @keyframes yapletFixedInlineSlideIn {
+      from {
+          top: calc(-1 * var(--yaplet-margin-top));
+      }
+      to {
+          top: 0px;
+      }
+    }
+
     .yaplet-b-f .yaplet-b {
       position: fixed;
       top: 10px;
@@ -321,6 +334,16 @@ export const injectStyledCSS = (
       border-radius: var(--yaplet-banner-radius, ${formItemBorderRadius}px);
       overflow: hidden;
       box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15), 0px 5px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .yaplet-b-fi .yaplet-b {
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      animation: yapletFixedInlineSlideIn .25s ease-out forwards;
+      z-index: ${zIndexBase + 99};
+      overflow: hidden;
     }
 
     .yaplet-b-shown .yaplet-b {

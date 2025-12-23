@@ -59,6 +59,8 @@ export default class BannerManager {
 								"--yaplet-banner-radius"
 							);
 						}
+					} else if (this.bannerData?.data?.style === "FIXED_INLINE") {
+						document.body.classList.add("yaplet-b-fi");
 					}
 				}
 				if (data.name === "banner-close") {
@@ -94,6 +96,7 @@ export default class BannerManager {
 
 		document.body.classList.remove("yaplet-b-shown");
 		document.body.classList.remove("yaplet-b-f");
+		document.body.classList.remove("yaplet-b-fi");
 		document.documentElement.style.removeProperty("--yaplet-banner-radius");
 		document.documentElement.style.removeProperty("--yaplet-margin-top"); // Add this
 	}

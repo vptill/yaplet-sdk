@@ -27,6 +27,17 @@
 				box-sizing: border-box;
 			}
 
+			html,
+			body {
+				scrollbar-width: none;
+				-ms-overflow-style: none;
+			}
+
+			html::-webkit-scrollbar,
+			body::-webkit-scrollbar {
+				display: none;
+			}
+
 			body {
 				font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
 					Roboto, sans-serif;
@@ -489,7 +500,7 @@
 
 			/* Demo Blur Effect */
 			.demo-blur {
-				filter: blur(8px) brightness(0.8);
+				filter: blur(8px) brightness(0.8) saturate(0.5);
 				transition: filter 0.3s ease;
 				pointer-events: none;
 			}
