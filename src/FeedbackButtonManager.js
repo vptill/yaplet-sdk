@@ -138,11 +138,8 @@ export default class FeedbackButtonManager {
 		const flowConfig = ConfigManager.getInstance().getFlowConfig();
 
 		var buttonIcon = "";
-		if (flowConfig.buttonLogo) {
-			buttonIcon = `<img class="yy-logo-logo" src="${flowConfig.buttonLogo}" alt="Feedback Button" />`;
-		} else {
-			buttonIcon = loadIcon("button", "#fff");
-		}
+		const iconName = flowConfig.buttonIcon || "button";
+		buttonIcon = loadIcon(iconName, "#fff");
 
 		this.feedbackButton.className = "yy-feedback-button yaplet-font gl-block";
 		this.feedbackButton.setAttribute(
