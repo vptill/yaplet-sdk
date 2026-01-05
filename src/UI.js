@@ -855,6 +855,7 @@ export const injectStyledCSS = (
       width: 100%;
       height: calc(100vh - ${130 + buttonY}px);
       max-height: ${widgetMaxHeight}px;
+      background-color: ${backgroundColor};
     }
 
     .yaplet-frame-container--survey .yaplet-frame-container-inner {
