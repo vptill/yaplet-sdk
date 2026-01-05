@@ -109,6 +109,7 @@ export const injectStyledCSS = (
       user-select: none;
       pointer-events: none;
       transition: max-width 0.3s ease-out;
+      isolation: isolate;
     }
 
     :root {
@@ -855,7 +856,6 @@ export const injectStyledCSS = (
       width: 100%;
       height: calc(100vh - ${130 + buttonY}px);
       max-height: ${widgetMaxHeight}px;
-      background-color: ${backgroundColor};
     }
 
     .yaplet-frame-container--survey .yaplet-frame-container-inner {
