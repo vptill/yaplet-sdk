@@ -148,21 +148,22 @@ export default class FeedbackButtonManager {
 		);
 
 		if (
-			flowConfig.feedbackButtonPosition ===
-			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
-			flowConfig.feedbackButtonPosition ===
-			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
-			flowConfig.feedbackButtonPosition ===
-			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+			flowConfig &&
+			(flowConfig.feedbackButtonPosition ===
+				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+				flowConfig.feedbackButtonPosition ===
+				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+				flowConfig.feedbackButtonPosition ===
+				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT)
 		) {
 			this.feedbackButton.classList.add(
 				"yy-feedback-button--classic-button-style"
 			);
 
 			this.feedbackButton.innerHTML = `<div class="yy-feedback-button-classic ${flowConfig.feedbackButtonPosition ===
-					FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
-					? "yy-feedback-button-classic--left"
-					: ""
+				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+				? "yy-feedback-button-classic--left"
+				: ""
 				}${flowConfig.feedbackButtonPosition ===
 					FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
 					? "yy-feedback-button-classic--bottom"
