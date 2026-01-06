@@ -242,21 +242,12 @@ export const fixHeight = () => {
 					const frameContainer = document.querySelector(
 						".yaplet-frame-container"
 					);
-					const innerContainer = document.querySelector(
-						".yaplet-frame-container-inner"
-					);
 					const iframe = document.querySelector(
 						".yaplet-frame-container-inner iframe"
 					);
 
-					if (!frameContainer || !innerContainer) {
+					if (!frameContainer) {
 						return;
-					}
-
-					// Store original max-height if not already stored so we can revert later
-					if (innerContainer.dataset.originalMaxHeight === undefined) {
-						innerContainer.dataset.originalMaxHeight =
-							innerContainer.style.maxHeight || "";
 					}
 
 					// Check if the keyboard is open by comparing visual viewport to initial layout height
@@ -278,13 +269,8 @@ export const fixHeight = () => {
 						frameContainer.style.setProperty("top", targetTopStr, "important");
 						frameContainer.style.setProperty("bottom", "auto", "important"); // Override CSS bottom
 
-						// Inner container
-						innerContainer.style.setProperty("height", targetHeightStr, "important");
-						innerContainer.style.setProperty("max-height", targetHeightStr, "important");
-
 						// Iframe
 						if (iframe) {
-							iframe.style.setProperty("height", targetHeightStr, "important");
 							iframe.style.setProperty("max-height", targetHeightStr, "important");
 						}
 
@@ -295,17 +281,7 @@ export const fixHeight = () => {
 						frameContainer.style.removeProperty("top");
 						frameContainer.style.removeProperty("bottom");
 
-						// Restore original max-height for inner container logic
-						innerContainer.style.removeProperty("height");
-						if (innerContainer.dataset.originalMaxHeight) {
-							innerContainer.style.maxHeight =
-								innerContainer.dataset.originalMaxHeight;
-						} else {
-							innerContainer.style.removeProperty("max-height");
-						}
-
 						if (iframe) {
-							iframe.style.removeProperty("height");
 							iframe.style.removeProperty("max-height");
 						}
 					}
