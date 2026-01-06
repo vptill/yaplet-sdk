@@ -233,39 +233,104 @@ export const runFunctionWhenDomIsReady = (callback) => {
 };
 
 export const fixHeight = () => {
-	if (!("visualViewport" in window) || !/iPad|iPhone|iPod/.test(navigator.userAgent)) return;
+	try {
+		if ("visualViewport" in window && isMobile()) {
+			let initialHeight = window.innerHeight;
 
-	let initialHeight = window.innerHeight;
-	const frameContainer = document.querySelector(".yaplet-frame-container-inner iframe");
-	if (!frameContainer) return;
+			function updateContainerHeight() {
+				try {
+					const frameContainer = document.querySelector(
+						".yaplet-frame-container"
+					);
+					const innerContainer = document.querySelector(
+						".yaplet-frame-container-inner"
+					);
+					const iframe = document.querySelector(
+						".yaplet-frame-container-inner iframe"
+					);
 
-	// 1. THE PRE-EMPTIVE STRIKE
-	// This fires the instant the user touches the textarea, 
-	// likely 100ms+ before the 'resize' event.
-	frameContainer.addEventListener("touchstart", () => {
-		// We guess the keyboard height (usually ~300px-400px) 
-		// to shrink the iframe BEFORE the browser calculates the scroll.
-		frameContainer.style.setProperty("height", "300px", "important");
-		frameContainer.style.setProperty("max-height", "300px", "important");
-	}, { passive: true });
+					if (!frameContainer || !innerContainer) {
+						return;
+					}
 
-	// 2. THE PRECISION ADJUSTMENT
-	function updateContainerHeight() {
-		const vvHeight = window.visualViewport.height;
+					// Store original max-height if not already stored so we can revert later
+					if (innerContainer.dataset.originalMaxHeight === undefined) {
+						innerContainer.dataset.originalMaxHeight =
+							innerContainer.style.maxHeight || "";
+					}
 
-		if (vvHeight < initialHeight) {
-			// Now we set the EXACT height based on the actual keyboard
-			frameContainer.style.setProperty("height", vvHeight + "px", "important");
-			frameContainer.style.setProperty("max-height", vvHeight + "px", "important");
-		} else {
-			frameContainer.style.removeProperty("height");
-			frameContainer.style.removeProperty("max-height");
+					// Check if the keyboard is open by comparing visual viewport to initial layout height
+					// Keyboard usually takes significant space, e.g. > 150px
+					const isKeyboardOpen = window.visualViewport.height < initialHeight - 150;
+
+					if (isKeyboardOpen) {
+						const viewportHeight = window.visualViewport.height;
+						// Calculate the height obscured by the keyboard (bottom of layout vs bottom of visual)
+						const obscuredHeight = window.innerHeight - viewportHeight;
+
+						// Force height to match visual viewport exactly
+						const targetHeightStr = Math.floor(viewportHeight) + "px";
+						const targetTopStr = Math.floor(window.visualViewport.offsetTop) + "px";
+
+						// Outer container: Pin to the visual viewport completely
+						frameContainer.style.setProperty("height", targetHeightStr, "important");
+						frameContainer.style.setProperty("max-height", targetHeightStr, "important");
+						frameContainer.style.setProperty("top", targetTopStr, "important");
+						frameContainer.style.setProperty("bottom", "auto", "important"); // Override CSS bottom
+
+						// Inner container
+						innerContainer.style.setProperty("height", targetHeightStr, "important");
+						innerContainer.style.setProperty("max-height", targetHeightStr, "important");
+
+						// Iframe
+						if (iframe) {
+							iframe.style.setProperty("height", targetHeightStr, "important");
+							iframe.style.setProperty("max-height", targetHeightStr, "important");
+						}
+
+					} else {
+						// Keyboard is likely closed, reset styles
+						frameContainer.style.removeProperty("height");
+						frameContainer.style.removeProperty("max-height");
+						frameContainer.style.removeProperty("top");
+						frameContainer.style.removeProperty("bottom");
+
+						// Restore original max-height for inner container logic
+						innerContainer.style.removeProperty("height");
+						if (innerContainer.dataset.originalMaxHeight) {
+							innerContainer.style.maxHeight =
+								innerContainer.dataset.originalMaxHeight;
+						} else {
+							innerContainer.style.removeProperty("max-height");
+						}
+
+						if (iframe) {
+							iframe.style.removeProperty("height");
+							iframe.style.removeProperty("max-height");
+						}
+					}
+				} catch (error) { }
+			}
+
+			function handleOrientationChange() {
+				try {
+					setTimeout(() => {
+						// Update initial dimensions
+						initialHeight = window.innerHeight;
+						updateContainerHeight();
+					}, 200);
+				} catch (error) { }
+			}
+
+			// Update on resize (keyboard show/hide and viewport resize) AND scroll
+			window.visualViewport.addEventListener("resize", updateContainerHeight);
+			window.visualViewport.addEventListener("scroll", updateContainerHeight);
+
+			// Handle orientation changes
+			window.addEventListener("orientationchange", handleOrientationChange);
+
+			// Update initially
+			updateContainerHeight();
 		}
-	}
-
-	window.visualViewport.addEventListener("resize", updateContainerHeight);
-	window.addEventListener("orientationchange", () => {
-		initialHeight = window.innerHeight;
-		updateContainerHeight();
-	});
+	} catch (error) { }
 };
