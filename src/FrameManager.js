@@ -72,13 +72,13 @@ export default class FrameManager {
 				try {
 					const doc = document.documentElement;
 					doc.style.setProperty("--glvh", window.innerHeight * 0.01 + "px");
-				} catch (e) {}
+				} catch (e) { }
 			}
 
 			try {
 				window.addEventListener("resize", appHeight);
 				appHeight();
-			} catch (e) {}
+			} catch (e) { }
 		}
 	}
 
@@ -174,13 +174,12 @@ export default class FrameManager {
 				var elem = document.createElement("div");
 				elem.className =
 					"yaplet-frame-container yaplet-frame-container--hidden gl-block";
-				elem.innerHTML = `<div class="yaplet-frame-container-inner"><iframe src="${
-					this.frameUrl +
+				elem.innerHTML = `<div class="yaplet-frame-container-inner"><iframe src="${this.frameUrl +
 					"/widget/" +
 					Session.getInstance().sdkKey +
 					"?access_token=" +
 					Session.getInstance().session.yapletHash
-				}" class="yaplet-frame" scrolling="yes" title="Yaplet Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
+					}" class="yaplet-frame" scrolling="yes" title="Yaplet Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
 				document.body.appendChild(elem);
 
 				this.yapletFrameContainer = elem;
@@ -251,9 +250,9 @@ export default class FrameManager {
 		const flowConfig = ConfigManager.getInstance().getFlowConfig();
 		if (
 			flowConfig.feedbackButtonPosition ===
-				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
 			flowConfig.feedbackButtonPosition ===
-				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
 		) {
 			styleToApply = classicStyle;
 		}
@@ -429,7 +428,7 @@ export default class FrameManager {
 					this.queue.push(data);
 				}
 			}
-		} catch (e) {}
+		} catch (e) { }
 	}
 
 	sendSessionUpdate() {
@@ -615,7 +614,7 @@ export default class FrameManager {
 
 							try {
 								delete formData.reportedBy;
-							} catch (e) {}
+							} catch (e) { }
 							Yaplet.trackEvent(`outbound-${outboundId}-submitted`, formData);
 						}
 					})
@@ -650,7 +649,7 @@ export default class FrameManager {
 						this.listeners[i](data);
 					}
 				}
-			} catch (exp) {}
+			} catch (exp) { }
 		});
 	}
 

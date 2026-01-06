@@ -1,85 +1,85 @@
 import FeedbackButtonManager from "./FeedbackButtonManager";
 
 const calculateShadeColor = function (col, amt) {
-	col = col.replace(/^#/, "");
-	if (col.length === 3)
-		col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
+  col = col.replace(/^#/, "");
+  if (col.length === 3)
+    col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
 
-	let [r, g, b] = col.match(/.{2}/g);
-	[r, g, b] = [
-		parseInt(r, 16) + amt,
-		parseInt(g, 16) + amt,
-		parseInt(b, 16) + amt,
-	];
+  let [r, g, b] = col.match(/.{2}/g);
+  [r, g, b] = [
+    parseInt(r, 16) + amt,
+    parseInt(g, 16) + amt,
+    parseInt(b, 16) + amt,
+  ];
 
-	r = Math.max(Math.min(255, r), 0).toString(16);
-	g = Math.max(Math.min(255, g), 0).toString(16);
-	b = Math.max(Math.min(255, b), 0).toString(16);
+  r = Math.max(Math.min(255, r), 0).toString(16);
+  g = Math.max(Math.min(255, g), 0).toString(16);
+  b = Math.max(Math.min(255, b), 0).toString(16);
 
-	const rr = (r.length < 2 ? "0" : "") + r;
-	const gg = (g.length < 2 ? "0" : "") + g;
-	const bb = (b.length < 2 ? "0" : "") + b;
+  const rr = (r.length < 2 ? "0" : "") + r;
+  const gg = (g.length < 2 ? "0" : "") + g;
+  const bb = (b.length < 2 ? "0" : "") + b;
 
-	return `#${rr}${gg}${bb}`;
+  return `#${rr}${gg}${bb}`;
 };
 
 const calculateContrast = (hex) => {
-	var r = parseInt(hex.substr(1, 2), 16),
-		g = parseInt(hex.substr(3, 2), 16),
-		b = parseInt(hex.substr(5, 2), 16),
-		yiq = (r * 299 + g * 587 + b * 114) / 1000;
-	return yiq >= 160 ? "#000000" : "#ffffff";
+  var r = parseInt(hex.substr(1, 2), 16),
+    g = parseInt(hex.substr(3, 2), 16),
+    b = parseInt(hex.substr(5, 2), 16),
+    yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 160 ? "#000000" : "#ffffff";
 };
 
 export const widgetMaxHeight = 700;
 
 export const injectStyledCSS = (
-	primaryColor,
-	headerColor,
-	buttonColor,
-	borderRadius,
-	backgroundColor,
-	buttonX,
-	buttonY,
-	buttonStyle,
-	zIndexBase = 2147483600
+  primaryColor,
+  headerColor,
+  buttonColor,
+  borderRadius,
+  backgroundColor,
+  buttonX,
+  buttonY,
+  buttonStyle,
+  zIndexBase = 2147483600
 ) => {
-	const contrastColor = calculateContrast(primaryColor);
-	const contrastButtonColor = calculateContrast(buttonColor);
-	const contrastBackgroundColor = calculateContrast(backgroundColor);
-	const contrastHeaderColor = calculateContrast(headerColor);
-	const isDarkMode = contrastBackgroundColor === "#ffffff";
-	const headerDarkColor = calculateShadeColor(
-		headerColor,
-		contrastHeaderColor === "#ffffff" ? -35 : -15
-	);
-	const subTextColor = isDarkMode
-		? calculateShadeColor(backgroundColor, 100)
-		: calculateShadeColor(backgroundColor, -120);
-	const backgroundColorHover = isDarkMode
-		? calculateShadeColor(backgroundColor, 30)
-		: calculateShadeColor(backgroundColor, -12);
-	const hoverHoverColor = isDarkMode
-		? calculateShadeColor(backgroundColor, 80)
-		: calculateShadeColor(backgroundColor, -30);
+  const contrastColor = calculateContrast(primaryColor);
+  const contrastButtonColor = calculateContrast(buttonColor);
+  const contrastBackgroundColor = calculateContrast(backgroundColor);
+  const contrastHeaderColor = calculateContrast(headerColor);
+  const isDarkMode = contrastBackgroundColor === "#ffffff";
+  const headerDarkColor = calculateShadeColor(
+    headerColor,
+    contrastHeaderColor === "#ffffff" ? -35 : -15
+  );
+  const subTextColor = isDarkMode
+    ? calculateShadeColor(backgroundColor, 100)
+    : calculateShadeColor(backgroundColor, -120);
+  const backgroundColorHover = isDarkMode
+    ? calculateShadeColor(backgroundColor, 30)
+    : calculateShadeColor(backgroundColor, -12);
+  const hoverHoverColor = isDarkMode
+    ? calculateShadeColor(backgroundColor, 80)
+    : calculateShadeColor(backgroundColor, -30);
 
-	var borderRadius = parseInt(borderRadius, 10);
-	const buttonBorderRadius = Math.round(borderRadius * 1.05);
-	const containerRadius = Math.round(borderRadius * 0.8);
-	const chatRadius = Math.round(borderRadius * 0.6);
-	const formItemBorderRadius = Math.round(borderRadius * 0.4);
-	const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
+  var borderRadius = parseInt(borderRadius, 10);
+  const buttonBorderRadius = Math.round(borderRadius * 1.05);
+  const containerRadius = Math.round(borderRadius * 0.8);
+  const chatRadius = Math.round(borderRadius * 0.6);
+  const formItemBorderRadius = Math.round(borderRadius * 0.4);
+  const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
 
-	var bottomInfoOffset = 57 + buttonY;
-	if (buttonStyle === FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
-		bottomInfoOffset = buttonY + 15;
-	} else if (buttonStyle && buttonStyle.includes("CLASSIC")) {
-		bottomInfoOffset = buttonY;
-	} else if (buttonStyle === FeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
-		bottomInfoOffset = buttonY;
-	}
+  var bottomInfoOffset = 57 + buttonY;
+  if (buttonStyle === FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
+    bottomInfoOffset = buttonY + 15;
+  } else if (buttonStyle && buttonStyle.includes("CLASSIC")) {
+    bottomInfoOffset = buttonY;
+  } else if (buttonStyle === FeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
+    bottomInfoOffset = buttonY;
+  }
 
-	const colorStyleSheet = `
+  const colorStyleSheet = `
     .yaplet-font, .yaplet-font * {
       font-style: normal;
       font-variant-caps: normal;
@@ -92,13 +92,19 @@ export const injectStyledCSS = (
       line-height: 1;
       font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
+    .yaplet-ai-ui-widget {
+      display: none;
+    }
+    .yaplet-input-highlight {
+      box-shadow: 0 0 0 3px ${primaryColor} !important;
+    }
     .yaplet-frame-container {
       right: ${buttonX}px;
       bottom: ${61 + buttonY}px;
       width: calc(100% - 40px);
       max-width: 410px;
       position: fixed;
-      z-index: ${zIndexBase + 51};
+      z-index: ${zIndexBase + 31};
       visibility: visible;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
       border-radius: ${containerRadius}px;
@@ -109,7 +115,10 @@ export const injectStyledCSS = (
       user-select: none;
       pointer-events: none;
       transition: max-width 0.3s ease-out;
-      isolation: isolate;
+    }
+
+    .yaplet-admin-highlight {
+      box-shadow: 0px 0px 0px 4px red;
     }
 
     :root {
@@ -202,6 +211,7 @@ export const injectStyledCSS = (
       display: inline !important;
       margin: 0px !important;
       padding: 0px !important;
+      word-break: break-word;
     }
 
     .yaplet-tooltip ul {
@@ -301,8 +311,9 @@ export const injectStyledCSS = (
       position: absolute;
       top: calc(-1 * var(--yaplet-margin-top));
       left: 0px;
-      width: 100%;
+      width: 100vw;
       height: var(--yaplet-margin-top);
+      z-index: ${zIndexBase + 99};
     }
 
     @keyframes yapletSlideIn {
@@ -701,7 +712,39 @@ export const injectStyledCSS = (
 
     .yaplet-notification-item-news {
       width: 100%;
+    }
+
+    .yaplet-news-pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .yaplet-news-page-indicator {
+      font-size: 12px;
+      color: ${subTextColor};
+    }
+
+    .yaplet-news-next-button {
+      background-color: ${primaryColor};
+      color: ${contrastColor};
+      border-radius: ${formItemSmallBorderRadius}px;
+      box-sizing: border-box;
+      padding: 5px 10px;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 21px;
+      border: none;
+      text-align: center;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none !important;
+      outline: none !important;
     }
 
     .yaplet-notification-item-news-content {
@@ -713,7 +756,7 @@ export const injectStyledCSS = (
 
     .yaplet-notification-item-news-preview {
       color: ${subTextColor};
-      font-size: 15px;
+      font-size: 14px;
       line-height: 21px;
       font-weight: 400;
       overflow-wrap: break-word;
@@ -780,9 +823,10 @@ export const injectStyledCSS = (
       max-height: 170px;
       object-fit: cover;
       width: 100%;
+      cursor: pointer;
     }
-
-    .yaplet-notification-item-news:hover .yaplet-notification-item-news-content-title {
+      
+    .yaplet-notification-item-news-content-title:hover {
       color: ${primaryColor};
     }
 
@@ -854,7 +898,7 @@ export const injectStyledCSS = (
     .yaplet-frame-container-inner {
       position: relative;
       width: 100%;
-      height: calc(100vh - ${130 + buttonY}px);
+      height: calc(100vh - ${84 + buttonY}px);
       max-height: ${widgetMaxHeight}px;
     }
 
@@ -876,8 +920,8 @@ export const injectStyledCSS = (
       height: 100% !important;
       width: 100% !important;
       max-width: 100% !important;
-      display: block;
-      pointer-events: auto;
+      display: block !important;
+      pointer-events: auto !important;
     }
     
     .yaplet-frame-container--hidden {
@@ -901,6 +945,31 @@ export const injectStyledCSS = (
       display: flex;
       align-items: center;
       padding: 0px;
+    }
+
+    @keyframes yyRedDotPulse {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.8;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .yy-feedback-button--red-dot {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: #ff3b30;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: ${zIndexBase + 31};
+      animation: yyRedDotPulse 2s ease-in-out infinite;
     }
 
     [dir=rtl].yy-feedback-button {
@@ -1713,8 +1782,9 @@ export const injectStyledCSS = (
         width: 100vw;
         max-width: 100vw;
         min-height: 100vh;
-        min-height: -webkit-fill-available;
-        max-height: -webkit-fill-available;
+        max-height: 100vh;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
         top: 0px;
         bottom: 0px;
         border-radius: 0px;
@@ -1788,7 +1858,7 @@ export const injectStyledCSS = (
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .yaplet-tour-sender-image {
@@ -1829,19 +1899,44 @@ export const injectStyledCSS = (
 
     .yaplet-tour-message p {
       line-height: 1.3;
+      margin-bottom: 10px !important;
+      margin-top: 10px !important;
     }
 
     .yaplet-tour-message ul {
       line-height: 1.3;
       padding-left: 20px;
-      margin-top: 10px;
-      margin-bottom: 10px;
+      margin-top: 10px !important;
+      margin-bottom: 10px !important;
     }
 
     .yaplet-tour-message {
       max-height: calc(80vh - 100px) !important;
       overflow-y: auto;
       min-width: 270px;
+    }
+
+    .yaplet-tour-message::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .yaplet-tour-message::-webkit-scrollbar-track {
+      border-radius: 0px;
+    }
+    
+    .yaplet-tour-message::-webkit-scrollbar-thumb {
+      background: ${hoverHoverColor}; 
+      border-radius: 5px;
+    }
+
+    .yaplet-tour-message::-webkit-scrollbar-thumb:hover {
+      background: ${subTextColor};
+    }
+
+    @media only screen and (max-width: 450px) {
+      .yaplet-tour-message {
+        min-width: auto !important;
+      }
     }
 
     .yaplet-tour-message iframe {
@@ -1920,6 +2015,33 @@ export const injectStyledCSS = (
       outline: none;
       display: block;
       border-radius: 8px;
+    }
+    
+    .yaplet-tour-message .linktype-link {
+      display: inline-block !important;
+      background-color: transparent !important;
+      color: ${buttonColor} !important;
+    }
+
+    .yaplet-tooltip .linktype-button,
+    .yaplet-tour-message .linktype-button {
+      display: inline-block !important;
+      border-radius: 5px;
+      box-sizing: border-box;
+      padding: 10px 20px !important;
+      text-decoration: none !important;
+      background-color: ${buttonColor} !important;
+      color: ${contrastButtonColor} !important;
+    }
+
+    .yaplet-tour-message img {
+      width: 100%;
+      max-width: 100%;
+      min-height: 260px;
+      height: auto;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      object-fit: cover;
     }
 
     .yaplet-admin-collapse-ui {
@@ -2286,59 +2408,59 @@ export const injectStyledCSS = (
     }    
     `;
 
-	const oldNode = document.querySelector(".yaplet-styles");
-	if (oldNode) {
-		oldNode.remove();
-	}
-	const node = document.createElement("style");
-	node.innerHTML = colorStyleSheet;
-	node.className = "yaplet-styles";
-	document.body.appendChild(node);
+  const oldNode = document.querySelector(".yaplet-styles");
+  if (oldNode) {
+    oldNode.remove();
+  }
+  const node = document.createElement("style");
+  node.innerHTML = colorStyleSheet;
+  node.className = "yaplet-styles";
+  document.body.appendChild(node);
 };
 
 export const loadIcon = function (name, color) {
-	if (name === "button") {
-		return `
+  if (name === "button") {
+    return `
     <svg class="yy-logo-logo yy-logo-logo--default" width="132" height="132" viewBox="0 0 132 132" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M103.7 19H29.3C24.185 19 20 23.185 20 28.3V112L38.6 93.4H103.7C108.815 93.4 113 89.215 113 84.1V28.3C113 23.185 108.815 19 103.7 19Z" fill="white"/>
 </svg>`;
-	}
+  }
 
-	if (name === "button-2") {
-		return `
+  if (name === "button-2") {
+    return `
     <svg class="yy-logo-logo yy-logo-logo--default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 290 290" width="290" height="290">
 	<path class="s0" d="m79 37c13.53 0 27.06 0 41 0 6.09 14.98 11.81 30.08 17.4 45.25q3.44 9.33 6.89 18.64 1.17 3.15 2.33 6.29 6.52 17.61 13.13 35.2 0.51 1.36 1.04 2.76 2.77 7.39 5.55 14.79 7.14 19 14.27 38 2.73 7.3 5.47 14.6 1.72 4.58 3.44 9.16 0.8 2.14 1.6 4.27 2.45 6.52 4.88 13.04 0.61 1.63 1.24 3.31 0.55 1.48 1.11 3.01 0.48 1.29 0.97 2.61c0.68 2.07 0.68 2.07 0.68 4.07-15.51 0-31.02 0-47 0-6.87-20.31-6.87-20.31-9.03-26.72q-0.86-2.51-1.71-5.02-0.44-1.3-0.89-2.63-0.42-1.25-0.86-2.53c-0.36-1.08-0.36-1.08-0.74-2.18-0.8-2.19-0.8-2.19-2.77-4.92-3.07-0.44-3.07-0.44-6.74-0.34q-1.04 0-2.1 0-3.45 0.01-6.89 0.05-2.38 0.01-4.76 0.01-6.28 0.02-12.56 0.07-6.4 0.05-12.81 0.06-12.57 0.05-25.14 0.15c-3.97-11.92 3.97-32.76 9-44 6.74-12.41 16.75-18.89 30.01-22.98 11.15-3.23 22.48-4.72 33.99-6.02q-0.49-0.99-1-2c-2.23-0.53-4.49-0.94-6.75-1.31-40.57-7.14-40.57-7.14-52.96-22.86-7.45-11.26-11.87-27.41-11.29-40.83 0.99-3.43 0.99-3.43 2.37-6.96q0.36-0.94 0.73-1.9 1.16-2.98 2.34-5.95 0.78-2.02 1.56-4.05c3.7-9.53 3.7-9.53 5-12.14z" fill="#000000" />
 	<path class="s0" d="m209 37c14.52 0 29.04 0 44 0 0 70.95 0 141.9 0 215-14.52 0-29.04 0-44 0 0-70.95 0-141.9 0-215z"/>
 	<path class="s0" d="m37 149c7.74 2.86 12.03 9.6 15.69 16.81 3.25 7.73 5.11 16.11 6.73 24.33q0.61 2.97 1.41 5.9c2.62 11.72-1.52 21.16-5.58 32.09q-1 2.81-2 5.63-1.82 5.13-3.71 10.24-0.37 1.02-0.75 2.06c-0.82 2.03-1.81 3.98-2.79 5.94-15.18 0-30.36 0-46 0 0.66-3.94 1.15-6.82 2.48-10.42q0.45-1.23 0.92-2.5 0.49-1.33 1-2.7 0.52-1.42 1.06-2.88 1.73-4.69 3.48-9.38 1.2-3.25 2.41-6.51c8.46-22.9 17.04-45.76 25.65-68.61z" fill="#000000" />
 </svg>`;
-	}
+  }
 
-	if (name === "unmute") {
-		return `<svg id="tooltip-svg-unmute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path id="tooltip-svg-unmute-path" d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.1 386.2C556.7 352 576 306.3 576 256c0-60.1-27.7-113.8-70.9-149c-10.3-8.4-25.4-6.8-33.8 3.5s-6.8 25.4 3.5 33.8C507.3 170.7 528 210.9 528 256c0 39.1-15.6 74.5-40.9 100.5L449 326.6c19-17.5 31-42.7 31-70.6c0-30.1-13.9-56.9-35.4-74.5c-10.3-8.4-25.4-6.8-33.8 3.5s-6.8 25.4 3.5 33.8C425.1 227.6 432 241 432 256s-6.9 28.4-17.7 37.3c-1.3 1-2.4 2.2-3.4 3.4L352 250.6V64c0-12.6-7.4-24-18.9-29.2s-25-3.1-34.4 5.3L197.8 129.8 38.8 5.1zM352 373.3L82.9 161.3C53.8 167.4 32 193.1 32 224v64c0 35.3 28.7 64 64 64h67.8L298.7 471.9c9.4 8.4 22.9 10.4 34.4 5.3S352 460.6 352 448V373.3z"/></svg>`;
-	}
+  if (name === "unmute") {
+    return `<svg id="tooltip-svg-unmute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path id="tooltip-svg-unmute-path" d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.1 386.2C556.7 352 576 306.3 576 256c0-60.1-27.7-113.8-70.9-149c-10.3-8.4-25.4-6.8-33.8 3.5s-6.8 25.4 3.5 33.8C507.3 170.7 528 210.9 528 256c0 39.1-15.6 74.5-40.9 100.5L449 326.6c19-17.5 31-42.7 31-70.6c0-30.1-13.9-56.9-35.4-74.5c-10.3-8.4-25.4-6.8-33.8 3.5s-6.8 25.4 3.5 33.8C425.1 227.6 432 241 432 256s-6.9 28.4-17.7 37.3c-1.3 1-2.4 2.2-3.4 3.4L352 250.6V64c0-12.6-7.4-24-18.9-29.2s-25-3.1-34.4 5.3L197.8 129.8 38.8 5.1zM352 373.3L82.9 161.3C53.8 167.4 32 193.1 32 224v64c0 35.3 28.7 64 64 64h67.8L298.7 471.9c9.4 8.4 22.9 10.4 34.4 5.3S352 460.6 352 448V373.3z"/></svg>`;
+  }
 
-	if (name === "mute") {
-		return `<svg id="tooltip-svg-mute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path id="tooltip-svg-mute-path" d="M533.6 32.5C598.5 85.3 640 165.8 640 256s-41.5 170.8-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h67.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z"/></svg>`;
-	}
+  if (name === "mute") {
+    return `<svg id="tooltip-svg-mute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path id="tooltip-svg-mute-path" d="M533.6 32.5C598.5 85.3 640 165.8 640 256s-41.5 170.8-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h67.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z"/></svg>`;
+  }
 
-	if (name === "replay") {
-		return `<svg id="tooltip-svg-replay" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  if (name === "replay") {
+    return `<svg id="tooltip-svg-replay" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path id="tooltip-svg-replay-path" d="M48.5 224H40C26.7 224 16 213.3 16 200V72C16 62.3 21.8 53.5 30.8 49.8C39.8 46.1 50.1 48.1 57 55L98.6 96.6C186.2 10.1 327.3 10.4 414.4 97.6C501.9 185.1 501.9 326.9 414.4 414.4C326.9 501.9 185.1 501.9 97.6 414.4C85.1 401.9 85.1 381.6 97.6 369.1C110.1 356.6 130.4 356.6 142.9 369.1C205.4 431.6 306.7 431.6 369.2 369.1C431.7 306.6 431.7 205.3 369.2 142.8C307 80.6 206.5 80.3 143.9 141.8L185 183C191.9 189.9 193.9 200.2 190.2 209.2C186.5 218.2 177.7 224 168 224H48.5Z" />
     </svg>`;
-	}
+  }
 
-	if (name === "dismiss") {
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M294.6 166.6L317.3 144 272 98.7l-22.6 22.6L160 210.7 70.6 121.4 48 98.7 2.7 144l22.6 22.6L114.7 256 25.4 345.4 2.7 368 48 413.3l22.6-22.6L160 301.3l89.4 89.4L272 413.3 317.3 368l-22.6-22.6L205.3 256l89.4-89.4z"/></svg>`;
-	}
+  if (name === "dismiss") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M294.6 166.6L317.3 144 272 98.7l-22.6 22.6L160 210.7 70.6 121.4 48 98.7 2.7 144l22.6 22.6L114.7 256 25.4 345.4 2.7 368 48 413.3l22.6-22.6L160 301.3l89.4 89.4L272 413.3 317.3 368l-22.6-22.6L205.3 256l89.4-89.4z"/></svg>`;
+  }
 
-	if (name === "blur") {
-		return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+  if (name === "blur") {
+    return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
  <path class="yy-svg-path" d="m602.25 1200c238.2 0 435.95-193.26 435.95-435.95 0-269.66-220.23-615.73-435.95-764.05-220.23 161.8-440.45 485.39-440.45 764.05 0 242.7 197.75 435.95 440.45 435.95zm-260.68-382.02c0 112.36 89.887 206.74 206.74 206.74v62.922c-148.32 0-274.16-121.35-274.16-269.66z" fill="#333"/>
 </svg>`;
-	}
+  }
 
-	if (name === "pen") {
-		return `<svg width="1072px" height="1034px" viewBox="0 0 1072 1034" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  if (name === "pen") {
+    return `<svg width="1072px" height="1034px" viewBox="0 0 1072 1034" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-907.000000, -217.000000)" fill-rule="nonzero">
             <g transform="translate(907.268457, 217.009827)">
@@ -2352,10 +2474,10 @@ export const loadIcon = function (name, color) {
         </g>
     </g>
 </svg>`;
-	}
+  }
 
-	if (name === "rect") {
-		return `<svg width="339px" height="241px" viewBox="0 0 339 241" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  if (name === "rect") {
+    return `<svg width="339px" height="241px" viewBox="0 0 339 241" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-0.000865, 0.000000)" fill-rule="nonzero">
             <g transform="translate(0.000865, 0.000000)" fill="#000000" class="yy-svg-path">
@@ -2367,26 +2489,26 @@ export const loadIcon = function (name, color) {
         </g>
     </g>
 </svg>`;
-	}
+  }
 
-	if (name === "pointer") {
-		return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+  if (name === "pointer") {
+    return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
     <path d="m1050.7 508.95-225.94 157.5 160.31 160.31c4.4531 4.4531 6.9141 10.43 6.9141 16.758s-2.4609 12.305-6.9141 16.758l-126.09 126.09c-4.4531 4.4531-10.43 6.9141-16.758 6.9141-6.3281 0-12.188-2.4609-16.758-6.9141l-160.2-160.43-157.62 225.94c-3.3984 4.9219-9.0234 7.8516-14.883 7.8516-0.70313 0-1.5234 0-2.2266-0.11719-6.7969-0.82031-12.422-5.2734-14.766-11.719l-333.16-880.55c-2.5781-6.6797-0.9375-14.297 4.2188-19.336 5.0391-5.0391 12.656-6.6797 19.336-4.2188l880.66 333.05c6.3281 2.3438 10.781 8.0859 11.602 14.766 0.82031 6.7969-2.1094 13.359-7.7344 17.344z" fill="#333"/>
    </svg>`;
-	}
+  }
 
-	if (name === "clip") {
-		return `<svg width="600px" height="1126px" viewBox="0 0 600 1126" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  if (name === "clip") {
+    return `<svg width="600px" height="1126px" viewBox="0 0 600 1126" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-0.002000, 0.501000)" fill="#333333" fill-rule="nonzero">
             <path d="M225.002,1124.999 C165.33,1124.999 108.102,1101.292 65.902,1059.097 C23.707,1016.902 5.68434189e-14,959.671 5.68434189e-14,899.997 L5.68434189e-14,299.997 C5.68434189e-14,220.431 31.605,144.127 87.867,87.867 C144.129,31.605 220.437,-4.26325641e-14 299.997,-4.26325641e-14 C379.557,-4.26325641e-14 455.867,31.605 512.127,87.867 C568.389,144.129 599.994,220.437 599.994,299.997 L599.994,1012.497 C599.994,1025.895 592.8456,1038.274 581.244,1044.974 C569.642,1051.6732 555.346,1051.6732 543.744,1044.974 C532.142,1038.2748 524.994,1025.896 524.994,1012.497 L524.994,299.997 C524.994,240.325 501.287,183.097 459.092,140.897 C416.897,98.702 359.666,74.995 299.992,74.995 C240.318,74.995 183.092,98.702 140.892,140.897 C98.697,183.092 74.99,240.323 74.99,299.997 L74.99,899.997 C74.99,953.587 103.58,1003.107 149.99,1029.897 C196.4,1056.694 253.58,1056.694 299.99,1029.897 C346.4,1003.104 374.99,953.585 374.99,899.997 L374.99,337.497 C374.99,310.704 360.697,285.942 337.49,272.544 C314.283,259.149 285.697,259.149 262.49,272.544 C239.283,285.942 224.99,310.704 224.99,337.497 L224.99,824.997 C224.99,838.395 217.8416,850.774 206.24,857.474 C194.638,864.1732 180.342,864.1732 168.74,857.474 C157.138,850.7748 149.99,838.396 149.99,824.997 L149.99,337.497 C149.99,283.907 178.58,234.387 224.99,207.597 C271.4,180.8 328.58,180.8 374.99,207.597 C421.4,234.39 449.99,283.909 449.99,337.497 L449.99,899.997 C449.99,959.669 426.283,1016.897 384.088,1059.097 C341.893,1101.292 284.662,1124.999 224.988,1124.999 L225.002,1124.999 Z" id="Path"></path>
         </g>
     </g>
 </svg>`;
-	}
+  }
 
-	if (name === "mic") {
-		return `<svg
+  if (name === "mic") {
+    return `<svg
     width="1200pt"
     height="1200pt"
     version="1.1"
@@ -2402,10 +2524,10 @@ export const loadIcon = function (name, color) {
       />
     </g>
   </svg>`;
-	}
+  }
 
-	if (name === "camera") {
-		return `<svg width="1155px" height="1004px" viewBox="0 0 1155 1004" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  if (name === "camera") {
+    return `<svg width="1155px" height="1004px" viewBox="0 0 1155 1004" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g fill="#333333" fill-rule="nonzero">
             <g transform="translate(128.324095, 0.000000)">
@@ -2421,10 +2543,10 @@ export const loadIcon = function (name, color) {
         </g>
     </g>
 </svg>`;
-	}
+  }
 
-	if (name === "recorderon") {
-		return `<svg width="1251px" height="1251px" viewBox="0 0 1251 1251" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  if (name === "recorderon") {
+    return `<svg width="1251px" height="1251px" viewBox="0 0 1251 1251" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g>
             <circle fill="#E31810" cx="625.5" cy="625.5" r="625.5"></circle>
@@ -2437,10 +2559,10 @@ export const loadIcon = function (name, color) {
         </g>
     </g>
 </svg>`;
-	}
+  }
 
-	if (name === "recorderoff") {
-		return `<svg width="1251px" height="1251px" viewBox="0 0 1251 1251" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  if (name === "recorderoff") {
+    return `<svg width="1251px" height="1251px" viewBox="0 0 1251 1251" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
           <g class="yy-rec-on-circle" fill="#EEEEEE" fill-rule="nonzero">
               <path d="M625.5,0 C970.954111,0 1251,280.045889 1251,625.5 C1251,970.954111 970.954111,1251 625.5,1251 C280.045889,1251 0,970.954111 0,625.5 C0,280.045889 280.045889,0 625.5,0 Z M626,124 C348.753056,124 124,348.753056 124,626 C124,903.246944 348.753056,1128 626,1128 C903.246944,1128 1128,903.246944 1128,626 C1128,348.753056 903.246944,124 626,124 Z"></path>
@@ -2450,28 +2572,28 @@ export const loadIcon = function (name, color) {
           </g>
       </g>
   </svg>`;
-	}
+  }
 
-	if (name === "arrowdown") {
-		return `<svg class="yy-logo-arrowdown" fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  if (name === "arrowdown") {
+    return `<svg class="yy-logo-arrowdown" fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="m50 77.637c-1.3477 0-2.6953-0.51562-3.7266-1.543l-44.73-44.73c-2.0586-2.0586-2.0586-5.3945 0-7.4531 2.0586-2.0586 5.3945-2.0586 7.4531 0l41.004 41 41.004-41c2.0586-2.0586 5.3945-2.0586 7.4531 0 2.0586 2.0586 2.0586 5.3945 0 7.4531l-44.73 44.727c-1.0312 1.0312-2.3789 1.5469-3.7266 1.5469z"/>
    </svg>`;
-	}
+  }
 
-	if (name === "arrowleft") {
-		return `<svg fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  if (name === "arrowleft") {
+    return `<svg fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="m70.988 1.6211c2.1875-2.168 5.7344-2.168 7.9297 0 2.1836 2.168 2.1836 5.7227 0 7.8906l-46.016 40.445 46.016 40.5c2.1836 2.168 2.1836 5.668 0 7.8906-2.1953 2.168-5.7383 2.168-7.9297 0l-50.039-44.109c-1.168-1.168-1.668-2.7227-1.5898-4.2773-0.078125-1.5 0.42188-3.0547 1.5898-4.2227l50.039-44.109z" fill-rule="evenodd"/>
    </svg>`;
-	}
+  }
 
-	if (name === "close") {
-		return `<svg fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  if (name === "close") {
+    return `<svg fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="m72.812 33.02l-5.832-5.832-16.98 16.875-16.98-16.875-5.832 5.832 16.875 16.98-16.875 16.98 5.832 5.832 16.98-16.875 16.98 16.875 5.832-5.832-16.875-16.98z"/>
    </svg>`;
-	}
+  }
 
-	if (name === "undo") {
-		return `<svg width="62px" height="60px" viewBox="0 0 62 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  if (name === "undo") {
+    return `<svg width="62px" height="60px" viewBox="0 0 62 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
       <g class="yy-svg-path" transform="translate(-0.000500, 0.001926)" fill-rule="nonzero">
         <path d="M28.0005,51.6270739 C24.9653,51.0684839 22.0825,49.8731739 19.5396,48.1192739 L13.8208,53.8380739 C17.9536,57.0060739 22.8403,59.0333739 28.0008,59.7286739 L28.0005,51.6270739 Z" id="Path"></path>
@@ -2482,31 +2604,31 @@ export const loadIcon = function (name, color) {
       </g>
     </g>
   </svg>`;
-	}
+  }
 
-	if (name === "circle-dot") {
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256-96a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg>`;
-	}
+  if (name === "circle-dot") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256-96a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg>`;
+  }
 
-	if (name === "circle-question") {
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H222.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg>`;
-	}
+  if (name === "circle-question") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H222.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg>`;
+  }
 
-	if (name === "circle-info") {
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216 192V224h24 48 24v24 88h8 24v48H296 216 192V336h24zm72-144H224V128h64v64z"/></svg>`;
-	}
+  if (name === "circle-info") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216 192V224h24 48 24v24 88h8 24v48H296 216 192V336h24zm72-144H224V128h64v64z"/></svg>`;
+  }
 
-	if (name === "circle-exclamation") {
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm24-384v24V264v24H232V264 152 128h48zM232 368V320h48v48H232z"/></svg>`;
-	}
+  if (name === "circle-exclamation") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm24-384v24V264v24H232V264 152 128h48zM232 368V320h48v48H232z"/></svg>`;
+  }
 
-	if (name === "circle-up") {
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM384 256H304V384H208V256H128V224L256 96 384 224v32z"/></svg>`;
-	}
+  if (name === "circle-up") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM384 256H304V384H208V256H128V224L256 96 384 224v32z"/></svg>`;
+  }
 
-	if (name === "circle-right") {
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM256 384l0-80-128 0 0-96 128 0 0-80 32 0L416 256 288 384l-32 0z"/></svg>`;
-	}
+  if (name === "circle-right") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM256 384l0-80-128 0 0-96 128 0 0-80 32 0L416 256 288 384l-32 0z"/></svg>`;
+  }
 
-	return "";
+  return "";
 };

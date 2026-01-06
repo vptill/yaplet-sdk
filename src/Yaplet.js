@@ -1,6 +1,6 @@
 import { injectStyledCSS } from "./UI";
 import NetworkIntercepter from "./NetworkIntercepter";
-import { dataParser, runFunctionWhenDomIsReady } from "./Helper";
+import { dataParser, fixHeight, runFunctionWhenDomIsReady } from "./Helper";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import ConfigManager from "./ConfigManager";
@@ -177,6 +177,10 @@ class Yaplet {
 		}
 		instance.initialized = true;
 
+		try {
+			fixHeight();
+		} catch (error) { }
+
 		// Start session
 		const sessionInstance = Session.getInstance();
 		sessionInstance.sdkKey = sdkKey;
@@ -246,7 +250,7 @@ class Yaplet {
 					Yaplet.startProductTour(tourId);
 				}, tourDelay * 1000);
 			}
-		} catch (exp) {}
+		} catch (exp) { }
 	}
 
 	/**
@@ -707,8 +711,8 @@ class Yaplet {
 		);
 		feedback
 			.sendFeedback()
-			.then(() => {})
-			.catch((error) => {});
+			.then(() => { })
+			.catch((error) => { });
 	}
 
 	/**
@@ -1195,7 +1199,7 @@ class Yaplet {
 			.then((config) => {
 				self.startProductTourWithConfig(tourId, config);
 			})
-			.catch((error) => {});
+			.catch((error) => { });
 	}
 
 	static startProductTourWithConfig(tourId, config) {
@@ -1212,7 +1216,7 @@ class Yaplet {
 	static showBanner(data) {
 		try {
 			BannerManager.getInstance().showBanner(data);
-		} catch (e) {}
+		} catch (e) { }
 	}
 
 	static showNotification(data) {
