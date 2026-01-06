@@ -106,11 +106,11 @@ export default class FeedbackButtonManager {
 		if (
 			!(
 				flowConfig.feedbackButtonPosition ===
-					FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
 				flowConfig.feedbackButtonPosition ===
-					FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
 				flowConfig.feedbackButtonPosition ===
-					FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
 			)
 		) {
 			return;
@@ -138,7 +138,7 @@ export default class FeedbackButtonManager {
 		const flowConfig = ConfigManager.getInstance().getFlowConfig();
 
 		var buttonIcon = "";
-		const iconName = flowConfig.buttonIcon || "button";
+		const iconName = flowConfig?.buttonIcon || "button";
 		buttonIcon = loadIcon(iconName, "#fff");
 
 		this.feedbackButton.className = "yy-feedback-button yaplet-font gl-block";
@@ -149,27 +149,25 @@ export default class FeedbackButtonManager {
 
 		if (
 			flowConfig.feedbackButtonPosition ===
-				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
 			flowConfig.feedbackButtonPosition ===
-				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
 			flowConfig.feedbackButtonPosition ===
-				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
 		) {
 			this.feedbackButton.classList.add(
 				"yy-feedback-button--classic-button-style"
 			);
 
-			this.feedbackButton.innerHTML = `<div class="yy-feedback-button-classic ${
-				flowConfig.feedbackButtonPosition ===
-				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+			this.feedbackButton.innerHTML = `<div class="yy-feedback-button-classic ${flowConfig.feedbackButtonPosition ===
+					FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
 					? "yy-feedback-button-classic--left"
 					: ""
-			}${
-				flowConfig.feedbackButtonPosition ===
-				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+				}${flowConfig.feedbackButtonPosition ===
+					FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
 					? "yy-feedback-button-classic--bottom"
 					: ""
-			}">${flowConfig.widgetButtonText}</div>`;
+				}">${flowConfig.widgetButtonText}</div>`;
 		} else {
 			if (buttonIcon !== this.lastButtonIcon) {
 				this.feedbackButton.innerHTML = `<div class="yy-feedback-button-icon">${buttonIcon}${loadIcon(
