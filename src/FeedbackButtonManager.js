@@ -184,7 +184,7 @@ export default class FeedbackButtonManager {
 		var hideButton = false;
 		if (FeedbackButtonManager.getInstance().buttonHidden === null) {
 			if (
-				flowConfig.feedbackButtonPosition ===
+				flowConfig?.feedbackButtonPosition ===
 				FeedbackButtonManager.FEEDBACK_BUTTON_NONE
 			) {
 				hideButton = true;
@@ -199,7 +199,7 @@ export default class FeedbackButtonManager {
 		}
 
 		if (
-			flowConfig.feedbackButtonPosition ===
+			flowConfig?.feedbackButtonPosition ===
 			FeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
 		) {
 			this.feedbackButton.classList.add("yy-feedback-button--bottomleft");
@@ -218,7 +218,7 @@ export default class FeedbackButtonManager {
 			this.feedbackButton.classList.add("yy-feedback-button--survey");
 		}
 
-		if (flowConfig.hideForGuests === true && !Session.getInstance().isUser()) {
+		if (flowConfig?.hideForGuests === true && !Session.getInstance().isUser()) {
 			this.feedbackButton.classList.add("yy-feedback-button--hidden");
 		}
 	}
