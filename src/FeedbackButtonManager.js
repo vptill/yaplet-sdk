@@ -105,11 +105,11 @@ export default class FeedbackButtonManager {
 
 		if (
 			!(
-				flowConfig.feedbackButtonPosition ===
+				flowConfig?.feedbackButtonPosition ===
 				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
-				flowConfig.feedbackButtonPosition ===
+				flowConfig?.feedbackButtonPosition ===
 				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
-				flowConfig.feedbackButtonPosition ===
+				flowConfig?.feedbackButtonPosition ===
 				FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
 			)
 		) {

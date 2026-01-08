@@ -249,28 +249,28 @@ export default class FrameManager {
 		var styleToApply = undefined;
 		const flowConfig = ConfigManager.getInstance().getFlowConfig();
 		if (
-			flowConfig.feedbackButtonPosition ===
+			flowConfig?.feedbackButtonPosition ===
 			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
-			flowConfig.feedbackButtonPosition ===
+			flowConfig?.feedbackButtonPosition ===
 			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
 		) {
 			styleToApply = classicStyle;
 		}
 		if (
-			flowConfig.feedbackButtonPosition ===
+			flowConfig?.feedbackButtonPosition ===
 			FeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
 		) {
 			styleToApply = classicStyleLeft;
 		}
 		if (
-			flowConfig.feedbackButtonPosition ===
+			flowConfig?.feedbackButtonPosition ===
 			FeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
 		) {
 			styleToApply = modernStyleLeft;
 		}
 		if (FeedbackButtonManager.getInstance().buttonHidden === null) {
 			if (
-				flowConfig.feedbackButtonPosition ===
+				flowConfig?.feedbackButtonPosition ===
 				FeedbackButtonManager.FEEDBACK_BUTTON_NONE
 			) {
 				styleToApply = noButtonStyleLeft;
