@@ -35,6 +35,19 @@ export default class FrameManager {
 	queue = [];
 	urlHandler = function (url, newTab) {
 		if (url && url.length > 0) {
+			// Basic protocol validation to prevent javascript: or data: URIs
+			const lowerUrl = url.toLowerCase().trim();
+			if (
+				!lowerUrl.startsWith("http://") &&
+				!lowerUrl.startsWith("https://") &&
+				!lowerUrl.startsWith("/") &&
+				!lowerUrl.startsWith("./") &&
+				!lowerUrl.startsWith("../")
+			) {
+				console.warn("Yaplet: Blocked potentially unsafe URL:", url);
+				return;
+			}
+
 			if (newTab) {
 				const newWindow = window.open(url, "_blank");
 
@@ -199,17 +212,24 @@ export default class FrameManager {
 		runFunctionWhenDomIsReady(() => {
 			var elem = document.createElement("div");
 			elem.className = "yaplet-image-view";
-			elem.innerHTML = `<div class="yaplet-image-view-close">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm97.9-320l-17 17-47 47 47 47 17 17L320 353.9l-17-17-47-47-47 47-17 17L158.1 320l17-17 47-47-47-47-17-17L192 158.1l17 17 47 47 47-47 17-17L353.9 192z"/></svg>
-      </div><img class="yaplet-image-view-image" src="${url}" />`;
+
+			var closeContainer = document.createElement("div");
+			closeContainer.className = "yaplet-image-view-close";
+			closeContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm97.9-320l-17 17-47 47 47 47 17 17L320 353.9l-17-17-47-47-47 47-17 17L158.1 320l17-17 47-47-47-47-17-17L192 158.1l17 17 47 47 47-47 17-17L353.9 192z"/></svg>`;
+
+			var img = document.createElement("img");
+			img.className = "yaplet-image-view-image";
+			img.src = url;
+
+			elem.appendChild(closeContainer);
+			elem.appendChild(img);
 			document.body.appendChild(elem);
 
 			const closeElement = () => {
 				elem.remove();
 			};
 
-			const close = elem.querySelector(".yaplet-image-view-close");
-			close.addEventListener("click", () => {
+			closeContainer.addEventListener("click", () => {
 				closeElement();
 			});
 
@@ -422,7 +442,10 @@ export default class FrameManager {
 		try {
 			this.yapletFrame = document.querySelector(".yaplet-frame");
 			if (this.comReady && this.yapletFrame && this.yapletFrame.contentWindow) {
-				this.yapletFrame.contentWindow.postMessage(JSON.stringify(data), "*");
+				this.yapletFrame.contentWindow.postMessage(
+					JSON.stringify(data),
+					this.frameUrl
+				);
 			} else {
 				if (queue) {
 					this.queue.push(data);
