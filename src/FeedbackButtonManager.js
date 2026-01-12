@@ -137,6 +137,14 @@ export default class FeedbackButtonManager {
 
 		const flowConfig = ConfigManager.getInstance().getFlowConfig();
 
+		console.log("flowConfig", flowConfig);
+
+		if (!flowConfig?.uiColor) {
+			this.feedbackButton.style.display = "none";
+			return;
+		}
+		this.feedbackButton.style.display = "";
+
 		var buttonIcon = "";
 		const iconName = flowConfig?.buttonIcon || "button";
 		buttonIcon = loadIcon(iconName, "#fff");
