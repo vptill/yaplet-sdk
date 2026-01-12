@@ -77,8 +77,7 @@ export default class StreamedEvent {
 		}
 
 		this.socket = new WebSocket(
-			`${Session.getInstance().wsApiUrl}?token=${
-				Session.getInstance().session.yapletHash
+			`${Session.getInstance().wsApiUrl}?token=${Session.getInstance().session.yapletHash
 			}&apiKey=${Session.getInstance().sdkKey}&sdkVersion=${SDK_VERSION}`
 		);
 		this.socket.addEventListener("open", this.handleOpenBound);
@@ -121,7 +120,7 @@ export default class StreamedEvent {
 		this.processMessage(JSON.parse(event.data));
 	}
 
-	handleError(error) {}
+	handleError(error) { }
 
 	handleClose(event) {
 		setTimeout(() => {
@@ -142,8 +141,8 @@ export default class StreamedEvent {
 					Yaplet.getInstance().performActions([message]);
 				}
 				/*if (u != null) {
-            NotificationManager.getInstance().setNotificationCount(u);
-          }*/
+			NotificationManager.getInstance().setNotificationCount(u);
+		  }*/
 			} else if (
 				["message", "survey", "banner", "tour"].includes(message.event)
 			) {
@@ -176,7 +175,7 @@ export default class StreamedEvent {
 		}
 	}
 
-	restart() {
+	restart(skipTrackInitial = false) {
 		// Only reconnect websockets when needed.
 		if (
 			this.connectedWebSocketYapletId !== Session.getInstance().session.yapletId
@@ -185,7 +184,9 @@ export default class StreamedEvent {
 		}
 
 		this.cleanupMainLoop();
-		this.trackInitialEvents();
+		if (!skipTrackInitial) {
+			this.trackInitialEvents();
+		}
 		this.runEventStreamLoop();
 	}
 

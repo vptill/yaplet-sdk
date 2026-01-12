@@ -5,6 +5,8 @@ import {
 	NotificationManager,
 	StreamedEvent,
 	BannerManager,
+	ConfigManager,
+	MetaDataManager,
 } from "./Yaplet";
 import {
 	eraseYapletCookie,
@@ -52,10 +54,10 @@ export default class Session {
 		try {
 			return this.session.name
 				? this.session.name
-						.split(" ")[0]
-						.split("@")[0]
-						.split(".")[0]
-						.split("+")[0]
+					.split(" ")[0]
+					.split("@")[0]
+					.split(".")[0]
+					.split("+")[0]
 				: "";
 		} catch (exp) {
 			return this.session.name;
@@ -93,7 +95,7 @@ export default class Session {
 		return false;
 	}
 
-	constructor() {}
+	constructor() { }
 
 	setOnSessionReady = (onSessionReady) => {
 		if (this.ready) {
@@ -124,12 +126,12 @@ export default class Session {
 
 		try {
 			saveToYapletCache(`session-${this.sdkKey}`, null);
-		} catch (exp) {}
+		} catch (exp) { }
 
 		if (this.useCookies) {
 			try {
 				eraseYapletCookie(`session-${this.sdkKey}`);
-			} catch (exp) {}
+			} catch (exp) { }
 		}
 
 		this.ready = false;
@@ -210,7 +212,7 @@ export default class Session {
 					this.validateSession(sessionData);
 				}
 			}
-		} catch (exp) {}
+		} catch (exp) { }
 
 		// Try to load session from local storage, if not already loaded.
 		if (
@@ -248,7 +250,7 @@ export default class Session {
 					);
 				}
 			}
-		} catch (exp) {}
+		} catch (exp) { }
 
 		http.onreadystatechange = function (e) {
 			if (http.readyState === 4) {
@@ -260,12 +262,39 @@ export default class Session {
 							sessionData.unreadCount
 						);
 
+						// Process config if present
+						if (sessionData.config) {
+							try {
+								const lang = TranslationManager.getInstance().getActiveLanguage();
+								saveToYapletCache(
+									`config-${self.sdkKey}-${lang}`,
+									sessionData.config
+								);
+							} catch (exp) { }
+							ConfigManager.getInstance().applyConfig({
+								flowConfig: sessionData.config,
+							});
+						}
+
+						// Process queue if present
+						if (sessionData.hasQueuedItems !== undefined) {
+							StreamedEvent.getInstance().handlePingResponse(sessionData);
+						}
+
+						// Clear sent events
+						if (eventsToSend.length > 0) {
+							StreamedEvent.getInstance().streamedEventArray.splice(
+								0,
+								eventsToSend.length
+							);
+						}
+
 						// Initially track.
-						StreamedEvent.getInstance().restart();
+						StreamedEvent.getInstance().restart(true);
 
 						// Load tooltips.
 						//TooltipManager.getInstance().load();
-					} catch (exp) {}
+					} catch (exp) { }
 				} else {
 					if (http.status !== 429) {
 						self.clearSession(attemp, true);
@@ -273,10 +302,23 @@ export default class Session {
 				}
 			}
 		};
+
+		// Prepare events
+		StreamedEvent.getInstance().trackInitialEvents();
+		const eventsToSend = [...StreamedEvent.getInstance().streamedEventArray];
+		const sessionDuration = MetaDataManager.getInstance().getSessionDuration();
+		const isOpened = FrameManager.getInstance().isOpened();
+
 		http.send(
 			JSON.stringify({
 				lang: TranslationManager.getInstance().getActiveLanguage(),
 				url: window.location.href,
+				time: sessionDuration,
+				events: eventsToSend,
+				opened: isOpened,
+				type: "js",
+				sdkVersion: SDK_VERSION,
+				ws: true,
 			})
 		);
 	};
@@ -302,7 +344,7 @@ export default class Session {
 			if (this.session.userId.toString() !== userId.toString()) {
 				return true;
 			}
-		} catch (exp) {}
+		} catch (exp) { }
 
 		return this.checkIfSessionDataNeedsUpdate(userData);
 	};
@@ -321,7 +363,7 @@ export default class Session {
 						!(
 							this.session.customData &&
 							JSON.stringify(this.session.customData[userDataKey]) ===
-								JSON.stringify(userData[userDataKey])
+							JSON.stringify(userData[userDataKey])
 						)
 					) {
 						return true;
@@ -358,7 +400,7 @@ export default class Session {
 						"Y-Authorization",
 						"Bearer " + self.session.yapletHash
 					);
-				} catch (exp) {}
+				} catch (exp) { }
 
 				http.onerror = () => {
 					reject();
@@ -419,7 +461,7 @@ export default class Session {
 						"Y-Authorization",
 						"Bearer " + self.session.yapletHash
 					);
-				} catch (exp) {}
+				} catch (exp) { }
 
 				http.onerror = () => {
 					reject();
@@ -488,7 +530,7 @@ export default class Session {
 						"Y-Authorization",
 						"Bearer " + self.session.yapletHash
 					);
-				} catch (exp) {}
+				} catch (exp) { }
 
 				http.onerror = () => {
 					reject();

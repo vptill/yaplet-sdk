@@ -69,15 +69,16 @@ export default class ConfigManager {
    * @returns {string}
    */
   start = () => {
+    if (this.flowConfig) {
+      return Promise.resolve();
+    }
     const session = Session.getInstance();
     const cachedConfig = loadFromYapletCache(
-      `config-${
-        session.sdkKey
+      `config-${session.sdkKey
       }-${TranslationManager.getInstance().getActiveLanguage()}`
     );
     if (cachedConfig) {
       this.applyConfig(cachedConfig);
-      this.loadConfigFromServer().catch(function (e) {});
       return Promise.resolve();
     }
 
@@ -103,10 +104,10 @@ export default class ConfigManager {
               const config = JSON.parse(http.responseText);
               try {
                 saveToYapletCache(`config-${session.sdkKey}-${lang}`, config);
-              } catch (exp) {}
+              } catch (exp) { }
               self.applyConfig(config);
               return resolve();
-            } catch (e) {}
+            } catch (e) { }
           }
           reject();
         }
@@ -191,6 +192,6 @@ export default class ConfigManager {
       Yaplet.enableShortcuts(flowConfig.enableShortcuts ? true : false);
 
       this.notifyConfigLoaded();
-    } catch (e) {}
+    } catch (e) { }
   }
 }
