@@ -139,7 +139,7 @@ export default class FeedbackButtonManager {
 
 		console.log("flowConfig", flowConfig);
 
-		if (!flowConfig?.uiColor) {
+		if (!flowConfig?.backgroundColor) {
 			this.feedbackButton.style.display = "none";
 			return;
 		}
