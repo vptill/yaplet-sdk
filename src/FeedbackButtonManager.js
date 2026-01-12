@@ -137,8 +137,6 @@ export default class FeedbackButtonManager {
 
 		const flowConfig = ConfigManager.getInstance().getFlowConfig();
 
-		console.log("flowConfig", flowConfig);
-
 		if (!flowConfig?.backgroundColor) {
 			this.feedbackButton.style.display = "none";
 			return;
