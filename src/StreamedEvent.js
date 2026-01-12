@@ -1,10 +1,9 @@
-import Yaplet, {
-	BannerManager,
-	FrameManager,
-	MetaDataManager,
-	NotificationManager,
-	Session,
-} from "./Yaplet";
+import Yaplet from "./Yaplet";
+import BannerManager from "./BannerManager";
+import FrameManager from "./FrameManager";
+import MetaDataManager from "./MetaDataManager";
+import NotificationManager from "./NotificationManager";
+import Session from "./Session";
 import { dataParser } from "./Helper";
 
 export default class StreamedEvent {
@@ -201,9 +200,11 @@ export default class StreamedEvent {
 	}
 
 	logCurrentPage() {
-		if (Yaplet.getInstance().disablePageTracking) {
-			return;
-		}
+		try {
+			if (Yaplet.getInstance().disablePageTracking) {
+				return;
+			}
+		} catch (e) { }
 
 		const currentUrl = window.location.href;
 		if (currentUrl && currentUrl !== this.lastUrl) {
