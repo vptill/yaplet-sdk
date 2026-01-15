@@ -1,7 +1,7 @@
 import Yaplet from "./Yaplet";
 
 export default class BannerManager {
-	bannerUrl = "https://yaplet.io";
+	bannerUrl = "https://embed.yaplet.com";
 	bannerContainer = null;
 	bannerData = null;
 
@@ -84,7 +84,7 @@ export default class BannerManager {
 				if (data.name === "show-help-article") {
 					Yaplet.openHelpCenterArticle(data.data?.articleId);
 				}
-			} catch (exp) {}
+			} catch (exp) { }
 		});
 	}
 
@@ -130,7 +130,7 @@ export default class BannerManager {
 					"*"
 				);
 			}
-		} catch (e) {}
+		} catch (e) { }
 	}
 
 	showBanner(bannerData) {

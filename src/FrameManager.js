@@ -21,7 +21,7 @@ import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./Helper";
 
 export default class FrameManager {
-	frameUrl = "https://yaplet.io";
+	frameUrl = "https://embed.yaplet.com";
 	yapletFrameContainer = null;
 	yapletFrame = null;
 	comReady = false;
@@ -165,7 +165,7 @@ export default class FrameManager {
 
 	autoWhiteListCookieManager = () => {
 		if (window && window.cmp_block_ignoredomains) {
-			window.cmp_block_ignoredomains.concat(["yaplet.io"]);
+			window.cmp_block_ignoredomains.concat(["yaplet.com"]);
 		}
 	};
 

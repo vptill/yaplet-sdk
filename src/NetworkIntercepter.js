@@ -5,7 +5,7 @@ class NetworkIntercepter {
   externalRequests = [];
   maxRequests = 30;
   filters = [];
-  defaultBlacklist = ["yaplet.io", "yaplet.com"];
+  defaultBlacklist = ["yaplet.com"];
   blacklist = [];
   initialized = false;
   stopped = false;
@@ -70,7 +70,7 @@ class NetworkIntercepter {
           var payloadObj = request.request.payload;
           try {
             payloadObj = JSON.parse(request.request.payload);
-          } catch (e) {}
+          } catch (e) { }
 
           if (payloadObj) {
             for (var j = 0; j < this.filters.length; j++) {
@@ -88,7 +88,7 @@ class NetworkIntercepter {
               delete data[this.filters[j]];
             }
             request.response.responseText = JSON.stringify(data);
-          } catch (e) {}
+          } catch (e) { }
         }
       }
     }
@@ -103,7 +103,7 @@ class NetworkIntercepter {
             if (
               (this.loadAllResources ||
                 ["xmlhttprequest", "fetch"].indexOf(resource.initiatorType) >
-                  -1) &&
+                -1) &&
               !requests.find((request) => request.url === resource.name)
             ) {
               requests.push({
@@ -117,7 +117,7 @@ class NetworkIntercepter {
           }
         }
       }
-    } catch (exp) {}
+    } catch (exp) { }
 
     var blacklist = this.blacklist.concat(this.defaultBlacklist);
     if (blacklist && blacklist.length > 0) {
@@ -130,7 +130,7 @@ class NetworkIntercepter {
           }
           return true;
         });
-      } catch (exp) {}
+      } catch (exp) { }
     }
 
     return requests;
@@ -217,7 +217,7 @@ class NetworkIntercepter {
         let value = new TextDecoder().decode(payload);
         return value;
       }
-    } catch (exp) {}
+    } catch (exp) { }
 
     return payload;
   }
@@ -299,7 +299,7 @@ class NetworkIntercepter {
             responseText: "<request_still_open>",
           };
           this.calcRequestTime(bbRequestId);
-        } catch (exp) {}
+        } catch (exp) { }
 
         try {
           var contentType = "";
@@ -337,7 +337,7 @@ class NetworkIntercepter {
             this.calcRequestTime(bbRequestId);
             this.cleanRequests();
           }
-        } catch (exp) {}
+        } catch (exp) { }
       },
       onFetchFailed: (err, bbRequestId) => {
         if (
