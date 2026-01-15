@@ -18,7 +18,7 @@ import {
 //import TooltipManager from "./TooltipManager";
 
 export default class Session {
-	apiUrl = "https://widget.yaplet.com/api";
+	apiUrl = "https://yaplet.com/api";
 	wsApiUrl = "wss://phx.yaplet.com/socket/websocket";
 	sdkKey = null;
 	updatingSession = false;
@@ -54,10 +54,10 @@ export default class Session {
 		try {
 			return this.session.name
 				? this.session.name
-					.split(" ")[0]
-					.split("@")[0]
-					.split(".")[0]
-					.split("+")[0]
+						.split(" ")[0]
+						.split("@")[0]
+						.split(".")[0]
+						.split("+")[0]
 				: "";
 		} catch (exp) {
 			return this.session.name;
@@ -95,7 +95,7 @@ export default class Session {
 		return false;
 	}
 
-	constructor() { }
+	constructor() {}
 
 	setOnSessionReady = (onSessionReady) => {
 		if (this.ready) {
@@ -126,12 +126,12 @@ export default class Session {
 
 		try {
 			saveToYapletCache(`session-${this.sdkKey}`, null);
-		} catch (exp) { }
+		} catch (exp) {}
 
 		if (this.useCookies) {
 			try {
 				eraseYapletCookie(`session-${this.sdkKey}`);
-			} catch (exp) { }
+			} catch (exp) {}
 		}
 
 		this.ready = false;
@@ -212,7 +212,7 @@ export default class Session {
 					this.validateSession(sessionData);
 				}
 			}
-		} catch (exp) { }
+		} catch (exp) {}
 
 		// Try to load session from local storage, if not already loaded.
 		if (
@@ -250,7 +250,7 @@ export default class Session {
 					);
 				}
 			}
-		} catch (exp) { }
+		} catch (exp) {}
 
 		http.onreadystatechange = function (e) {
 			if (http.readyState === 4) {
@@ -265,12 +265,13 @@ export default class Session {
 						// Process config if present
 						if (sessionData.config) {
 							try {
-								const lang = TranslationManager.getInstance().getActiveLanguage();
+								const lang =
+									TranslationManager.getInstance().getActiveLanguage();
 								saveToYapletCache(
 									`config-${self.sdkKey}-${lang}`,
 									sessionData.config
 								);
-							} catch (exp) { }
+							} catch (exp) {}
 							ConfigManager.getInstance().applyConfig({
 								flowConfig: sessionData.config,
 							});
@@ -294,7 +295,7 @@ export default class Session {
 
 						// Load tooltips.
 						//TooltipManager.getInstance().load();
-					} catch (exp) { }
+					} catch (exp) {}
 				} else {
 					if (http.status !== 429) {
 						self.clearSession(attemp, true);
@@ -344,7 +345,7 @@ export default class Session {
 			if (this.session.userId.toString() !== userId.toString()) {
 				return true;
 			}
-		} catch (exp) { }
+		} catch (exp) {}
 
 		return this.checkIfSessionDataNeedsUpdate(userData);
 	};
@@ -363,7 +364,7 @@ export default class Session {
 						!(
 							this.session.customData &&
 							JSON.stringify(this.session.customData[userDataKey]) ===
-							JSON.stringify(userData[userDataKey])
+								JSON.stringify(userData[userDataKey])
 						)
 					) {
 						return true;
@@ -400,7 +401,7 @@ export default class Session {
 						"Y-Authorization",
 						"Bearer " + self.session.yapletHash
 					);
-				} catch (exp) { }
+				} catch (exp) {}
 
 				http.onerror = () => {
 					reject();
@@ -461,7 +462,7 @@ export default class Session {
 						"Y-Authorization",
 						"Bearer " + self.session.yapletHash
 					);
-				} catch (exp) { }
+				} catch (exp) {}
 
 				http.onerror = () => {
 					reject();
@@ -530,7 +531,7 @@ export default class Session {
 						"Y-Authorization",
 						"Bearer " + self.session.yapletHash
 					);
-				} catch (exp) { }
+				} catch (exp) {}
 
 				http.onerror = () => {
 					reject();
