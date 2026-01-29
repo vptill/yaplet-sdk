@@ -13,5 +13,6 @@ Yaplet.initialize("3528f1f0-33a7-43d3-b334-c61ee682447c"); // TEST
 // Yaplet.initialize("998782b5-8863-4c6e-b186-5f6f576bd9ec"); // Yaplet separate display acc
 //Yaplet.initialize("38e4449b-6c2d-4822-aedb-095ff83bdace"); // Tippmix
 // Yaplet.initialize("d283d726-d428-4159-9f7a-32558f3f1158"); // Yaplet live
+// Yaplet.initialize("704a08ce-9015-4ec5-b6bc-22b7450ea74c"); // Puregold repa
 
 //Yaplet.showSurvey("241d5cd9-9e35-47e9-88fb-34943656832c", "survey_full");
