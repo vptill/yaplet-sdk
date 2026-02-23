@@ -105,6 +105,9 @@ export default class AdminManager {
         if (data.type === "admin") {
           if (data.name === "load") {
             self.configData = data.data;
+            if (data.data && data.data.frameUrl) {
+              self.frameUrl = data.data.frameUrl;
+            }
             self.initAdminHelper();
             this.sendMessage({ name: "builder-init" });
           }
