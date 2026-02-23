@@ -277,11 +277,6 @@ export default class Session {
 							});
 						}
 
-						// Process queue if present
-						if (sessionData.hasQueuedItems !== undefined) {
-							StreamedEvent.getInstance().handlePingResponse(sessionData);
-						}
-
 						// Clear sent events
 						if (eventsToSend.length > 0) {
 							StreamedEvent.getInstance().streamedEventArray.splice(
@@ -290,8 +285,15 @@ export default class Session {
 							);
 						}
 
-						// Initially track.
+						// Initially track (must happen before handlePingResponse,
+						// because restart -> initWebSocket -> cleanupWebSocket -> stopHeartbeat
+						// would kill the heartbeat we're about to schedule)
 						StreamedEvent.getInstance().restart(true);
+
+						// Process queue if present (after restart so heartbeat isn't cleared)
+						if (sessionData.hasQueuedItems !== undefined) {
+							StreamedEvent.getInstance().handlePingResponse(sessionData);
+						}
 
 						// Load tooltips.
 						//TooltipManager.getInstance().load();
