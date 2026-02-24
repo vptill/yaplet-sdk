@@ -24,6 +24,7 @@ export default class StreamedEvent {
 	handleCloseBound = null;
 	heartbeatTimeout = null;
 	stopHeartbeatAfterNextCheck = false;
+	pendingQueueCheck = false;
 
 	// StreamedEvent singleton
 	static instance;
@@ -112,6 +113,13 @@ export default class StreamedEvent {
 		if (this.connectionTimeout) {
 			clearTimeout(this.connectionTimeout);
 			this.connectionTimeout = null;
+		}
+
+		// If outreach items were queued during session init, process them now
+		// that the WebSocket is connected and can receive broadcasts
+		if (this.pendingQueueCheck) {
+			this.pendingQueueCheck = false;
+			this.callHeartbeatEndpoint();
 		}
 	}
 
@@ -355,10 +363,22 @@ export default class StreamedEvent {
 	handlePingResponse(response) {
 		const hasQueuedItems =
 			typeof response === "boolean" ? response : response.hasQueuedItems;
-		const pollInMs = response?.pollInMs || 10000;
+		const pollInMs = response?.pollInMs ?? 10000;
 
 		if (hasQueuedItems) {
-			this.scheduleHeartbeat(pollInMs);
+			// pollInMs === 0 means the server queued items during session init
+			// and wants us to process them once the WebSocket is ready
+			if (pollInMs === 0) {
+				if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+					// WebSocket already connected — process immediately
+					this.callHeartbeatEndpoint();
+				} else {
+					// WebSocket not ready yet — will trigger in handleOpen
+					this.pendingQueueCheck = true;
+				}
+			} else {
+				this.scheduleHeartbeat(pollInMs);
+			}
 			this.stopHeartbeatAfterNextCheck = false;
 		} else if (this.heartbeatTimeout) {
 			if (this.stopHeartbeatAfterNextCheck) {

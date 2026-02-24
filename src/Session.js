@@ -111,7 +111,7 @@ export default class Session {
 			http.setRequestHeader("Yaplet-Id", this.session.yapletId);
 			http.setRequestHeader(
 				"Y-Authorization",
-				"Bearer " + this.session.yapletHash
+				"Bearer " + this.session.yapletHash,
 			);
 		}
 	};
@@ -120,7 +120,7 @@ export default class Session {
 		if (this.session && this.session.yapletHash) {
 			EventManager.notifyEvent(
 				"unregister-pushmessage-group",
-				`yapletuser-${this.session.yapletHash}`
+				`yapletuser-${this.session.yapletHash}`,
 			);
 		}
 
@@ -149,7 +149,7 @@ export default class Session {
 			{
 				name: "session-cleared",
 			},
-			true
+			true,
 		);
 		NotificationManager.getInstance().clearAllNotifications(false);
 		NotificationManager.getInstance().setNotificationCount(0);
@@ -175,7 +175,7 @@ export default class Session {
 		if (this.session && this.session.yapletHash) {
 			EventManager.notifyEvent(
 				"unregister-pushmessage-group",
-				`yapletuser-${this.session.yapletHash}`
+				`yapletuser-${this.session.yapletHash}`,
 			);
 		}
 
@@ -184,7 +184,7 @@ export default class Session {
 			setYapletCookie(
 				`session-${this.sdkKey}`,
 				encodeURIComponent(JSON.stringify(session)),
-				365
+				365,
 			);
 		}
 
@@ -195,7 +195,7 @@ export default class Session {
 		if (this.session && this.session.yapletHash) {
 			EventManager.notifyEvent(
 				"register-pushmessage-group",
-				`yapletuser-${this.session.yapletHash}`
+				`yapletuser-${this.session.yapletHash}`,
 			);
 		}
 
@@ -240,13 +240,13 @@ export default class Session {
 				http.setRequestHeader("Yaplet-Id", this.session.yapletId);
 				http.setRequestHeader(
 					"Y-Authorization",
-					"Bearer " + this.session.yapletHash
+					"Bearer " + this.session.yapletHash,
 				);
 			} else {
 				if (oldCachedSession) {
 					http.setRequestHeader(
 						"Y-Authorization",
-						"Bearer " + oldCachedSession
+						"Bearer " + oldCachedSession,
 					);
 				}
 			}
@@ -259,7 +259,7 @@ export default class Session {
 						const sessionData = JSON.parse(http.responseText);
 						self.validateSession(sessionData);
 						NotificationManager.getInstance().setNotificationCount(
-							sessionData.unreadCount
+							sessionData.unreadCount,
 						);
 
 						// Process config if present
@@ -269,7 +269,7 @@ export default class Session {
 									TranslationManager.getInstance().getActiveLanguage();
 								saveToYapletCache(
 									`config-${self.sdkKey}-${lang}`,
-									sessionData.config
+									sessionData.config,
 								);
 							} catch (exp) {}
 							ConfigManager.getInstance().applyConfig({
@@ -281,7 +281,7 @@ export default class Session {
 						if (eventsToSend.length > 0) {
 							StreamedEvent.getInstance().streamedEventArray.splice(
 								0,
-								eventsToSend.length
+								eventsToSend.length,
 							);
 						}
 
@@ -322,7 +322,7 @@ export default class Session {
 				type: "js",
 				sdkVersion: SDK_VERSION,
 				ws: true,
-			})
+			}),
 		);
 	};
 
@@ -401,7 +401,7 @@ export default class Session {
 					http.setRequestHeader("Yaplet-Id", self.session.yapletId);
 					http.setRequestHeader(
 						"Y-Authorization",
-						"Bearer " + self.session.yapletHash
+						"Bearer " + self.session.yapletHash,
 					);
 				} catch (exp) {}
 
@@ -434,7 +434,7 @@ export default class Session {
 						sdkVersion: SDK_VERSION,
 						ws: true,
 						url: window.location.href,
-					})
+					}),
 				);
 			});
 		});
@@ -462,7 +462,7 @@ export default class Session {
 					http.setRequestHeader("Yaplet-Id", self.session.yapletId);
 					http.setRequestHeader(
 						"Y-Authorization",
-						"Bearer " + self.session.yapletHash
+						"Bearer " + self.session.yapletHash,
 					);
 				} catch (exp) {}
 
@@ -509,7 +509,7 @@ export default class Session {
 						userId,
 						userHash,
 						lang: TranslationManager.getInstance().getActiveLanguage(),
-					})
+					}),
 				);
 			});
 		});
@@ -531,7 +531,7 @@ export default class Session {
 					http.setRequestHeader("Yaplet-Id", self.session.yapletId);
 					http.setRequestHeader(
 						"Y-Authorization",
-						"Bearer " + self.session.yapletHash
+						"Bearer " + self.session.yapletHash,
 					);
 				} catch (exp) {}
 
@@ -557,7 +557,7 @@ export default class Session {
 				http.send(
 					JSON.stringify({
 						outboundId: tourId,
-					})
+					}),
 				);
 			});
 		});
