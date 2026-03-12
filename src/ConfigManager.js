@@ -5,9 +5,9 @@ import Yaplet, {
   TranslationManager,
   NetworkIntercepter,
   Session,
-  ReplayRecorder,
   NotificationManager,
 } from "./Yaplet";
+import ModuleRegistry from "./ModuleRegistry";
 
 const parseIntWithDefault = (val, def) => {
   const parsed = parseInt(val);
@@ -161,10 +161,20 @@ export default class ConfigManager {
       FeedbackButtonManager.getInstance().updateFeedbackButtonState();
       NotificationManager.getInstance().updateContainerStyle();
 
-      if (flowConfig.enableWebReplays) {
-        ReplayRecorder.getInstance().start();
-      } else {
-        ReplayRecorder.getInstance().stop();
+      const ReplayRecorder = ModuleRegistry.get("ReplayRecorder");
+      const ReplayManager = ModuleRegistry.get("ReplayManager");
+      const replayEnabled = flowConfig.enableWebReplays;
+
+      if (ReplayRecorder) {
+        if (replayEnabled) {
+          ReplayRecorder.getInstance().start();
+        } else {
+          ReplayRecorder.getInstance().stop();
+        }
+      }
+
+      if (ReplayManager) {
+        ReplayManager.getInstance().updateFromConfig(flowConfig);
       }
 
       if (flowConfig.enableNetworkLogs) {

@@ -1,5 +1,6 @@
 import { isMobile } from "./Helper";
 import { rrwebRecord } from "./RRWebRecorder.js";
+import ModuleRegistry from "./ModuleRegistry";
 
 export default class ReplayRecorder {
   startDate = undefined;
@@ -108,6 +109,9 @@ export default class ReplayRecorder {
     return replayResult;
   }
 }
+
+// Auto-register with ModuleRegistry when this module is imported.
+ModuleRegistry.register("ReplayRecorder", ReplayRecorder);
 
 export function ensureMaxMessageSize(data) {
   let stringifiedData = JSON.stringify(data);

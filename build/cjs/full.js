@@ -548,16 +548,6 @@ eval("{__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpa
 
 eval("{__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var _ReplayRecorder__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ReplayRecorder */ \"./src/ReplayRecorder.js\");\n/* harmony import */ var _ReplayManager__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ReplayManager */ \"./src/ReplayManager.js\");\n/* harmony import */ var _Yaplet__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Yaplet */ \"./src/Yaplet.js\");\n// Import ReplayRecorder as a side-effect to register it with ModuleRegistry.\n\n\n\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_Yaplet__WEBPACK_IMPORTED_MODULE_2__[\"default\"]);//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9zcmMvaW5kZXguZnVsbC5qcyIsIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQUE7QUFDMEI7QUFDRDtBQUVLO0FBRTlCLGlFQUFlQSwrQ0FBTSIsInNvdXJjZXMiOlsid2VicGFjazovL1lhcGxldC8uL3NyYy9pbmRleC5mdWxsLmpzPzBiMmQiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gSW1wb3J0IFJlcGxheVJlY29yZGVyIGFzIGEgc2lkZS1lZmZlY3QgdG8gcmVnaXN0ZXIgaXQgd2l0aCBNb2R1bGVSZWdpc3RyeS5cbmltcG9ydCBcIi4vUmVwbGF5UmVjb3JkZXJcIjtcbmltcG9ydCBcIi4vUmVwbGF5TWFuYWdlclwiO1xuXG5pbXBvcnQgWWFwbGV0IGZyb20gXCIuL1lhcGxldFwiO1xuXG5leHBvcnQgZGVmYXVsdCBZYXBsZXQ7XG4iXSwibmFtZXMiOlsiWWFwbGV0Il0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VSb290IjoiIn0=\n//# sourceURL=webpack-internal:///./src/index.full.js\n\n}");
 
-/***/ }),
-
-/***/ "./src/index.js":
-/*!**********************!*\
-  !*** ./src/index.js ***!
-  \**********************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-eval("{__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* reexport safe */ _index_full__WEBPACK_IMPORTED_MODULE_0__[\"default\"])\n/* harmony export */ });\n/* harmony import */ var _index_full__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index.full */ \"./src/index.full.js\");\n// Default entry point includes all features (backward compatible).\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9zcmMvaW5kZXguanMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBQSIsInNvdXJjZXMiOlsid2VicGFjazovL1lhcGxldC8uL3NyYy9pbmRleC5qcz9iNjM1Il0sInNvdXJjZXNDb250ZW50IjpbIi8vIERlZmF1bHQgZW50cnkgcG9pbnQgaW5jbHVkZXMgYWxsIGZlYXR1cmVzIChiYWNrd2FyZCBjb21wYXRpYmxlKS5cclxuZXhwb3J0IHsgZGVmYXVsdCB9IGZyb20gXCIuL2luZGV4LmZ1bGxcIjtcclxuIl0sIm5hbWVzIjpbImRlZmF1bHQiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///./src/index.js\n\n}");
-
 /***/ })
 
 /******/ 	});
@@ -620,7 +610,7 @@ eval("{__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpa
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	// This entry module can't be inlined because the eval-source-map devtool is used.
-/******/ 	var __webpack_exports__ = __webpack_require__("./src/index.js");
+/******/ 	var __webpack_exports__ = __webpack_require__("./src/index.full.js");
 /******/ 	__webpack_exports__ = __webpack_exports__["default"];
 /******/ 	
 /******/ 	return __webpack_exports__;

@@ -13,7 +13,7 @@ import FeedbackButtonManager from "./FeedbackButtonManager";
 import CustomDataManager from "./CustomDataManager";
 import EventManager from "./EventManager";
 import CustomActionManager from "./CustomActionManager";
-import ReplayRecorder from "./ReplayRecorder";
+import ModuleRegistry from "./ModuleRegistry";
 import MarkerManager from "./MarkerManager";
 import TranslationManager from "./TranslationManager";
 import ShortcutListener from "./ShortcutListener";
@@ -258,7 +258,14 @@ class Yaplet {
 	 * @returns
 	 */
 	static destroy() {
-		ReplayRecorder.getInstance().stop();
+		const ReplayRecorder = ModuleRegistry.get("ReplayRecorder");
+		const ReplayManager = ModuleRegistry.get("ReplayManager");
+		if (ReplayManager) {
+			ReplayManager.getInstance().stop();
+		}
+		if (ReplayRecorder) {
+			ReplayRecorder.getInstance().stop();
+		}
 		StreamedEvent.getInstance().stop();
 		FrameManager.getInstance().destroy();
 		FeedbackButtonManager.getInstance().toggleFeedbackButton(false);
@@ -378,7 +385,10 @@ class Yaplet {
 	 * @param {*} options
 	 */
 	static setReplayOptions(options) {
-		ReplayRecorder.getInstance().setOptions(options);
+		const ReplayRecorder = ModuleRegistry.get("ReplayRecorder");
+		if (ReplayRecorder) {
+			ReplayRecorder.getInstance().setOptions(options);
+		}
 	}
 
 	/**
@@ -758,6 +768,9 @@ class Yaplet {
 		if (!sessionInstance.ready) {
 			return;
 		}
+
+		// Notify flow started so replay data is captured.
+		EventManager.notifyEvent("flow-started");
 
 		// Initially set scroll position
 		Yaplet.getInstance().setGlobalDataItem("snapshotPosition", {
@@ -1245,8 +1258,11 @@ class Yaplet {
 	 * Takes the current replay and assigns it to the global data array.
 	 */
 	takeCurrentReplay() {
-		const replayData = ReplayRecorder.getInstance().getReplayData();
-		this.setGlobalDataItem("webReplay", replayData);
+		const ReplayRecorder = ModuleRegistry.get("ReplayRecorder");
+		if (ReplayRecorder) {
+			const replayData = ReplayRecorder.getInstance().getReplayData();
+			this.setGlobalDataItem("webReplay", replayData);
+		}
 	}
 }
 
@@ -1320,7 +1336,7 @@ export {
 	ShortcutListener,
 	MarkerManager,
 	TranslationManager,
-	ReplayRecorder,
+	ModuleRegistry,
 	Feedback,
 	ConsoleLogManager,
 	CustomActionManager,

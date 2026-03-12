@@ -3,18 +3,34 @@ const webpack = require("webpack");
 const exec = require("child_process").exec;
 const TerserPlugin = require("terser-webpack-plugin");
 
+const fs = require("fs");
+
 const copyBuildPlugin = {
   apply: (compiler) => {
     compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
       const nodeVersion = process.env.npm_package_version;
-      return exec(
-        `mkdir -p published/${nodeVersion} & mkdir -p published/latest & cp ./build/cjs/index.js published/${nodeVersion}/index.js & cp ./build/cjs/index.js published/latest/index.js`,
-        (err, stdout, stderr) => {
-          if (stdout) process.stdout.write(stdout);
-          if (stderr) process.stderr.write(stderr);
-          console.log("DONE 🎉");
-        }
-      );
+      // Map source files to published filenames.
+      // index.js in published/ should be the core build (no replay).
+      // Users who need replay can explicitly load full.js.
+      const variants = [
+        { src: "core.js", dest: "core.js" },
+        { src: "full.js", dest: "full.js" },
+        { src: "core.js", dest: "index.js" },
+      ];
+      const dirs = [`published/${nodeVersion}`, "published/latest"];
+
+      dirs.forEach((dir) => {
+        fs.mkdirSync(dir, { recursive: true });
+        variants.forEach(({ src, dest }) => {
+          const srcPath = `./build/cjs/${src}`;
+          const destPath = `${dir}/${dest}`;
+          if (fs.existsSync(srcPath)) {
+            fs.copyFileSync(srcPath, destPath);
+          }
+        });
+      });
+
+      console.log("DONE - copied bundles to published/");
     });
   },
 };
@@ -25,6 +41,8 @@ const commonConfig = (isDevelopment, plugins = []) => {
     mode: "production",
     entry: {
       index: "./src/index.js",
+      core: "./src/index.core.js",
+      full: "./src/index.full.js",
     },
     optimization: {
       minimize: true,
@@ -123,9 +141,21 @@ const cjsConfig = {
   },
 };
 
+// Development configuration - outputs UMD to build/cjs/ without minification
 const developmentConfig = {
   ...commonConfig(true, []),
-  // ... additional development-specific settings ...
+  output: {
+    filename: "[name].js",
+    path: path.resolve(__dirname, "build/cjs"),
+    libraryTarget: "umd",
+    library: "Yaplet",
+    libraryExport: "default",
+    globalObject: "this",
+  },
+  optimization: {
+    minimize: false,
+  },
+  devtool: "eval-source-map",
 };
 
 module.exports = (env) => {

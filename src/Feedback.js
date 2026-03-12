@@ -61,6 +61,9 @@ export default class Feedback {
 
     var dataPromises = [];
 
+    // Capture current replay data before reading it.
+    yapletInstance.takeCurrentReplay();
+
     // Assign replays
     var webReplay = yapletInstance.getGlobalDataItem("webReplay");
     if (webReplay !== null) {
