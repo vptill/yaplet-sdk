@@ -38,8 +38,6 @@ export namespace Yaplet {
     function startConversation(showBackButton?: boolean): void;
     function attachCustomData(customData: any): void;
     function setTicketAttribute(key: string, value: string): void;
-    function unsetTicketAttribute(key: string): void;
-    function clearTicketAttributes(): void;
     function setCustomData(key: string, value: string): void;
     function removeCustomData(key: string): void;
     function clearCustomData(): void;
@@ -49,6 +47,7 @@ export namespace Yaplet {
     function setApiUrl(apiUrl: string): void;
     function setWSApiUrl(wsApiUrl: string): void;
     function setFrameUrl(frameUrl: string): void;
+    function setAdminUrl(builderUrl: string): void;
     function closeBanner(): void;
     function setBannerUrl(bannerUrl: string): void;
     function setMaxNetworkRequests(maxRequests: number): void;
@@ -58,6 +57,7 @@ export namespace Yaplet {
     function registerCustomAction(
       customAction: (action: { name: string }) => void
     ): void;
+    function triggerCustomAction(name: string): void;
     function log(message: string, logLevel?: "INFO" | "WARNING" | "ERROR"): void;
     /**
      * @deprecated Please use trackEvent instead.
@@ -66,18 +66,18 @@ export namespace Yaplet {
     function trackEvent(name: string, data?: any): void;
     function setAppBuildNumber(buildNumber: string): void;
     function setAppVersionCode(versionCode: string): void;
-    function setStyles(styles: {
-      primaryColor: string;
-      headerColor: string;
-      buttonColor: string;
-      backgroundColor: string;
-      borderRadius?: number;
-      buttonX?: number;
-      buttonY?: number;
-      buttonStyle?: string;
-    }): void;
+    function setStyles(
+      primaryColor: string,
+      headerColor: string,
+      buttonColor: string,
+      backgroundColor?: string,
+      borderRadius?: number,
+      buttonX?: number,
+      buttonY?: number,
+      buttonStyle?: string,
+      zIndexBase?: number
+    ): void;
     function disableConsoleLogOverwrite(): void;
-    function setLiveSite(isLiveSite: boolean): void;
     function enableShortcuts(enabled: boolean): void;
     function setLanguage(language: string): void;
     function preFillForm(data: object): void;
@@ -98,6 +98,7 @@ export namespace Yaplet {
     function attachNetworkLogs(networkLogs: string): void;
     function clearIdentity(): void;
     function setTags(tags: string[]): void;
+    function setOfflineMode(offlineMode: boolean): void;
     function setDisableInAppNotifications(
       disableInAppNotifications: boolean
     ): void;
@@ -142,6 +143,7 @@ export namespace Yaplet {
     function openNewsArticle(id: string, showBackButton?: boolean): void;
     function openConversations(showBackButton?: boolean): void;
     function startProductTour(tourId: string): void;
+    function startProductTourWithConfig(tourId: string, config: any): void;
     function openConversation(
       shareToken?: string,
       showBackButton?: boolean
@@ -160,6 +162,9 @@ export namespace Yaplet {
     ): void;
     function searchHelpCenter(term: string, showBackButton?: boolean): void;
     function openFeatureRequests(showBackButton?: boolean): void;
+    function showBanner(data: any): void;
+    function showNotification(data: any): void;
+    function checkForUrlParams(): void;
     function close(): void;
     function hide(): void;
     function setUseCookies(useCookies: boolean): void;
@@ -169,6 +174,16 @@ export namespace Yaplet {
       feedbackFlow: string,
       showBackButton?: boolean
     ): void;
+    function startFeedbackFlowWithOptions(
+      id: string,
+      options?: {
+        autostartDrawing?: boolean;
+        hideBackButton?: boolean;
+        format?: string;
+      },
+      isSurvey?: boolean
+    ): void;
+    function setFlowConfig(flowConfig: any): void;
     function showSurvey(surveyId: string, format?: string): void;
     function on(event: string, callback: (data?: any) => void): void;
     function getIdentity(): any;
