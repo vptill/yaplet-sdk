@@ -310,11 +310,27 @@ export default class Session {
 		StreamedEvent.getInstance().trackInitialEvents();
 		const eventsToSend = [...StreamedEvent.getInstance().streamedEventArray];
 		const sessionDuration = MetaDataManager.getInstance().getSessionDuration();
+		const metadata = MetaDataManager.getInstance().getMetaData();
 		const isOpened = FrameManager.getInstance().isOpened();
+		const clientSessionId = StreamedEvent.getInstance().getClientSessionId();
 
 		http.send(
 			JSON.stringify({
 				lang: TranslationManager.getInstance().getActiveLanguage(),
+				client_session_id: clientSessionId,
+				language: metadata?.language || null,
+				client_timezone:
+					(typeof Intl !== "undefined" && Intl.DateTimeFormat
+						? Intl.DateTimeFormat().resolvedOptions().timeZone
+						: null) || null,
+				referrer: (typeof document !== "undefined" && document.referrer) || null,
+				screen_width: metadata?.screenWidth || null,
+				screen_height: metadata?.screenHeight || null,
+				viewport_width: metadata?.innerWidth || null,
+				viewport_height: metadata?.innerHeight || null,
+				device_pixel_ratio: metadata?.devicePixelRatio || null,
+				max_touch_points:
+					(typeof navigator !== "undefined" && navigator.maxTouchPoints) || null,
 				url: window.location.href,
 				time: sessionDuration,
 				events: eventsToSend,

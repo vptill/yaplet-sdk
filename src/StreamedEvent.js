@@ -203,8 +203,46 @@ export default class StreamedEvent {
 	}
 
 	trackInitialEvents() {
-		StreamedEvent.getInstance().logEvent("sessionStart");
+		const metadata = MetaDataManager.getInstance().getMetaData();
+		const clientSessionId = this.getClientSessionId();
+		StreamedEvent.getInstance().logEvent("sessionStart", {
+			client_session_id: clientSessionId,
+			language: metadata?.language || null,
+			client_timezone:
+				(typeof Intl !== "undefined" && Intl.DateTimeFormat
+					? Intl.DateTimeFormat().resolvedOptions().timeZone
+					: null) || null,
+			referrer: (typeof document !== "undefined" && document.referrer) || null,
+			screen_width: metadata?.screenWidth || null,
+			screen_height: metadata?.screenHeight || null,
+			viewport_width: metadata?.innerWidth || null,
+			viewport_height: metadata?.innerHeight || null,
+			device_pixel_ratio: metadata?.devicePixelRatio || null,
+			max_touch_points:
+				(typeof navigator !== "undefined" && navigator.maxTouchPoints) || null,
+		});
 		StreamedEvent.getInstance().logCurrentPage();
+	}
+
+	getClientSessionId() {
+		try {
+			const key = `yaplet-client-session-id-${Session.getInstance().sdkKey}`;
+			let id = sessionStorage.getItem(key);
+			if (!id) {
+				id =
+					Date.now().toString(36) +
+					"-" +
+					Math.random().toString(36).slice(2, 10);
+				sessionStorage.setItem(key, id);
+			}
+			return id;
+		} catch (e) {
+			return (
+				Date.now().toString(36) +
+				"-" +
+				Math.random().toString(36).slice(2, 10)
+			);
+		}
 	}
 
 	logCurrentPage() {
@@ -346,8 +384,10 @@ export default class StreamedEvent {
 		};
 
 		const sessionDuration = MetaDataManager.getInstance().getSessionDuration();
+		const clientSessionId = this.getClientSessionId();
 		http.send(
 			JSON.stringify({
+				client_session_id: clientSessionId,
 				time: sessionDuration,
 				events: this.streamedEventArray,
 				opened: FrameManager.getInstance().isOpened(),
