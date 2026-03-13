@@ -28,6 +28,14 @@ const copyBuildPlugin = {
             fs.copyFileSync(srcPath, destPath);
           }
         });
+
+        // Copy chunk files for lazy-loaded modules.
+        const chunkFiles = fs
+          .readdirSync("./build/cjs/")
+          .filter((f) => f.endsWith(".chunk.js"));
+        chunkFiles.forEach((file) => {
+          fs.copyFileSync(`./build/cjs/${file}`, `${dir}/${file}`);
+        });
       });
 
       console.log("DONE - copied bundles to published/");
@@ -115,7 +123,9 @@ const esmConfig = {
   ...commonConfig(false, []),
   output: {
     filename: "[name].mjs",
+    chunkFilename: "[name].chunk.mjs",
     path: path.resolve(__dirname, "build/esm"),
+    publicPath: "auto",
     library: {
       type: "module",
     },
@@ -132,7 +142,9 @@ const cjsConfig = {
   ...commonConfig(false, [copyBuildPlugin]),
   output: {
     filename: "[name].js",
+    chunkFilename: "[name].chunk.js",
     path: path.resolve(__dirname, "build/cjs"),
+    publicPath: "auto",
     libraryTarget: "umd",
     library: "Yaplet",
     libraryExport: "default",
@@ -146,7 +158,9 @@ const developmentConfig = {
   ...commonConfig(true, []),
   output: {
     filename: "[name].js",
+    chunkFilename: "[name].chunk.js",
     path: path.resolve(__dirname, "build/cjs"),
+    publicPath: "auto",
     libraryTarget: "umd",
     library: "Yaplet",
     libraryExport: "default",

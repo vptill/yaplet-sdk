@@ -23,7 +23,6 @@ import BannerManager from "./BannerManager";
 import AudioManager from "./AudioManager";
 import TagManager from "./TagManager";
 import AdminManager from "./AdminManager";
-import ProductTours from "./ProductTours";
 
 if (
 	typeof HTMLCanvasElement !== "undefined" &&
@@ -1215,7 +1214,10 @@ class Yaplet {
 			.catch((error) => { });
 	}
 
-	static startProductTourWithConfig(tourId, config) {
+	static async startProductTourWithConfig(tourId, config) {
+		const { default: ProductTours } = await import(
+			/* webpackChunkName: "tours" */ "./ProductTours"
+		);
 		ProductTours.getInstance().startWithConfig(tourId, config, (data) => {
 			const comData = {
 				tourId: data.tourId,

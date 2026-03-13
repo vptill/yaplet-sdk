@@ -1,5 +1,4 @@
 import { loadIcon } from "./UI";
-import AdminHelper from "./AdminHelper";
 
 export default class AdminManager {
 	libraryInstance = null;
@@ -45,9 +44,12 @@ export default class AdminManager {
 		}, 1000);
 	}
 
-	initAdminHelper() {
+	async initAdminHelper() {
 		const self = this;
 
+		const { default: AdminHelper } = await import(
+			/* webpackChunkName: "admin-helper" */ "./AdminHelper"
+		);
 		self.adminHelper = new AdminHelper();
 
 		try {
