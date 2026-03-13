@@ -1,9 +1,7 @@
-import {
-	FrameManager,
-	FeedbackButtonManager,
-	Session,
-	ConfigManager,
-} from "./Yaplet";
+import FrameManager from "./FrameManager";
+import FeedbackButtonManager from "./FeedbackButtonManager";
+import Session from "./Session";
+import ConfigManager from "./ConfigManager";
 
 export default class TranslationManager {
 	overrideLanguage = "";

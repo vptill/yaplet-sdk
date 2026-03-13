@@ -1,4 +1,6 @@
-import { ConsoleLogManager, FrameManager, handleYapletLink } from "./Yaplet";
+import ConsoleLogManager from "./ConsoleLogManager";
+import FrameManager from "./FrameManager";
+import { handleYapletLink } from "./handleYapletLink";
 import { getDOMElementDescription } from "./Helper";
 
 export default class ClickListener {

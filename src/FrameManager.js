@@ -1,24 +1,23 @@
-import Yaplet, {
-	StreamedEvent,
-	AudioManager,
-	NotificationManager,
-	CustomActionManager,
-	EventManager,
-	MarkerManager,
-	Feedback,
-	FeedbackButtonManager,
-	TranslationManager,
-	Session,
-	ConfigManager,
-	CustomDataManager,
-	MetaDataManager,
-	ConsoleLogManager,
-	NetworkIntercepter,
-	TagManager,
-	BannerManager,
-} from "./Yaplet";
+import StreamedEvent from "./StreamedEvent";
+import AudioManager from "./AudioManager";
+import NotificationManager from "./NotificationManager";
+import CustomActionManager from "./CustomActionManager";
+import EventManager from "./EventManager";
+import MarkerManager from "./MarkerManager";
+import Feedback from "./Feedback";
+import FeedbackButtonManager from "./FeedbackButtonManager";
+import TranslationManager from "./TranslationManager";
+import Session from "./Session";
+import ConfigManager from "./ConfigManager";
+import CustomDataManager from "./CustomDataManager";
+import MetaDataManager from "./MetaDataManager";
+import ConsoleLogManager from "./ConsoleLogManager";
+import NetworkIntercepter from "./NetworkIntercepter";
+import TagManager from "./TagManager";
+import BannerManager from "./BannerManager";
 import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./Helper";
+import { getYaplet, getYapletInstance } from "./YapletRuntime";
 
 export default class FrameManager {
 	frameUrl = "https://embed.yaplet.com";
@@ -366,10 +365,13 @@ export default class FrameManager {
 
 		this.workThroughQueue();
 
-		Yaplet.getInstance().setGlobalDataItem("snapshotPosition", {
-			x: window.scrollX,
-			y: window.scrollY,
-		});
+		const yapletInstance = getYapletInstance();
+		if (yapletInstance) {
+			yapletInstance.setGlobalDataItem("snapshotPosition", {
+				x: window.scrollX,
+				y: window.scrollY,
+			});
+		}
 
 		this.showFrameContainer(false);
 		this.updateWidgetStatus();
@@ -638,7 +640,10 @@ export default class FrameManager {
 							try {
 								delete formData.reportedBy;
 							} catch (e) { }
-							Yaplet.trackEvent(`outbound-${outboundId}-submitted`, formData);
+							const yaplet = getYaplet();
+							if (yaplet) {
+								yaplet.trackEvent(`outbound-${outboundId}-submitted`, formData);
+							}
 						}
 					})
 					.catch((error) => {

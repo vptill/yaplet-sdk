@@ -1,4 +1,4 @@
-import { Session } from "./Yaplet";
+import Session from "./Session";
 
 export class ScreenRecorder {
 	rerender;

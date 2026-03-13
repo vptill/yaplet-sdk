@@ -23,6 +23,7 @@ import BannerManager from "./BannerManager";
 import AudioManager from "./AudioManager";
 import TagManager from "./TagManager";
 import AdminManager from "./AdminManager";
+import { handleYapletLink } from "./handleYapletLink";
 
 if (
 	typeof HTMLCanvasElement !== "undefined" &&
@@ -1280,54 +1281,6 @@ if (typeof window !== "undefined") {
 		}
 	}
 }
-
-const handleYapletLink = (href) => {
-	try {
-		const urlParts = href.split("/");
-		const type = urlParts[2];
-		if (type === "article") {
-			const identifier = urlParts[3];
-			Yaplet.openHelpCenterArticle(identifier, true);
-		}
-
-		if (type === "collection") {
-			const identifier = urlParts[3];
-			Yaplet.openHelpCenterCollection(identifier, true);
-		}
-
-		if (type === "flow") {
-			const identifier = urlParts[3];
-			Yaplet.startFeedbackFlow(identifier, true);
-		}
-
-		if (type === "survey") {
-			const identifier = urlParts[3];
-			Yaplet.showSurvey(identifier);
-		}
-
-		if (type === "bot") {
-			const identifier = urlParts[3];
-			Yaplet.startBot(identifier, true);
-		}
-
-		if (type === "news") {
-			const identifier = urlParts[3];
-			Yaplet.openNewsArticle(identifier, true);
-		}
-
-		if (type === "checklist") {
-			const identifier = urlParts[3];
-			Yaplet.startChecklist(identifier, true);
-		}
-
-		if (type === "tour") {
-			const identifier = urlParts[3];
-			Yaplet.startProductTour(identifier);
-		}
-	} catch (e) {
-		console.error("Failed to handle Yaplet link: ", href);
-	}
-};
 
 export {
 	NetworkIntercepter,

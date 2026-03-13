@@ -1,13 +1,11 @@
-import {
-	EventManager,
-	TranslationManager,
-	FrameManager,
-	NotificationManager,
-	StreamedEvent,
-	BannerManager,
-	ConfigManager,
-	MetaDataManager,
-} from "./Yaplet";
+import EventManager from "./EventManager";
+import TranslationManager from "./TranslationManager";
+import FrameManager from "./FrameManager";
+import NotificationManager from "./NotificationManager";
+import StreamedEvent from "./StreamedEvent";
+import BannerManager from "./BannerManager";
+import ConfigManager from "./ConfigManager";
+import MetaDataManager from "./MetaDataManager";
 import {
 	eraseYapletCookie,
 	getYapletCookie,

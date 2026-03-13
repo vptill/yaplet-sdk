@@ -1,4 +1,4 @@
-import Yaplet from "./Yaplet";
+import { getYapletInstance } from "./YapletRuntime";
 
 export default class EventManager {
   eventListeners = {};
@@ -17,10 +17,12 @@ export default class EventManager {
    */
   static notifyEvent(event, data = {}) {
     if (event === "flow-started") {
-      const yapletInstance = Yaplet.getInstance();
-      yapletInstance.setGlobalDataItem("webReplay", null);
-      yapletInstance.setGlobalDataItem("screenRecordingData", null);
-      yapletInstance.takeCurrentReplay();
+		  const yapletInstance = getYapletInstance();
+		  if (yapletInstance) {
+		    yapletInstance.setGlobalDataItem("webReplay", null);
+		    yapletInstance.setGlobalDataItem("screenRecordingData", null);
+		    yapletInstance.takeCurrentReplay();
+		  }
     }
 
     const eventListeners = this.getInstance().eventListeners[event];

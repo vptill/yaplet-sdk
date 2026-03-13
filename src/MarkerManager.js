@@ -1,8 +1,10 @@
-import Yaplet, { TranslationManager, FrameManager } from "./Yaplet";
+import TranslationManager from "./TranslationManager";
+import FrameManager from "./FrameManager";
 import { ScreenDrawer } from "./ScreenDrawer";
 import { ScrollStopper } from "./ScrollStopper";
 import { ScreenRecorder } from "./ScreenRecorder";
 import { loadIcon } from "./UI";
+import { getYapletInstance } from "./YapletRuntime";
 
 export default class MarkerManager {
   type = "screenshot";
@@ -12,10 +14,14 @@ export default class MarkerManager {
   screenDrawer = null;
   escListener = null;
   pageLeaveListener = null;
-  overrideLanguage = Yaplet.getInstance().overrideLanguage;
+  overrideLanguage = "";
 
   constructor(type) {
     this.type = type;
+    const yapletInstance = getYapletInstance();
+    if (yapletInstance) {
+      this.overrideLanguage = yapletInstance.overrideLanguage;
+    }
   }
 
   hideWidgetUI() {
@@ -335,10 +341,13 @@ export default class MarkerManager {
     // Setup screenshot data
     if (this.type === "screenshot") {
       // Overwrite snapshot position
-      Yaplet.getInstance().setGlobalDataItem("snapshotPosition", {
-        x: window.scrollX,
-        y: window.scrollY,
-      });
+      const yapletInstance = getYapletInstance();
+      if (yapletInstance) {
+        yapletInstance.setGlobalDataItem("snapshotPosition", {
+          x: window.scrollX,
+          y: window.scrollY,
+        });
+      }
 
       // Disable scroll
       ScrollStopper.disableScroll();
@@ -533,10 +542,13 @@ export default class MarkerManager {
     }
 
     if (this.screenRecorder.file) {
-      Yaplet.getInstance().setGlobalDataItem(
-        "screenRecordingData",
-        this.screenRecorder.file
-      );
+      const yapletInstance = getYapletInstance();
+      if (yapletInstance) {
+        yapletInstance.setGlobalDataItem(
+          "screenRecordingData",
+          this.screenRecorder.file
+        );
+      }
     }
 
     const itemInactiveClass = "yy-capture-editor-item-inactive";

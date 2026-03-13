@@ -1,10 +1,8 @@
-import {
-	FrameManager,
-	ConfigManager,
-	NotificationManager,
-	TranslationManager,
-	Session,
-} from "./Yaplet";
+import FrameManager from "./FrameManager";
+import ConfigManager from "./ConfigManager";
+import NotificationManager from "./NotificationManager";
+import TranslationManager from "./TranslationManager";
+import Session from "./Session";
 import { loadIcon } from "./UI";
 
 export default class FeedbackButtonManager {

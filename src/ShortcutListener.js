@@ -1,4 +1,4 @@
-import Yaplet from "./Yaplet";
+import { getYaplet } from "./YapletRuntime";
 
 export default class ShortcutListener {
   shortCutListener = undefined;
@@ -30,14 +30,17 @@ export default class ShortcutListener {
       return code;
     };
 
-    this.shortCutListener = document.addEventListener("keyup", function (e) {
-      const char = charForEvent(e);
-      if (e.ctrlKey && (char === "u" || char === "U" || char === 85)) {
-        Yaplet.startFeedbackFlowWithOptions("bugreporting", {
-          autostartDrawing: true,
-        });
-      }
-    });
+		this.shortCutListener = document.addEventListener("keyup", function (e) {
+			const char = charForEvent(e);
+			if (e.ctrlKey && (char === "u" || char === "U" || char === 85)) {
+				const yaplet = getYaplet();
+				if (yaplet) {
+					yaplet.startFeedbackFlowWithOptions("bugreporting", {
+						autostartDrawing: true,
+					});
+				}
+			}
+		});
   }
 
   stop() {

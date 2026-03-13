@@ -7,7 +7,7 @@ import {
 	offset,
 	shift,
 } from "@floating-ui/dom";
-import { Session } from "./Yaplet";
+import Session from "./Session";
 import { loadIcon } from "./UI";
 
 function throttle(fn, time) {

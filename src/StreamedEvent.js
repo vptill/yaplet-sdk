@@ -1,4 +1,4 @@
-import Yaplet from "./Yaplet";
+import { getYapletInstance } from "./YapletRuntime";
 import BannerManager from "./BannerManager";
 import FrameManager from "./FrameManager";
 import MetaDataManager from "./MetaDataManager";
@@ -145,7 +145,10 @@ export default class StreamedEvent {
 					message.event === "banner" ||
 					message.event === "tour"
 				) {
-					Yaplet.getInstance().performActions([message]);
+					const yapletInstance = getYapletInstance();
+					if (yapletInstance) {
+						yapletInstance.performActions([message]);
+					}
 				}
 				/*if (u != null) {
 			NotificationManager.getInstance().setNotificationCount(u);
@@ -153,7 +156,10 @@ export default class StreamedEvent {
 			} else if (
 				["message", "survey", "banner", "tour"].includes(message.event)
 			) {
-				Yaplet.getInstance().performActions([message]);
+				const yapletInstance = getYapletInstance();
+				if (yapletInstance) {
+					yapletInstance.performActions([message]);
+				}
 			}
 		} catch (exp) {
 			console.log("Error processing message", exp);
@@ -247,7 +253,8 @@ export default class StreamedEvent {
 
 	logCurrentPage() {
 		try {
-			if (Yaplet.getInstance().disablePageTracking) {
+			const yapletInstance = getYapletInstance();
+			if (yapletInstance && yapletInstance.disablePageTracking) {
 				return;
 			}
 		} catch (e) { }

@@ -1,14 +1,13 @@
 import { startScreenCapture } from "./ScreenCapture";
 import { ScreenRecorder } from "./ScreenRecorder";
-import Yaplet, {
-  ConsoleLogManager,
-  StreamedEvent,
-  Session,
-  CustomDataManager,
-  MetaDataManager,
-  NetworkIntercepter,
-  TagManager,
-} from "./Yaplet";
+import ConsoleLogManager from "./ConsoleLogManager";
+import StreamedEvent from "./StreamedEvent";
+import Session from "./Session";
+import CustomDataManager from "./CustomDataManager";
+import MetaDataManager from "./MetaDataManager";
+import NetworkIntercepter from "./NetworkIntercepter";
+import TagManager from "./TagManager";
+import { getYapletInstance } from "./YapletRuntime";
 
 export default class Feedback {
   excludeData = {};
@@ -50,7 +49,10 @@ export default class Feedback {
   }
 
   takeSnapshot() {
-    const yapletInstance = Yaplet.getInstance();
+    const yapletInstance = getYapletInstance();
+    if (!yapletInstance) {
+      return Promise.resolve();
+    }
     this.customData = CustomDataManager.getInstance().getCustomData();
     this.metaData = MetaDataManager.getInstance().getMetaData();
     this.consoleLog = ConsoleLogManager.getInstance().getLogs();

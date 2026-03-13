@@ -1,14 +1,13 @@
-import Yaplet, {
-	FeedbackButtonManager,
-	ConfigManager,
-	FrameManager,
-	Session,
-	AudioManager,
-	TranslationManager,
-	EventManager,
-} from "./Yaplet";
+import FeedbackButtonManager from "./FeedbackButtonManager";
+import ConfigManager from "./ConfigManager";
+import FrameManager from "./FrameManager";
+import Session from "./Session";
+import AudioManager from "./AudioManager";
+import TranslationManager from "./TranslationManager";
+import EventManager from "./EventManager";
 import { loadFromYapletCache, saveToYapletCache } from "./Helper";
 import { loadIcon } from "./UI";
+import { getYaplet } from "./YapletRuntime";
 
 export default class NotificationManager {
 	notificationContainer = null;
@@ -160,15 +159,20 @@ export default class NotificationManager {
 						true
 					);
 				}
-				if (notification.payload.chat) {
-					Yaplet.openConversation(notification.payload.chat.id, true);
-				} else if (notification.payload.news) {
-					Yaplet.openNewsArticle(notification.data.news.id, true);
-				} else if (notification.payload.checklist) {
-					Yaplet.openChecklist(notification.data.checklist.id, true);
-				} else {
-					Yaplet.open();
-				}
+			const yaplet = getYaplet();
+			if (!yaplet) {
+				return;
+			}
+
+			if (notification.payload.chat) {
+				yaplet.openConversation(notification.payload.chat.id, true);
+			} else if (notification.payload.news) {
+				yaplet.openNewsArticle(notification.data.news.id, true);
+			} else if (notification.payload.checklist) {
+				yaplet.openChecklist(notification.data.checklist.id, true);
+			} else {
+				yaplet.open();
+			}
 			};
 
 			if (notification.payload.news) {

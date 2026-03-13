@@ -1,4 +1,7 @@
-import { ConsoleLogManager, NetworkIntercepter, Session, StreamedEvent } from "./Yaplet";
+import ConsoleLogManager from "./ConsoleLogManager";
+import NetworkIntercepter from "./NetworkIntercepter";
+import Session from "./Session";
+import StreamedEvent from "./StreamedEvent";
 import ModuleRegistry from "./ModuleRegistry";
 
 const FLUSH_INTERVAL_MS = 60000;

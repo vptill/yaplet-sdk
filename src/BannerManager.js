@@ -1,4 +1,4 @@
-import Yaplet from "./Yaplet";
+import { getYaplet } from "./YapletRuntime";
 
 export default class BannerManager {
 	bannerUrl = "https://embed.yaplet.com";
@@ -31,6 +31,7 @@ export default class BannerManager {
 
 			try {
 				const data = JSON.parse(event.data);
+				const yaplet = getYaplet();
 				if (data.name === "banner-loaded" && this.bannerData) {
 					this.sendMessage({
 						name: "banner-data",
@@ -67,22 +68,34 @@ export default class BannerManager {
 					this.removeBannerUI();
 				}
 				if (data.name === "start-conversation") {
-					Yaplet.startBot(data.data?.botId);
+					if (yaplet) {
+						yaplet.startBot(data.data?.botId);
+					}
 				}
 				if (data.name === "start-custom-action") {
-					Yaplet.triggerCustomAction(data.data?.action);
+					if (yaplet) {
+						yaplet.triggerCustomAction(data.data?.action);
+					}
 				}
 				if (data.name === "show-form") {
-					Yaplet.startFeedbackFlow(data.data?.formId);
+					if (yaplet) {
+						yaplet.startFeedbackFlow(data.data?.formId);
+					}
 				}
 				if (data.name === "show-survey") {
-					Yaplet.showSurvey(data.data?.formId, data.data?.surveyFormat);
+					if (yaplet) {
+						yaplet.showSurvey(data.data?.formId, data.data?.surveyFormat);
+					}
 				}
 				if (data.name === "show-news-article") {
-					Yaplet.openNewsArticle(data.data?.articleId);
+					if (yaplet) {
+						yaplet.openNewsArticle(data.data?.articleId);
+					}
 				}
 				if (data.name === "show-help-article") {
-					Yaplet.openHelpCenterArticle(data.data?.articleId);
+					if (yaplet) {
+						yaplet.openHelpCenterArticle(data.data?.articleId);
+					}
 				}
 			} catch (exp) { }
 		});

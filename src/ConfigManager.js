@@ -1,13 +1,12 @@
 import { loadFromYapletCache, saveToYapletCache } from "./Helper";
-import Yaplet, {
-  FrameManager,
-  FeedbackButtonManager,
-  TranslationManager,
-  NetworkIntercepter,
-  Session,
-  NotificationManager,
-} from "./Yaplet";
+import FrameManager from "./FrameManager";
+import FeedbackButtonManager from "./FeedbackButtonManager";
+import TranslationManager from "./TranslationManager";
+import NetworkIntercepter from "./NetworkIntercepter";
+import Session from "./Session";
+import NotificationManager from "./NotificationManager";
 import ModuleRegistry from "./ModuleRegistry";
+import { getYaplet } from "./YapletRuntime";
 
 const parseIntWithDefault = (val, def) => {
   const parsed = parseInt(val);
@@ -118,8 +117,12 @@ export default class ConfigManager {
 
   applyStylesFromConfig() {
     const flowConfig = { ...this.flowConfig, ...this.flowConfigOverride };
+    const yaplet = getYaplet();
+    if (!yaplet) {
+      return;
+    }
 
-    Yaplet.setStyles(
+    yaplet.setStyles(
       flowConfig.primaryColor ? flowConfig.primaryColor : "#485BFF",
       flowConfig.headerColor ? flowConfig.headerColor : "#485BFF",
       flowConfig.primaryColor ? flowConfig.primaryColor : "#485BFF",
@@ -199,7 +202,10 @@ export default class ConfigManager {
 
       TranslationManager.getInstance().updateRTLSupport();
 
-      Yaplet.enableShortcuts(flowConfig.enableShortcuts ? true : false);
+      const yaplet = getYaplet();
+      if (yaplet) {
+        yaplet.enableShortcuts(flowConfig.enableShortcuts ? true : false);
+      }
 
       this.notifyConfigLoaded();
     } catch (e) { }
