@@ -1269,6 +1269,12 @@ class Yaplet {
 	}
 }
 
+if (typeof globalThis !== "undefined") {
+	globalThis.Yaplet = Yaplet;
+} else if (typeof window !== "undefined") {
+	window.Yaplet = Yaplet;
+}
+
 // Check for unperformed Yaplet actions.
 if (typeof window !== "undefined") {
 	const YapletActions = window.YapletActions;
