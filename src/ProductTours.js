@@ -1,6 +1,7 @@
 import { loadIcon } from "./UI";
 import Tours from "./Tours";
 import AdminManager from "./AdminManager";
+import TourStateManager from "./TourStateManager";
 
 export default class ProductTours {
 	productTourData = undefined;
@@ -21,10 +22,11 @@ export default class ProductTours {
 
 	constructor() {}
 
-	startWithConfig(tourId, config, onCompletion) {
+	startWithConfig(tourId, config, onCompletion, resumeStepIndex = 0) {
 		this.productTourId = tourId;
 		this.productTourData = config;
 		this.onCompletion = onCompletion;
+		this.resumeStepIndex = resumeStepIndex;
 
 		return this.start();
 	}
@@ -93,6 +95,7 @@ export default class ProductTours {
 						: {}),
 				},
 				url: step.url,
+				pageUrl: step.pageUrl,
 			};
 			if (step.selector && step.selector.length > 0) {
 				driverStep.element = step.selector;
@@ -134,6 +137,7 @@ export default class ProductTours {
 			}
 		}
 
+		const existingTourState = TourStateManager.load();
 		const yapletTourObj = Tours({
 			showProgress: true,
 			steps: driverSteps,
@@ -143,9 +147,16 @@ export default class ProductTours {
 			doneBtnText: config.doneText,
 			prevBtnText: config.prevText,
 			showButtons: buttons,
+			// Multi-page tour metadata
+			__tourId: this.productTourId,
+			__fullConfig: config,
+			__startedAt: existingTourState?.startedAt || Date.now(),
+			__startUrl: config.startUrl,
+			__elementWaitTimeout: this.resumeStepIndex > 0 ? 5000 : 2000,
 			onDestroyStarted: () => {
 				if (!yapletTourObj.hasNextStep()) {
 					yapletTourObj.destroy();
+					TourStateManager.clear();
 
 					if (self.onCompletion) {
 						self.onCompletion({
@@ -257,7 +268,7 @@ export default class ProductTours {
 				}
 			},
 		});
-		yapletTourObj.drive();
+		yapletTourObj.drive(this.resumeStepIndex);
 
 		document.addEventListener("click", onDocumentClick);
 	}

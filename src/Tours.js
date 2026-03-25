@@ -1,3 +1,5 @@
+import TourStateManager from "./TourStateManager";
+
 const Tours = (function () {
 	"use strict";
 	let currentConfig = {};
@@ -269,7 +271,7 @@ const Tours = (function () {
 		document.body.appendChild(element);
 		return element;
 	}
-	function highlight(step, attemptTime = 2000) {
+	function highlight(step, attemptTime = getConfig('__elementWaitTimeout') || 2000) {
 		const { element } = step;
 		let elemObj = element;
 		if (typeof elemObj === "string") {
@@ -1254,13 +1256,41 @@ const Tours = (function () {
 				destroy();
 				return;
 			}
+			// Multi-page: if step belongs to a different page, save state and navigate
+			const stepPageUrl = steps[stepIndex].pageUrl;
+			if (stepPageUrl && !TourStateManager.urlMatchesCurrent(stepPageUrl)) {
+				TourStateManager.save({
+					tourId: getConfig("__tourId"),
+					config: getConfig("__fullConfig"),
+					currentStepIndex: stepIndex,
+					startedAt: getConfig("__startedAt") || Date.now(),
+					startUrl: getConfig("__startUrl"),
+					navigatedByTour: true,
+				});
+				window.location.href = stepPageUrl;
+				destroy();
+				return;
+			}
+			// "link" type redirect — end-of-tour
 			if (steps[stepIndex].url) {
+				TourStateManager.clear();
 				window.location.href = steps[stepIndex].url;
 				destroy();
 				return;
 			}
 			setState("__activeOnDestroyed", document.activeElement);
 			setState("activeIndex", stepIndex);
+			// Track current step in sessionStorage for refresh resilience
+			if (TourStateManager.isActive()) {
+				const tourState = TourStateManager.load();
+				if (tourState) {
+					TourStateManager.save({
+						...tourState,
+						currentStepIndex: stepIndex,
+						navigatedByTour: true,
+					});
+				}
+			}
 			const currentStep = steps[stepIndex];
 			const hasNextStep = steps[stepIndex + 1];
 			const hasPreviousStep = steps[stepIndex - 1];

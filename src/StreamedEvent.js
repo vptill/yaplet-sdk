@@ -320,6 +320,11 @@ export default class StreamedEvent {
 		if (data) {
 			log.data = dataParser(data);
 		}
+		// Inject current URL for custom events so server-side page rules can evaluate
+		if (name === "customEvent" && typeof window !== "undefined") {
+			log.data = log.data || {};
+			log.data.url = window.location.href;
+		}
 		this.eventArray.push(log);
 		this.streamedEventArray.push(log);
 

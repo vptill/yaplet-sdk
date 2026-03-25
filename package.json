@@ -10,7 +10,7 @@
   },
   "types": "index.d.ts",
   "scripts": {
-    "start": "webpack serve --env development",
+    "start": "concurrently -n webpack,browser-sync -c blue,green \"npm run dev:watch\" \"npm run dev:serve\"",
     "build": "webpack",
     "dev:watch": "webpack --watch --env development",
     "dev:serve": "browser-sync start --config bs-config.js",

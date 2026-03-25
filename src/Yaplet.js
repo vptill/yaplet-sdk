@@ -24,6 +24,7 @@ import AudioManager from "./AudioManager";
 import TagManager from "./TagManager";
 import AdminManager from "./AdminManager";
 import { handleYapletLink } from "./handleYapletLink";
+import TourStateManager from "./TourStateManager";
 
 if (
 	typeof HTMLCanvasElement !== "undefined" &&
@@ -202,6 +203,9 @@ class Yaplet {
 							// Check for URL params.
 							Yaplet.checkForUrlParams();
 
+							// Check for multi-page tour resume.
+							Yaplet.checkForTourResume();
+
 							// Notify event.
 							EventManager.notifyEvent("initialized");
 						});
@@ -240,7 +244,7 @@ class Yaplet {
 				);
 			}
 			const tourId = urlParams.get("yaplet_tour");
-			if (tourId && tourId.length > 0) {
+			if (tourId && tourId.length > 0 && !TourStateManager.isActive()) {
 				var tourDelay = parseInt(urlParams.get("yaplet_tour_delay"));
 				if (isNaN(tourDelay)) {
 					tourDelay = 4;
@@ -251,6 +255,48 @@ class Yaplet {
 				}, tourDelay * 1000);
 			}
 		} catch (exp) { }
+	}
+
+	/**
+	 * Checks for a multi-page tour that should be resumed on this page.
+	 * Called during initialization after checkForUrlParams().
+	 */
+	static checkForTourResume() {
+		try {
+			const state = TourStateManager.load();
+
+			if (!state || !state.navigatedByTour) {
+				if (state) TourStateManager.clear();
+				return;
+			}
+
+			// Validate current URL matches expected step's page
+			const steps = state.config.steps || [];
+			const step = steps[state.currentStepIndex];
+			if (!step) {
+				TourStateManager.clear();
+				return;
+			}
+
+			const expectedPage = step.pageUrl || state.startUrl;
+			if (!TourStateManager.urlMatchesCurrent(expectedPage)) {
+				TourStateManager.clear();
+				return;
+			}
+
+			// Reset navigatedByTour flag and resume after delay for page render
+			TourStateManager.save({ ...state, navigatedByTour: false });
+
+			setTimeout(() => {
+				Yaplet.startProductTourWithConfig(
+					state.tourId,
+					state.config,
+					state.currentStepIndex
+				);
+			}, 1000);
+		} catch (e) {
+			console.warn("Failed to resume tour:", e);
+		}
 	}
 
 	/**
@@ -1129,54 +1175,70 @@ class Yaplet {
 
 			if (action.payload?.trigger) {
 				if (action.payload.trigger.pageQuery.children.length) {
-					const pageQuery = action.payload.trigger.pageQuery.children[0].value;
-					const pageQueryValue = pageQuery[1];
-					const operator = pageQuery[0];
+					const normalizeForCompare = (url) => {
+						try {
+							const parsed = new URL(url);
+							return (parsed.host + parsed.pathname).replace(/\/$/, "").toLowerCase();
+						} catch {
+							return url.replace(/^https?:\/\//, "").replace(/[?#].*$/, "").replace(/\/$/, "").toLowerCase();
+						}
+					};
+
 					let isValid = false;
-					switch (operator) {
-						case "equals":
-							isValid = window.location.href === pageQueryValue;
+					for (let j = 0; j < action.payload.trigger.pageQuery.children.length; j++) {
+						const pageQuery = action.payload.trigger.pageQuery.children[j].value;
+						const pageQueryValue = pageQuery[1];
+						const operator = pageQuery[0];
+						let childValid = false;
+						switch (operator) {
+							case "equals":
+								childValid = normalizeForCompare(window.location.href) === normalizeForCompare(pageQueryValue);
+								break;
+							case "not_equals":
+								childValid = window.location.href !== pageQueryValue;
+								break;
+							case "ilike":
+								childValid = window.location.href
+									.toLowerCase()
+									.includes(pageQueryValue.toLowerCase());
+								break;
+							case "not_ilike":
+								childValid = !window.location.href
+									.toLowerCase()
+									.includes(pageQueryValue.toLowerCase());
+								break;
+							case "start_ilike":
+								childValid = window.location.href
+									.toLowerCase()
+									.startsWith(pageQueryValue.toLowerCase());
+								break;
+							case "not_start_ilike":
+								childValid = !window.location.href
+									.toLowerCase()
+									.startsWith(pageQueryValue.toLowerCase());
+								break;
+							case "end_ilike":
+								childValid = window.location.href
+									.toLowerCase()
+									.endsWith(pageQueryValue.toLowerCase());
+								break;
+							case "not_end_ilike":
+								childValid = !window.location.href
+									.toLowerCase()
+									.endsWith(pageQueryValue.toLowerCase());
+								break;
+							default:
+								childValid = false;
+								break;
+						}
+						if (childValid) {
+							isValid = true;
 							break;
-						case "not_equals":
-							isValid = window.location.href !== pageQueryValue;
-							break;
-						case "ilike":
-							isValid = window.location.href
-								.toLowerCase()
-								.includes(pageQueryValue.toLowerCase());
-							break;
-						case "not_ilike":
-							isValid = !window.location.href
-								.toLowerCase()
-								.includes(pageQueryValue.toLowerCase());
-							break;
-						case "start_ilike":
-							isValid = window.location.href
-								.toLowerCase()
-								.startsWith(pageQueryValue.toLowerCase());
-							break;
-						case "not_start_ilike":
-							isValid = !window.location.href
-								.toLowerCase()
-								.startsWith(pageQueryValue.toLowerCase());
-							break;
-						case "end_ilike":
-							isValid = window.location.href
-								.toLowerCase()
-								.endsWith(pageQueryValue.toLowerCase());
-							break;
-						case "not_end_ilike":
-							isValid = !window.location.href
-								.toLowerCase()
-								.endsWith(pageQueryValue.toLowerCase());
-							break;
-						default:
-							isValid = false;
-							break;
+						}
 					}
 
 					if (!isValid) {
-						console.log("Invalid page query", pageQuery, window.location.href);
+						console.log("Invalid page query", action.payload.trigger.pageQuery.children, window.location.href);
 						continue;
 					}
 				}
@@ -1194,10 +1256,12 @@ class Yaplet {
 				} else if (action.event === "banner") {
 					Yaplet.showBanner(action.payload);
 				} else if (action.event === "tour") {
-					Yaplet.startProductTourWithConfig(
-						action.payload.id,
-						action.payload.data
-					);
+					if (!TourStateManager.isActive()) {
+						Yaplet.startProductTourWithConfig(
+							action.payload.id,
+							action.payload.data
+						);
+					}
 				} else if (action.event === "survey") {
 					Yaplet.showSurvey(action.payload.id, "survey");
 				}
@@ -1215,7 +1279,7 @@ class Yaplet {
 			.catch((error) => { });
 	}
 
-	static async startProductTourWithConfig(tourId, config) {
+	static async startProductTourWithConfig(tourId, config, resumeStepIndex = 0) {
 		const { default: ProductTours } = await import(
 			/* webpackChunkName: "tours" */ "./ProductTours"
 		);
@@ -1226,7 +1290,7 @@ class Yaplet {
 
 			EventManager.notifyEvent("productTourCompleted", comData);
 			Yaplet.trackEvent(`tour-${data.tourId}-completed`, comData);
-		});
+		}, resumeStepIndex);
 	}
 
 	static showBanner(data) {
