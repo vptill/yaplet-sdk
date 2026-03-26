@@ -271,55 +271,23 @@ const Tours = (function () {
 		document.body.appendChild(element);
 		return element;
 	}
-	function querySelectorSafe(selector) {
-		try {
-			return document.querySelector(selector);
-		} catch (error) {
-			// Escape colons within IDs but not affect pseudo-classes or other valid uses of colons
-			let refactoredSelector = selector.replace(
-				/(#[^#\s]+)/g,
-				function (match) {
-					return match.replace(/:/g, "\\:");
-				}
-			);
-			return document.querySelector(refactoredSelector);
-		}
-	}
-
-	function resolveElement(step) {
-		const { element, fallbackSelectors } = step;
-
-		// Try the primary element first
-		if (typeof element === "string") {
-			const primary = querySelectorSafe(element);
-			if (primary && isElementVisible(primary)) {
-				return primary;
-			}
-		} else if (element) {
-			return element;
-		}
-
-		// Try fallback selectors in order
-		if (fallbackSelectors && fallbackSelectors.length > 0) {
-			for (const selector of fallbackSelectors) {
-				const el = querySelectorSafe(selector);
-				if (el && isElementVisible(el)) {
-					return el;
-				}
-			}
-		}
-
-		// Return primary even if not visible (for retry logic)
-		if (typeof element === "string") {
-			return querySelectorSafe(element);
-		}
-
-		return element;
-	}
-
 	function highlight(step, attemptTime = getConfig('__elementWaitTimeout') || 2000) {
 		const { element } = step;
-		let elemObj = resolveElement(step);
+		let elemObj = element;
+		if (typeof elemObj === "string") {
+			try {
+				elemObj = document.querySelector(element);
+			} catch (error) {
+				// This will escape colons within IDs but not affect pseudo-classes or other valid uses of colons
+				let refactoredElement = element.replace(
+					/(#[^#\s]+)/g,
+					function (match) {
+						return match.replace(/:/g, "\\:");
+					}
+				);
+				elemObj = document.querySelector(refactoredElement);
+			}
+		}
 
 		if (element && !elemObj && attemptTime >= 0) {
 			setTimeout(() => {

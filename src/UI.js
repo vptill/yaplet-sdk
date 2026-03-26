@@ -2044,6 +2044,37 @@ export const injectStyledCSS = (
       object-fit: cover;
     }
 
+    .yaplet-admin-collapse-ui {
+      z-index: ${zIndexBase + 35};
+      cursor: pointer;
+      position: fixed;
+      bottom: 75px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 100%;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+    }
+
+    .yaplet-admin-collapse-ui svg {
+      width: 20px;
+      height: 14px;
+      margin-top: 6px;
+      fill: #000 !important;
+    }
+
+    .yaplet-admin-collapse-ui-active {
+      bottom: 20px !important;
+    }
+
+    .yaplet-admin-collapse-ui-active svg {
+      transform: rotate(180deg);
+    }
+
     .yaplet-admin-frame-container-active {
       display: none !important;
     }
@@ -2063,7 +2094,6 @@ export const injectStyledCSS = (
       border: none;
       outline: none;
       display: block;
-      background: transparent;
     }
     
     .yaplet-tooltip .linktype-button,
