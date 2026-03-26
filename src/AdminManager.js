@@ -1,12 +1,8 @@
-import { loadIcon } from "./UI";
-
 export default class AdminManager {
 	libraryInstance = null;
 	lastUrl = undefined;
 	injectedFrame = false;
 	yapletFrameContainer = null;
-	yapletCollapseUI = null;
-	injectedCollapseUI = false;
 	yapletFrame = null;
 	frameUrl = "https://yaplet.com";
 	configData = null;
@@ -54,7 +50,6 @@ export default class AdminManager {
 
 		try {
 			self.adminHelper.onElementPicked = (selector) => {
-				self.toggleCollapseUI(true);
 				self.sendMessageToTourBuilder({
 					name: "element-picked",
 					data: {
@@ -67,8 +62,32 @@ export default class AdminManager {
 		}
 
 		self.injectFrame();
-		self.injectCollapseUI();
 		self.setFrameHeight("loading");
+	}
+
+	yapletOverlay = null;
+
+	setOverlay(visible) {
+		if (!this.yapletOverlay) {
+			this.yapletOverlay = document.createElement("div");
+			this.yapletOverlay.className = "yaplet-admin-overlay";
+			this.yapletOverlay.style.cssText =
+				"position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,0.35);pointer-events:none;transition:opacity 0.2s ease;opacity:0;display:none;";
+			document.body.appendChild(this.yapletOverlay);
+		}
+		if (visible) {
+			this.yapletOverlay.style.display = "";
+			// Force reflow before changing opacity for transition
+			this.yapletOverlay.offsetHeight;
+			this.yapletOverlay.style.opacity = "1";
+		} else {
+			this.yapletOverlay.style.opacity = "0";
+			setTimeout(() => {
+				if (this.yapletOverlay && this.yapletOverlay.style.opacity === "0") {
+					this.yapletOverlay.style.display = "none";
+				}
+			}, 200);
+		}
 	}
 
 	setFrameHeight(state) {
@@ -121,10 +140,15 @@ export default class AdminManager {
 
 				if (data.type === "tourbuilder") {
 					if (data.name === "loaddata") {
+						var pageBg = window.getComputedStyle(document.body).backgroundColor;
+						if (!pageBg || pageBg === "rgba(0, 0, 0, 0)" || pageBg === "transparent") {
+							pageBg = window.getComputedStyle(document.documentElement).backgroundColor;
+						}
 						this.sendMessageToTourBuilder({
 							name: "data",
 							data: self.configData,
 							url: window.location.href,
+							pageBackground: pageBg,
 						});
 					}
 
@@ -158,6 +182,11 @@ export default class AdminManager {
 						if (self.status === "picker") {
 							self.adminHelper.startPicker();
 						}
+
+						// Show/hide darkening overlay based on mode
+						this.setOverlay(
+							self.status === "editor",
+						);
 					}
 				}
 			} catch (exp) {}
@@ -197,53 +226,6 @@ export default class AdminManager {
 			}
 		} catch (e) {}
 	}
-
-	toggleCollapseUI = (onlyIfActive = false) => {
-		const COLLAPSE_UI_ACTIVE_CLASS = "yaplet-admin-collapse-ui-active";
-		const FRAME_CONTAINER_ACTIVE_CLASS = "yaplet-admin-frame-container-active";
-
-		// Helper function to check if an element has an active class
-		const isActive = (element, activeClass) =>
-			element && element.classList.contains(activeClass);
-
-		// Check if onlyIfActive is true and if the UI elements are already inactive
-		if (
-			onlyIfActive &&
-			(!isActive(this.yapletCollapseUI, COLLAPSE_UI_ACTIVE_CLASS) ||
-				!isActive(this.yapletFrameContainer, FRAME_CONTAINER_ACTIVE_CLASS))
-		) {
-			return; // Return early without toggling the UI
-		}
-
-		// Toggle the UI elements
-		if (this.yapletCollapseUI) {
-			this.yapletCollapseUI.classList.toggle(COLLAPSE_UI_ACTIVE_CLASS);
-		}
-		if (this.yapletFrameContainer) {
-			this.yapletFrameContainer.classList.toggle(FRAME_CONTAINER_ACTIVE_CLASS);
-		}
-	};
-
-	injectCollapseUI = () => {
-		if (this.injectedCollapseUI) {
-			return;
-		}
-		this.injectedCollapseUI = true;
-
-		// Inject widget HTML.
-		var elem = document.createElement("div");
-		elem.className = "yaplet-admin-collapse-ui";
-		elem.innerHTML = `<div class="yaplet-admin-collapse-ui-icon">
-    ${loadIcon("arrowdown")}
-    </div>`;
-		document.body.appendChild(elem);
-
-		this.yapletCollapseUI = elem;
-
-		elem.addEventListener("click", () => {
-			this.toggleCollapseUI();
-		});
-	};
 
 	injectFrame = () => {
 		if (this.injectedFrame) {

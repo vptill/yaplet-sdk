@@ -100,6 +100,16 @@ export default class ProductTours {
 			if (step.selector && step.selector.length > 0) {
 				driverStep.element = step.selector;
 			}
+			if (step.selectors && step.selectors.length > 0) {
+				// First selector becomes primary element, rest are fallbacks
+				if (!driverStep.element) {
+					driverStep.element = step.selectors[0];
+					driverStep.fallbackSelectors = step.selectors.slice(1);
+				} else {
+					// selector field is primary, selectors array are all fallbacks
+					driverStep.fallbackSelectors = step.selectors;
+				}
+			}
 			driverSteps.push(driverStep);
 		}
 
