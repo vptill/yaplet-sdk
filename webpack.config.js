@@ -119,6 +119,9 @@ const commonConfig = (isDevelopment, plugins = []) => {
 };
 
 // Configuration for ESM
+// Inline all dynamic imports — ESM consumers (Vite/Nuxt) will do their own
+// code-splitting.  Webpack's chunk-loading runtime doesn't work when another
+// bundler re-bundles the output (the chunk URL resolves incorrectly).
 const esmConfig = {
   ...commonConfig(false, []),
   output: {
@@ -131,6 +134,14 @@ const esmConfig = {
     },
     globalObject: "this",
     clean: true,
+  },
+  module: {
+    ...commonConfig(false).module,
+    parser: {
+      javascript: {
+        dynamicImportMode: "eager",
+      },
+    },
   },
   experiments: {
     outputModule: true,
