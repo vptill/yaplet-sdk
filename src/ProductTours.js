@@ -31,6 +31,72 @@ export default class ProductTours {
 		return this.start();
 	}
 
+	buildDriverStep(step, config) {
+		const isClickMode = step.mode === "CLICK";
+		const isInputMode = step.mode === "INPUT";
+
+		var message = "";
+		var hasSender = false;
+
+		if (step.type === "video-pointer") {
+			message = `<div class="yaplet-tour-video">
+              <video class="yaplet-tour-video-obj" muted autoplay>
+                <source src="${step.videoUrl}" type="video/mp4">
+              </video>
+              <div class="yaplet-tour-video-playpause">${loadIcon(
+							"unmute"
+						)}</div>
+            </div>`;
+		} else {
+			var senderHTML = ``;
+
+			if (config.sender && config.sender.firstName) {
+				hasSender = true;
+				senderHTML = `<div class="yaplet-tour-sender">
+                <div class="yaplet-tour-sender-image" style="background-image: url('${config.sender.profileImageUrl}');"></div>
+                <div class="yaplet-tour-sender-name">${config.sender.firstName}</div>
+              </div>`;
+			}
+
+			message = `${senderHTML}<div class="yaplet-tour-message">${step.message}</div>`;
+		}
+
+		const disableInteraction = !isClickMode && !isInputMode;
+
+		var driverStep = {
+			disableActiveInteraction: disableInteraction,
+			mode: step.mode,
+			popover: {
+				description: message,
+				popoverClass: `yaplet-tour-popover-${step.type} ${
+					!hasSender && "yaplet-tour-popover-no-sender"
+				} ${config.allowClose && "yaplet-tour-popover-can-close"}`,
+				...(isClickMode
+					? {
+							showButtons: [
+								...(config.backButton ? ["previous"] : []),
+								...(config.allowClose ? ["close"] : []),
+							],
+					  }
+					: {}),
+			},
+			url: step.url,
+			pageUrl: step.pageUrl,
+		};
+		if (step.selector && step.selector.length > 0) {
+			driverStep.element = step.selector;
+		}
+		if (step.selectors && step.selectors.length > 0) {
+			if (!driverStep.element) {
+				driverStep.element = step.selectors[0];
+				driverStep.fallbackSelectors = step.selectors.slice(1);
+			} else {
+				driverStep.fallbackSelectors = step.selectors;
+			}
+		}
+		return driverStep;
+	}
+
 	start() {
 		const config = this.productTourData;
 		if (!config || AdminManager.getInstance().adminHelper) {
@@ -45,71 +111,19 @@ export default class ProductTours {
 
 		for (let i = 0; i < steps.length; i++) {
 			const step = steps[i];
+			var driverStep = this.buildDriverStep(step, config);
 
-			const isClickMode = step.mode === "CLICK";
-			const isInputMode = step.mode === "INPUT";
-
-			var message = "";
-			var hasSender = false;
-
-			if (step.type === "video-pointer") {
-				message = `<div class="yaplet-tour-video">
-              <video class="yaplet-tour-video-obj" muted autoplay>
-                <source src="${step.videoUrl}" type="video/mp4">
-              </video>
-              <div class="yaplet-tour-video-playpause">${loadIcon(
-								"unmute"
-							)}</div>
-            </div>`;
-			} else {
-				var senderHTML = ``;
-
-				if (config.sender && config.sender.firstName) {
-					hasSender = true;
-					senderHTML = `<div class="yaplet-tour-sender">
-                <div class="yaplet-tour-sender-image" style="background-image: url('${config.sender.profileImageUrl}');"></div>
-                <div class="yaplet-tour-sender-name">${config.sender.firstName}</div>
-              </div>`;
-				}
-
-				message = `${senderHTML}<div class="yaplet-tour-message">${step.message}</div>`;
+			// Build fallback driver steps if defined
+			if (step.fallbackSteps && step.fallbackSteps.length > 0) {
+				driverStep.fallbackDriverSteps = step.fallbackSteps.map(
+					(fs) => this.buildDriverStep(fs, config)
+				);
 			}
 
-			const disableInteraction = !isClickMode && !isInputMode;
+			if (step.skipIfHidden) {
+				driverStep.skipIfHidden = true;
+			}
 
-			var driverStep = {
-				disableActiveInteraction: disableInteraction,
-				mode: step.mode,
-				popover: {
-					description: message,
-					popoverClass: `yaplet-tour-popover-${step.type} ${
-						!hasSender && "yaplet-tour-popover-no-sender"
-					} ${config.allowClose && "yaplet-tour-popover-can-close"}`,
-					...(isClickMode
-						? {
-								showButtons: [
-									...(config.backButton ? ["previous"] : []),
-									...(config.allowClose ? ["close"] : []),
-								],
-						  }
-						: {}),
-				},
-				url: step.url,
-				pageUrl: step.pageUrl,
-			};
-			if (step.selector && step.selector.length > 0) {
-				driverStep.element = step.selector;
-			}
- 			if (step.selectors && step.selectors.length > 0) {
-				// First selector becomes primary element, rest are fallbacks
-				if (!driverStep.element) {
-					driverStep.element = step.selectors[0];
-					driverStep.fallbackSelectors = step.selectors.slice(1);
-				} else {
-					// selector field is primary, selectors array are all fallbacks
-					driverStep.fallbackSelectors = step.selectors;
-				}
-			}
 			driverSteps.push(driverStep);
 		}
 

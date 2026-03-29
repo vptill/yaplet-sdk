@@ -317,6 +317,25 @@ const Tours = (function () {
 		return element;
 	}
 
+	// Check if any selector in a step config is currently visible in the DOM
+	function hasVisibleSelector(step) {
+		if (!step.element && !step.fallbackSelectors) return false;
+
+		if (typeof step.element === "string") {
+			const el = querySelectorSafe(step.element);
+			if (el && isElementVisible(el)) return true;
+		}
+
+		if (step.fallbackSelectors) {
+			for (const selector of step.fallbackSelectors) {
+				const el = querySelectorSafe(selector);
+				if (el && isElementVisible(el)) return true;
+			}
+		}
+
+		return false;
+	}
+
 	function highlight(step, attemptTime = getConfig('__elementWaitTimeout') || 2000) {
 		const { element } = step;
 		let elemObj = resolveElement(step);
@@ -1320,6 +1339,55 @@ const Tours = (function () {
 				destroy();
 				return;
 			}
+			// Restore original step config if it was previously swapped by fallback logic
+			if (steps[stepIndex].__originalStep) {
+				const original = steps[stepIndex].__originalStep;
+				Object.keys(steps[stepIndex]).forEach(k => delete steps[stepIndex][k]);
+				Object.assign(steps[stepIndex], original);
+			}
+
+			// Fallback step resolution: if primary step has no visible selectors,
+			// try fallback steps in order, then skip if flagged, then fall through to dummy
+			const originalStep = steps[stepIndex];
+			if (originalStep.element && !hasVisibleSelector(originalStep)) {
+				// Try fallback driver steps
+				if (originalStep.fallbackDriverSteps && originalStep.fallbackDriverSteps.length > 0) {
+					for (const fallbackStep of originalStep.fallbackDriverSteps) {
+						// A post-type fallback has no element — always usable
+						if (!fallbackStep.element) {
+							// Temporarily swap step config for this drive
+							const saved = { ...steps[stepIndex] };
+							Object.assign(steps[stepIndex], fallbackStep, {
+								fallbackDriverSteps: saved.fallbackDriverSteps,
+								skipIfHidden: saved.skipIfHidden,
+								__originalStep: saved,
+							});
+							break;
+						}
+						if (hasVisibleSelector(fallbackStep)) {
+							const saved = { ...steps[stepIndex] };
+							Object.assign(steps[stepIndex], fallbackStep, {
+								fallbackDriverSteps: saved.fallbackDriverSteps,
+								skipIfHidden: saved.skipIfHidden,
+								__originalStep: saved,
+							});
+							break;
+						}
+					}
+				}
+
+				// If still no visible selector after fallbacks, check skip flag
+				if (originalStep.element && !hasVisibleSelector(steps[stepIndex]) && steps[stepIndex].skipIfHidden) {
+					const nextStepIndex = stepIndex + 1;
+					if (steps[nextStepIndex]) {
+						drive(nextStepIndex);
+					} else {
+						destroy();
+					}
+					return;
+				}
+			}
+
 			setState("__activeOnDestroyed", document.activeElement);
 			setState("activeIndex", stepIndex);
 			// Track current step in sessionStorage for refresh resilience

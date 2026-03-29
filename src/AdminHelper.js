@@ -35,10 +35,7 @@ class AdminHelper {
         }
       },
       elementFilter: (el) => {
-        if (
-          el.classList.contains("yaplet-admin-collapse-ui") ||
-          el.closest(".yaplet-admin-collapse-ui")
-        ) {
+        if (el.closest(".yaplet-admin-frame-container")) {
           return false;
         }
         return true;
