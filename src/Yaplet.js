@@ -193,6 +193,19 @@ class Yaplet {
 					.then(() => {
 						StreamedEvent.getInstance().start();
 
+						// Listen for visitor ID requests from the dashboard (popup test setup)
+						window.addEventListener("message", (event) => {
+							if (event.data?.type === "yaplet-get-visitor-id") {
+								const session = Session.getInstance().getSession();
+								if (session?.yapletId && event.source) {
+									event.source.postMessage({
+										type: "yaplet-visitor-id",
+										visitorId: session.yapletId,
+									}, event.origin || "*");
+								}
+							}
+						});
+
 						runFunctionWhenDomIsReady(() => {
 							// Inject the widget buttons
 							FeedbackButtonManager.getInstance().injectFeedbackButton();
