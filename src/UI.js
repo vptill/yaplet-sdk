@@ -2051,6 +2051,7 @@ export const injectStyledCSS = (
       right: 0px;
       width: 100vw;
       z-index: ${zIndexBase + 40};
+      background: transparent;
     }
 
     .yaplet-admin-frame {
@@ -2059,6 +2060,7 @@ export const injectStyledCSS = (
       border: none;
       outline: none;
       display: block;
+      background: transparent;
     }
     
     .yaplet-tooltip .linktype-button,
