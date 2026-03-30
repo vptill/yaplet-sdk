@@ -603,14 +603,11 @@ const Tours = (function () {
 			description,
 			showButtons,
 			disableButtons,
-			showProgress,
 			nextBtnText = getConfig("nextBtnText") || "Next",
 			prevBtnText = getConfig("prevBtnText") || "Previous",
-			progressText = getConfig("progressText") || "{current}",
 		} = step.popover || {};
 		popover.nextButton.innerHTML = nextBtnText;
 		popover.previousButton.innerHTML = prevBtnText;
-		popover.progress.innerHTML = progressText;
 		if (title) {
 			popover.title.innerHTML = title;
 			popover.title.style.display = "block";
@@ -624,22 +621,19 @@ const Tours = (function () {
 			popover.description.style.display = "none";
 		}
 		const showButtonsConfig = showButtons || getConfig("showButtons");
-		const showProgressConfig =
-			showProgress || getConfig("showProgress") || false;
 		const showFooter =
 			(showButtonsConfig == null
 				? void 0
 				: showButtonsConfig.includes("next")) ||
 			(showButtonsConfig == null
 				? void 0
-				: showButtonsConfig.includes("previous")) ||
-			showProgressConfig;
+				: showButtonsConfig.includes("previous"));
 		popover.closeButton.style.display = showButtonsConfig.includes("close")
 			? "block"
 			: "none";
 		if (showFooter) {
 			popover.footer.style.display = "flex";
-			popover.progress.style.display = showProgressConfig ? "block" : "none";
+			popover.progress.style.display = "none";
 			popover.nextButton.style.display = showButtonsConfig.includes("next")
 				? "block"
 				: "none";
@@ -1409,7 +1403,6 @@ const Tours = (function () {
 				getConfig("doneBtnText") ||
 				"Done";
 			const allowsClosing = getConfig("allowClose");
-			const showProgress = false;
 			const configuredButtons =
 				((_e = currentStep.popover) == null ? void 0 : _e.showButtons) ||
 				getConfig("showButtons");
@@ -1438,7 +1431,6 @@ const Tours = (function () {
 					showButtons: calculatedButtons,
 					nextBtnText: !hasNextStep ? doneBtnText : void 0,
 					disableButtons: [...(!hasPreviousStep ? ["previous"] : [])],
-					showProgress,
 					onNextClick: onNextClick
 						? onNextClick
 						: () => {
@@ -1573,8 +1565,6 @@ const Tours = (function () {
 					popover: step.popover
 						? {
 								showButtons: [],
-								showProgress: false,
-								progressText: "",
 								...step.popover,
 						  }
 						: void 0,

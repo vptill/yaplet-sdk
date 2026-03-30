@@ -163,9 +163,8 @@ export default class ProductTours {
 
 		const existingTourState = TourStateManager.load();
 		const yapletTourObj = Tours({
-			showProgress: true,
+			showProgress: false,
 			steps: driverSteps,
-			showProgress: steps.length > 1,
 			allowClose: config.allowClose,
 			nextBtnText: config.nextText,
 			doneBtnText: config.doneText,
