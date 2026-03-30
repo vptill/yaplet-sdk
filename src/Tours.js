@@ -606,7 +606,7 @@ const Tours = (function () {
 			showProgress,
 			nextBtnText = getConfig("nextBtnText") || "Next",
 			prevBtnText = getConfig("prevBtnText") || "Previous",
-			progressText = getConfig("progressText") || "{current} of {total}",
+			progressText = getConfig("progressText") || "{current}",
 		} = step.popover || {};
 		popover.nextButton.innerHTML = nextBtnText;
 		popover.previousButton.innerHTML = prevBtnText;
@@ -1409,21 +1409,7 @@ const Tours = (function () {
 				getConfig("doneBtnText") ||
 				"Done";
 			const allowsClosing = getConfig("allowClose");
-			const showProgress =
-				typeof ((_b = currentStep.popover) == null
-					? void 0
-					: _b.showProgress) !== "undefined"
-					? (_c = currentStep.popover) == null
-						? void 0
-						: _c.showProgress
-					: getConfig("showProgress");
-			const progressText =
-				((_d = currentStep.popover) == null ? void 0 : _d.progressText) ||
-				getConfig("progressText") ||
-				"{{current}} of {{total}}";
-			const progressTextReplaced = progressText
-				.replace("{{current}}", `${stepIndex + 1}`)
-				.replace("{{total}}", `${steps.length}`);
+			const showProgress = false;
 			const configuredButtons =
 				((_e = currentStep.popover) == null ? void 0 : _e.showButtons) ||
 				getConfig("showButtons");
@@ -1453,7 +1439,6 @@ const Tours = (function () {
 					nextBtnText: !hasNextStep ? doneBtnText : void 0,
 					disableButtons: [...(!hasPreviousStep ? ["previous"] : [])],
 					showProgress,
-					progressText: progressTextReplaced,
 					onNextClick: onNextClick
 						? onNextClick
 						: () => {
