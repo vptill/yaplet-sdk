@@ -292,6 +292,19 @@ export default class StreamedEvent {
 						case "endsWith":
 							isValid = currentUrl.endsWith(pageQueryValue);
 							break;
+						case "glob": {
+							const pattern = new RegExp("^" + pageQueryValue.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$", "i");
+							isValid = pattern.test(currentUrl);
+							break;
+						}
+						case "regex": {
+							try {
+								isValid = new RegExp(pageQueryValue, "i").test(currentUrl);
+							} catch {
+								isValid = false;
+							}
+							break;
+						}
 						default:
 							isValid = false;
 							break;

@@ -1240,6 +1240,19 @@ class Yaplet {
 									.toLowerCase()
 									.endsWith(pageQueryValue.toLowerCase());
 								break;
+							case "glob": {
+								const pattern = new RegExp("^" + pageQueryValue.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$", "i");
+								childValid = pattern.test(window.location.href);
+								break;
+							}
+							case "regex": {
+								try {
+									childValid = new RegExp(pageQueryValue, "i").test(window.location.href);
+								} catch {
+									childValid = false;
+								}
+								break;
+							}
 							default:
 								childValid = false;
 								break;
