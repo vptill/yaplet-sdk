@@ -2187,12 +2187,12 @@ export const injectStyledCSS = (
       position: absolute;
       top: 5px;
       right: 5px;
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
       cursor: pointer;
-      font-size: 30px;
+      font-size: 20px;
       font-weight: 500;
-      line-height: 32px;
+      line-height: 24px;
       color: #d2d2d2;
       z-index: 1;
       text-align: center;
@@ -2211,6 +2211,7 @@ export const injectStyledCSS = (
     
     .yaplet-tour-popover-description {
       margin-bottom: 0;
+      margin-top: 4px;
       font: 15px / normal sans-serif;
       line-height: 1.5;
       font-weight: 400;
