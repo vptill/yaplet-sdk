@@ -22,6 +22,10 @@ export function handleYapletLink(href) {
 			yaplet.startFeedbackFlow(identifier, true);
 		}
 
+		if (type === "form") {
+			yaplet.startClassicForm(identifier, true);
+		}
+
 		if (type === "survey") {
 			yaplet.showSurvey(identifier);
 		}
