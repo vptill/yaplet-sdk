@@ -25,6 +25,7 @@ import TagManager from "./TagManager";
 import AdminManager from "./AdminManager";
 import { handleYapletLink } from "./handleYapletLink";
 import TourStateManager from "./TourStateManager";
+import { evaluateQueryTreeSync, compareValues } from "./RuleEvaluator";
 
 if (
 	typeof HTMLCanvasElement !== "undefined" &&
@@ -1197,71 +1198,17 @@ class Yaplet {
 						}
 					};
 
-					let isValid = false;
-					for (let j = 0; j < action.payload.trigger.pageQuery.children.length; j++) {
-						const pageQuery = action.payload.trigger.pageQuery.children[j].value;
-						const pageQueryValue = pageQuery[1];
-						const operator = pageQuery[0];
-						let childValid = false;
-						switch (operator) {
-							case "equals":
-								childValid = normalizeForCompare(window.location.href) === normalizeForCompare(pageQueryValue);
-								break;
-							case "not_equals":
-								childValid = window.location.href !== pageQueryValue;
-								break;
-							case "ilike":
-								childValid = window.location.href
-									.toLowerCase()
-									.includes(pageQueryValue.toLowerCase());
-								break;
-							case "not_ilike":
-								childValid = !window.location.href
-									.toLowerCase()
-									.includes(pageQueryValue.toLowerCase());
-								break;
-							case "start_ilike":
-								childValid = window.location.href
-									.toLowerCase()
-									.startsWith(pageQueryValue.toLowerCase());
-								break;
-							case "not_start_ilike":
-								childValid = !window.location.href
-									.toLowerCase()
-									.startsWith(pageQueryValue.toLowerCase());
-								break;
-							case "end_ilike":
-								childValid = window.location.href
-									.toLowerCase()
-									.endsWith(pageQueryValue.toLowerCase());
-								break;
-							case "not_end_ilike":
-								childValid = !window.location.href
-									.toLowerCase()
-									.endsWith(pageQueryValue.toLowerCase());
-								break;
-							case "glob": {
-								const pattern = new RegExp("^" + pageQueryValue.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$", "i");
-								childValid = pattern.test(window.location.href);
-								break;
+					const isValid = evaluateQueryTreeSync(action.payload.trigger.pageQuery, (rule) => {
+						try {
+							const [operator, value] = rule.value || [];
+							if (operator === "equals") {
+								return normalizeForCompare(window.location.href) === normalizeForCompare(value);
 							}
-							case "regex": {
-								try {
-									childValid = new RegExp(pageQueryValue, "i").test(window.location.href);
-								} catch {
-									childValid = false;
-								}
-								break;
-							}
-							default:
-								childValid = false;
-								break;
+							return compareValues(window.location.href, operator, value) || false;
+						} catch {
+							return false;
 						}
-						if (childValid) {
-							isValid = true;
-							break;
-						}
-					}
+					});
 
 					if (!isValid) {
 						console.log("Invalid page query", action.payload.trigger.pageQuery.children, window.location.href);

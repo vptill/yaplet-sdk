@@ -8,6 +8,7 @@ export default class ReplayRecorder {
   bufferSize = 0;
   stopFunction = undefined;
   customOptions = {};
+  lastEventTimestamp = 0;
 
   // ReplayRecorder singleton
   static instance;
@@ -34,7 +35,9 @@ export default class ReplayRecorder {
     this.stop();
 
     this.startDate = Date.now();
+    this.lastEventTimestamp = Date.now();
     var events = this.events;
+    var self = this;
 
     var options = {
       inlineStylesheet: true,
@@ -70,6 +73,7 @@ export default class ReplayRecorder {
         emit(rrwebEvent) {
           const { event } = ensureMaxMessageSize(rrwebEvent);
           events.push(event);
+          self.lastEventTimestamp = Date.now();
         },
       });
     } catch (e) {
@@ -89,6 +93,10 @@ export default class ReplayRecorder {
     this.startDate = undefined;
     this.events = [];
     this.bufferSize = 0;
+  }
+
+  getLastEventTimestamp() {
+    return this.lastEventTimestamp;
   }
 
   /**

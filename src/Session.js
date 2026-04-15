@@ -267,7 +267,7 @@ export default class Session {
 									TranslationManager.getInstance().getActiveLanguage();
 								saveToYapletCache(
 									`config-${self.sdkKey}-${lang}`,
-									sessionData.config,
+									{ flowConfig: sessionData.config },
 								);
 							} catch (exp) {}
 							ConfigManager.getInstance().applyConfig({

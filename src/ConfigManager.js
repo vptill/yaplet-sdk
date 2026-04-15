@@ -77,7 +77,10 @@ export default class ConfigManager {
       }-${TranslationManager.getInstance().getActiveLanguage()}`
     );
     if (cachedConfig) {
-      this.applyConfig(cachedConfig);
+      const configToApply = cachedConfig.flowConfig
+        ? cachedConfig
+        : { flowConfig: cachedConfig };
+      this.applyConfig(configToApply);
       return Promise.resolve();
     }
 
@@ -164,18 +167,7 @@ export default class ConfigManager {
       FeedbackButtonManager.getInstance().updateFeedbackButtonState();
       NotificationManager.getInstance().updateContainerStyle();
 
-      const ReplayRecorder = ModuleRegistry.get("ReplayRecorder");
       const ReplayManager = ModuleRegistry.get("ReplayManager");
-      const replayEnabled = flowConfig.enableWebReplays;
-
-      if (ReplayRecorder) {
-        if (replayEnabled) {
-          ReplayRecorder.getInstance().start();
-        } else {
-          ReplayRecorder.getInstance().stop();
-        }
-      }
-
       if (ReplayManager) {
         ReplayManager.getInstance().updateFromConfig(flowConfig);
       }
