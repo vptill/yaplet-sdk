@@ -76,6 +76,10 @@ jspm_packages/
 # dotenv environment variables file
 .env
 
+# Local-only dev override for the SDK demo. Contains a setWSApiUrl override
+# toggled by /yaplet-realtime-toggle in livechat-app. Must NEVER be committed.
+demo/local-overrides.js
+
 # next.js build output
 .next
 
