@@ -232,6 +232,11 @@ export default class Session {
 		http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 		http.setRequestHeader("Api-Token", self.sdkKey);
 
+		// 15s ceiling — the session POST is on the critical path; without a timeout a hung
+		// connection would block forever. Slightly higher than /sdk/config's 10s since this
+		// is the request that gates the rest of init.
+		http.timeout = 15000;
+
 		const oldCachedSession = localStorage.getItem(`yaplet-access-token`);
 		try {
 			if (this.session && this.session.yapletId && this.session.yapletHash) {
@@ -250,58 +255,96 @@ export default class Session {
 			}
 		} catch (exp) {}
 
-		http.onreadystatechange = function (e) {
-			if (http.readyState === 4) {
-				if (http.status === 200 || http.status === 201) {
-					try {
-						const sessionData = JSON.parse(http.responseText);
-						self.validateSession(sessionData);
-						NotificationManager.getInstance().setNotificationCount(
-							sessionData.unreadCount,
-						);
-
-						// Process config if present
-						if (sessionData.config) {
-							try {
-								const lang =
-									TranslationManager.getInstance().getActiveLanguage();
-								saveToYapletCache(
-									`config-${self.sdkKey}-${lang}`,
-									{ flowConfig: sessionData.config },
-								);
-							} catch (exp) {}
-							ConfigManager.getInstance().applyConfig({
-								flowConfig: sessionData.config,
-							});
-						}
-
-						// Clear sent events
-						if (eventsToSend.length > 0) {
-							StreamedEvent.getInstance().streamedEventArray.splice(
-								0,
-								eventsToSend.length,
-							);
-						}
-
-						// Initially track (must happen before handlePingResponse,
-						// because restart -> initWebSocket -> cleanupWebSocket -> stopHeartbeat
-						// would kill the heartbeat we're about to schedule)
-						StreamedEvent.getInstance().restart(true);
-
-						// Process queue if present (after restart so heartbeat isn't cleared)
-						if (sessionData.hasQueuedItems !== undefined) {
-							StreamedEvent.getInstance().handlePingResponse(sessionData);
-						}
-
-						// Load tooltips.
-						//TooltipManager.getInstance().load();
-					} catch (exp) {}
-				} else {
-					if (http.status !== 429) {
-						self.clearSession(attemp, true);
-					}
-				}
+		// Schedules a soft retry without wiping the cached session. Used for transient
+		// failures (network errors, aborts on page unload, server 5xx, timeouts) where
+		// the visitor's identity is still valid — we just couldn't reach the server.
+		// Capped at 6 attempts to avoid runaway retries when the server is permanently
+		// unreachable (exponential backoff: 0, 10, 40, 90, 160, 250 s).
+		const scheduleSoftRetry = () => {
+			if (!isNaN(attemp) && attemp < 6) {
+				const newTimeout = Math.pow(attemp, 2) * 10;
+				setTimeout(() => self.startSession(attemp + 1), newTimeout * 1000);
 			}
+		};
+
+		http.ontimeout = function () {
+			// Treat as transient: preserve session, retry.
+			scheduleSoftRetry();
+		};
+
+		http.onerror = function () {
+			// Some browsers fire onerror in addition to onreadystatechange with status 0;
+			// the readystatechange handler below covers status 0 explicitly, so this is
+			// just a defensive no-op to avoid an unhandled error.
+		};
+
+		http.onreadystatechange = function (e) {
+			if (http.readyState !== 4) return;
+
+			if (http.status === 200 || http.status === 201) {
+				try {
+					const sessionData = JSON.parse(http.responseText);
+					self.validateSession(sessionData);
+					NotificationManager.getInstance().setNotificationCount(
+						sessionData.unreadCount,
+					);
+
+					// Process config if present
+					if (sessionData.config) {
+						try {
+							const lang =
+								TranslationManager.getInstance().getActiveLanguage();
+							saveToYapletCache(
+								`config-${self.sdkKey}-${lang}`,
+								{ flowConfig: sessionData.config },
+							);
+						} catch (exp) {}
+						ConfigManager.getInstance().applyConfig({
+							flowConfig: sessionData.config,
+						});
+					}
+
+					// Clear sent events
+					if (eventsToSend.length > 0) {
+						StreamedEvent.getInstance().streamedEventArray.splice(
+							0,
+							eventsToSend.length,
+						);
+					}
+
+					// Initially track (must happen before handlePingResponse,
+					// because restart -> initWebSocket -> cleanupWebSocket -> stopHeartbeat
+					// would kill the heartbeat we're about to schedule)
+					StreamedEvent.getInstance().restart(true);
+
+					// Process queue if present (after restart so heartbeat isn't cleared)
+					if (sessionData.hasQueuedItems !== undefined) {
+						StreamedEvent.getInstance().handlePingResponse(sessionData);
+					}
+
+					// Load tooltips.
+					//TooltipManager.getInstance().load();
+				} catch (exp) {}
+				return;
+			}
+
+			if (http.status === 401 || http.status === 403) {
+				// Genuine auth rejection — the cached token is bad. Wipe it so the next
+				// startSession mints a fresh visitor.
+				self.clearSession(attemp, true);
+				return;
+			}
+
+			if (http.status === 429) {
+				// Rate limited. Server tells us to back off; do not retry, do not clear.
+				return;
+			}
+
+			// Status 0 (aborted / network error / page unload), 5xx, or any other
+			// non-auth failure: preserve the cached session and retry.
+			// This is the critical fix that prevents the visitor's chat history from
+			// vanishing when the page is unloaded mid-request (e.g., clicking a link).
+			scheduleSoftRetry();
 		};
 
 		// Prepare events
