@@ -168,11 +168,12 @@ export default class FrameManager {
 		}
 	};
 
-	injectFrame = () => {
+	injectFrame = ({ preload = false } = {}) => {
 		if (this.injectedFrame) {
 			return;
 		}
 		this.injectedFrame = true;
+		this.preloadOnly = preload;
 
 		this.autoWhiteListCookieManager();
 
@@ -184,8 +185,18 @@ export default class FrameManager {
 
 				// Inject widget HTML.
 				var elem = document.createElement("div");
+				// If the user clicked during the preload-mount async gap, treat this
+				// as a normal open — the click intent overrides the preload mode.
+				const userClickedDuringMount = this.pendingShow;
+				const effectivePreload = preload && !userClickedDuringMount;
+				// In preload mode, use --preloading (visibility:hidden) instead of
+				// --hidden (display:none) so the browser actually loads the iframe
+				// src + executes the widget bundle in the background.
+				const initialHideClass = effectivePreload
+					? "yaplet-frame-container--preloading"
+					: "yaplet-frame-container--hidden";
 				elem.className =
-					"yaplet-frame-container yaplet-frame-container--hidden gl-block";
+					"yaplet-frame-container " + initialHideClass + " gl-block";
 				elem.innerHTML = `<div class="yaplet-frame-container-inner"><iframe src="${this.frameUrl +
 					"/widget/" +
 					Session.getInstance().sdkKey +
@@ -196,15 +207,34 @@ export default class FrameManager {
 
 				this.yapletFrameContainer = elem;
 				this.yapletFrame = document.querySelector(".yaplet-frame");
+				this.preloadOnly = effectivePreload;
 
 				this.updateFrameStyle();
 
-				// Show loading preview for widget app mode.
-				if (this.appMode === "widget") {
+				// Auto-show if either: this is a normal (non-preload) injection, or
+				// the user clicked while the preload was mid-mount. In the latter
+				// case we always show with the loader since the iframe just started.
+				const shouldAutoShow =
+					(!effectivePreload && this.appMode === "widget") ||
+					userClickedDuringMount;
+				if (shouldAutoShow) {
+					this.pendingShow = false;
 					this.showFrameContainer(true);
 				}
 			});
 		});
+	};
+
+	/**
+	 * Mounts the widget iframe in the background so it is fully booted by the
+	 * time the user clicks the feedback button. Safe to call multiple times —
+	 * second call no-ops because injectFrame is idempotent.
+	 */
+	preloadFrame = () => {
+		if (this.injectedFrame) {
+			return;
+		}
+		this.injectFrame({ preload: true });
 	};
 
 	showImage = (url) => {
@@ -330,6 +360,12 @@ export default class FrameManager {
 			this.yapletFrameContainer.classList.remove(
 				"yaplet-frame-container--hidden"
 			);
+			// Strip the preload-only hidden state too — first user-initiated open
+			// after a background preload reveals the already-booted iframe.
+			this.yapletFrameContainer.classList.remove(
+				"yaplet-frame-container--preloading"
+			);
+			this.preloadOnly = false;
 			if (showLoader) {
 				this.yapletFrameContainer.classList.add(loadingClass);
 
@@ -373,7 +409,10 @@ export default class FrameManager {
 			});
 		}
 
-		this.showFrameContainer(false);
+		// Show the loader if the widget hasn't pinged ready yet — happens when the
+		// user clicks during the preload window before the widget bundle finishes
+		// booting. comReady is set in startCommunication when the iframe pings.
+		this.showFrameContainer(!this.comReady);
 		this.updateWidgetStatus();
 
 		EventManager.notifyEvent("open");
@@ -391,6 +430,12 @@ export default class FrameManager {
 		setTimeout(() => {
 			if (this.yapletFrameContainer) {
 				this.runWidgetShouldOpenCallback();
+			} else if (this.injectedFrame) {
+				// Preload was kicked off but the async mount hasn't completed yet.
+				// Record the click intent — injectFrame's onConfigLoaded callback
+				// will pick this up and auto-show with the loader once the container
+				// is in the DOM.
+				this.pendingShow = true;
 			} else {
 				FrameManager.getInstance().injectFrame();
 			}
@@ -510,7 +555,10 @@ export default class FrameManager {
 				this.sendConfigUpdate();
 				this.sendSessionUpdate();
 				this.workThroughQueue();
-				if (data.shouldOpen) {
+				// shouldOpen: the widget says "I'm freshly loaded, please open me."
+				// Suppress auto-open while the container is still in preload-only state
+				// — the user's actual click clears preloadOnly via showFrameContainer.
+				if (data.shouldOpen && !this.preloadOnly) {
 					setTimeout(() => {
 						this.runWidgetShouldOpenCallback();
 					}, 300);

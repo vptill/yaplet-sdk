@@ -929,6 +929,18 @@ export const injectStyledCSS = (
       pointer-events: none;
       animation: none !important;
     }
+
+    /* Preloading: iframe is mounted and booting in the background, but invisible
+       and inert. Crucially, no display:none — that can defer iframe src loading
+       in some browsers, defeating the preload. We rely on visibility + opacity
+       + pointer-events instead. The container is position:fixed so visibility:
+       hidden does not affect layout. */
+    .yaplet-frame-container--preloading {
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      animation: none !important;
+    }
     
     .yy-feedback-button {
       margin: 0px;

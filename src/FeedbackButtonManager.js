@@ -4,6 +4,7 @@ import NotificationManager from "./NotificationManager";
 import TranslationManager from "./TranslationManager";
 import Session from "./Session";
 import { loadIcon } from "./UI";
+import { persistButtonColor } from "./CriticalAssets";
 
 export default class FeedbackButtonManager {
 	feedbackButton = null;
@@ -38,6 +39,11 @@ export default class FeedbackButtonManager {
 
 		FeedbackButtonManager.getInstance().updateFeedbackButtonState();
 		NotificationManager.getInstance().updateContainerStyle();
+
+		// If a hidden button is now visible at runtime, wire intent listeners.
+		if (show) {
+			this.armPreloadOnIntent();
+		}
 	}
 
 	feedbackButtonPressed() {
@@ -67,6 +73,43 @@ export default class FeedbackButtonManager {
 		this.feedbackButton = elem;
 
 		this.updateFeedbackButtonState();
+
+		// Arm intent-based preload (hover / first touch) so clickers get an
+		// instant open without paying the iframe + bundle + WS + /chat/init cost
+		// for the ~95% of visitors who never open the widget.
+		this.armPreloadOnIntent();
+	}
+
+	armPreloadOnIntent() {
+		if (this.preloadFired || this.preloadArmed) return;
+
+		const flowConfig = ConfigManager.getInstance().getFlowConfig();
+		const isNoButtonConfig =
+			flowConfig?.feedbackButtonPosition ===
+			FeedbackButtonManager.FEEDBACK_BUTTON_NONE;
+		const explicitlyShown = this.buttonHidden === false;
+		if (isNoButtonConfig && !explicitlyShown) return;
+		if (!this.feedbackButton) return;
+
+		this.preloadArmed = true;
+
+		const fire = () => {
+			if (this.preloadFired) return;
+			this.preloadFired = true;
+			this.feedbackButton.removeEventListener("mouseenter", fire);
+			this.feedbackButton.removeEventListener("touchstart", fire);
+			try {
+				FrameManager.getInstance().preloadFrame();
+			} catch (e) { }
+		};
+
+		// mouseenter: desktop hover gives us 100–400ms of head start over the
+		// click. touchstart: on mobile, fires at the start of the tap that opens
+		// the widget — concurrent with showWidget(), but FrameManager handles
+		// the race via userClickedDuringMount. passive:true so we never block
+		// the touch's default scroll behavior.
+		this.feedbackButton.addEventListener("mouseenter", fire, { once: true });
+		this.feedbackButton.addEventListener("touchstart", fire, { once: true, passive: true });
 	}
 
 	updateNotificationBadge(count) {
@@ -94,6 +137,7 @@ export default class FeedbackButtonManager {
 			this.feedbackButton = null;
 			this.buttonHidden = null;
 			this.lastButtonIcon = null;
+			this.preloadArmed = false;
 			this.injectFeedbackButton();
 		}
 	}
@@ -140,6 +184,11 @@ export default class FeedbackButtonManager {
 			return;
 		}
 		this.feedbackButton.style.display = "";
+
+		// Cache brand color so the next visit's critical-CSS placeholder matches.
+		if (flowConfig?.primaryColor) {
+			persistButtonColor(Session.getInstance().sdkKey, flowConfig.primaryColor);
+		}
 
 		var buttonIcon = "";
 		const iconName = flowConfig?.buttonIcon || "button";

@@ -96,8 +96,13 @@ export default class ConfigManager {
       http.open("GET", session.apiUrl + "/sdk/config");
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       session.injectSession(http);
+      // 10s ceiling — without this, a hung config request leaves the SDK stuck forever.
+      http.timeout = 10000;
+      http.ontimeout = function () {
+        reject(new Error("config-timeout"));
+      };
       http.onerror = function () {
-        reject();
+        reject(new Error("config-network-error"));
       };
       http.onreadystatechange = function (e) {
         if (http.readyState === 4) {
@@ -111,7 +116,7 @@ export default class ConfigManager {
               return resolve();
             } catch (e) { }
           }
-          reject();
+          reject(new Error("config-bad-response"));
         }
       };
       http.send();

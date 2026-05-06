@@ -26,6 +26,28 @@ import AdminManager from "./AdminManager";
 import { handleYapletLink } from "./handleYapletLink";
 import TourStateManager from "./TourStateManager";
 import { evaluateQueryTreeSync, compareValues } from "./RuleEvaluator";
+import { injectCriticalAssets } from "./CriticalAssets";
+
+const scheduleIdle = (fn) => {
+	if (typeof window === "undefined") return;
+	if (typeof window.requestIdleCallback === "function") {
+		window.requestIdleCallback(fn, { timeout: 5000 });
+	} else {
+		setTimeout(fn, 1500);
+	}
+};
+
+const SAFE_FALLBACK_FLOW_CONFIG = {
+	primaryColor: "#485BFF",
+	headerColor: "#485BFF",
+	backgroundColor: "#FFFFFF",
+	borderRadius: 20,
+	buttonX: 20,
+	buttonY: 20,
+	feedbackButtonPosition: "BOTTOM_RIGHT",
+	enableWebReplays: false,
+	enableNetworkLogs: false,
+};
 
 if (
 	typeof HTMLCanvasElement !== "undefined" &&
@@ -76,11 +98,21 @@ class Yaplet {
 	 */
 	constructor() {
 		if (typeof window !== "undefined") {
-			// Make sure all instances are ready.
+			// Inject DNS preconnect hints + critical button CSS before any other work
+			// so the button paints in <100ms even on slow networks.
+			injectCriticalAssets(null);
+
+			// Crash-log buffering must run synchronously to capture errors that fire
+			// before the widget is opened.
 			MetaDataManager.getInstance();
 			ConsoleLogManager.getInstance().start();
-			ClickListener.getInstance().start();
-			AdminManager.getInstance().start();
+
+			// Click + admin tracking are not on the critical path for the button —
+			// defer to idle so we don't burn main-thread time during initial paint.
+			scheduleIdle(() => {
+				ClickListener.getInstance().start();
+				AdminManager.getInstance().start();
+			});
 		}
 	}
 
@@ -179,9 +211,47 @@ class Yaplet {
 		}
 		instance.initialized = true;
 
+		// Re-run critical assets injection now that we know the sdkKey — this lets the
+		// button placeholder pick up the cached brand color from a prior session.
+		injectCriticalAssets(sdkKey);
+
 		try {
 			fixHeight();
 		} catch (error) { }
+
+		const continueInit = () => {
+			StreamedEvent.getInstance().start();
+
+			// Listen for visitor ID requests from the dashboard (popup test setup)
+			window.addEventListener("message", (event) => {
+				if (event.data?.type === "yaplet-get-visitor-id") {
+					const session = Session.getInstance().getSession();
+					if (session?.yapletId && event.source) {
+						event.source.postMessage({
+							type: "yaplet-visitor-id",
+							visitorId: session.yapletId,
+						}, event.origin || "*");
+					}
+				}
+			});
+
+			runFunctionWhenDomIsReady(() => {
+				// Inject the widget buttons
+				FeedbackButtonManager.getInstance().injectFeedbackButton();
+
+				// Inject the notification container
+				NotificationManager.getInstance().injectNotificationUI();
+
+				// Check for URL params.
+				Yaplet.checkForUrlParams();
+
+				// Check for multi-page tour resume.
+				Yaplet.checkForTourResume();
+
+				// Notify event.
+				EventManager.notifyEvent("initialized");
+			});
+		};
 
 		// Start session
 		const sessionInstance = Session.getInstance();
@@ -191,41 +261,19 @@ class Yaplet {
 			setTimeout(() => {
 				ConfigManager.getInstance()
 					.start()
-					.then(() => {
-						StreamedEvent.getInstance().start();
-
-						// Listen for visitor ID requests from the dashboard (popup test setup)
-						window.addEventListener("message", (event) => {
-							if (event.data?.type === "yaplet-get-visitor-id") {
-								const session = Session.getInstance().getSession();
-								if (session?.yapletId && event.source) {
-									event.source.postMessage({
-										type: "yaplet-visitor-id",
-										visitorId: session.yapletId,
-									}, event.origin || "*");
-								}
-							}
-						});
-
-						runFunctionWhenDomIsReady(() => {
-							// Inject the widget buttons
-							FeedbackButtonManager.getInstance().injectFeedbackButton();
-
-							// Inject the notification container
-							NotificationManager.getInstance().injectNotificationUI();
-
-							// Check for URL params.
-							Yaplet.checkForUrlParams();
-
-							// Check for multi-page tour resume.
-							Yaplet.checkForTourResume();
-
-							// Notify event.
-							EventManager.notifyEvent("initialized");
-						});
-					})
+					.then(continueInit)
 					.catch(function (err) {
-						console.warn("Failed to initialize Yaplet.", err);
+						// If config fetch fails or times out, fall back to safe defaults so the
+						// widget button still works rather than hanging forever.
+						console.warn("Yaplet config load failed; using defaults.", err);
+						try {
+							ConfigManager.getInstance().applyConfig({
+								flowConfig: { ...SAFE_FALLBACK_FLOW_CONFIG },
+							});
+							continueInit();
+						} catch (fallbackErr) {
+							console.warn("Failed to initialize Yaplet.", fallbackErr);
+						}
 					});
 			}, 0);
 		});
