@@ -23,7 +23,10 @@ const PRECONNECT_HOSTS = [
 const FALLBACK_BUTTON_COLOR = "#485BFF";
 
 const cachedColorKey = (sdkKey) => `yaplet-button-color-${sdkKey || "default"}`;
+const cachedIconColorKey = (sdkKey) => `yaplet-button-icon-color-${sdkKey || "default"}`;
 
+// Cached value can be a hex string ("#RRGGBB") or a full CSS gradient string ("linear-gradient(...)").
+// Both are valid `background:` values for the placeholder CSS.
 export const persistButtonColor = (sdkKey, color) => {
     if (!color || typeof window === "undefined" || !window.localStorage) {
         return;
@@ -39,6 +42,26 @@ const loadCachedButtonColor = (sdkKey) => {
     }
     try {
         return window.localStorage.getItem(cachedColorKey(sdkKey));
+    } catch (e) {
+        return null;
+    }
+};
+
+export const persistButtonIconColor = (sdkKey, color) => {
+    if (!color || typeof window === "undefined" || !window.localStorage) {
+        return;
+    }
+    try {
+        window.localStorage.setItem(cachedIconColorKey(sdkKey), color);
+    } catch (e) { }
+};
+
+export const loadCachedButtonIconColor = (sdkKey) => {
+    if (typeof window === "undefined" || !window.localStorage) {
+        return null;
+    }
+    try {
+        return window.localStorage.getItem(cachedIconColorKey(sdkKey));
     } catch (e) {
         return null;
     }

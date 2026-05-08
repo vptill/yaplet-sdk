@@ -75,7 +75,9 @@ export namespace Yaplet {
       buttonX?: number,
       buttonY?: number,
       buttonStyle?: string,
-      zIndexBase?: number
+      zIndexBase?: number,
+      feedbackButtonGradient?: { colors: string[]; angle: number } | null,
+      feedbackButtonIconColor?: string | null
     ): void;
     function disableConsoleLogOverwrite(): void;
     function enableShortcuts(enabled: boolean): void;

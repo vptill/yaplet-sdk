@@ -139,7 +139,9 @@ export default class ConfigManager {
       parseIntWithDefault(flowConfig.buttonX, 20),
       parseIntWithDefault(flowConfig.buttonY, 20),
       flowConfig.feedbackButtonPosition,
-      Math.max(flowConfig.zIndexBase || 0, 2147483600)
+      Math.max(flowConfig.zIndexBase || 0, 2147483600),
+      flowConfig.feedbackButtonGradient || null,
+      flowConfig.feedbackButtonIconColor || null
     );
 
     FeedbackButtonManager.getInstance().updateFeedbackButtonState();

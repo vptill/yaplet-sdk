@@ -45,6 +45,8 @@ const SAFE_FALLBACK_FLOW_CONFIG = {
 	buttonX: 20,
 	buttonY: 20,
 	feedbackButtonPosition: "BOTTOM_RIGHT",
+	feedbackButtonGradient: null,
+	feedbackButtonIconColor: null,
 	enableWebReplays: false,
 	enableNetworkLogs: false,
 };
@@ -744,7 +746,9 @@ class Yaplet {
 		buttonX = 20,
 		buttonY = 20,
 		buttonStyle = FeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT,
-		zIndexBase = 2147483600
+		zIndexBase = 2147483600,
+		feedbackButtonGradient = null,
+		feedbackButtonIconColor = null
 	) {
 		runFunctionWhenDomIsReady(() => {
 			injectStyledCSS(
@@ -756,7 +760,9 @@ class Yaplet {
 				buttonX,
 				buttonY,
 				buttonStyle,
-				zIndexBase
+				zIndexBase,
+				feedbackButtonGradient,
+				feedbackButtonIconColor
 			);
 		});
 	}

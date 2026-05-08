@@ -4,7 +4,8 @@ import NotificationManager from "./NotificationManager";
 import TranslationManager from "./TranslationManager";
 import Session from "./Session";
 import { loadIcon } from "./UI";
-import { persistButtonColor } from "./CriticalAssets";
+import { persistButtonColor, persistButtonIconColor } from "./CriticalAssets";
+import { calculateContrast } from "./UI";
 
 export default class FeedbackButtonManager {
 	feedbackButton = null;
@@ -186,8 +187,15 @@ export default class FeedbackButtonManager {
 		this.feedbackButton.style.display = "";
 
 		// Cache brand color so the next visit's critical-CSS placeholder matches.
+		// In gradient mode, cache the full `linear-gradient(...)` CSS string so it can be applied as `background:` directly.
 		if (flowConfig?.primaryColor) {
-			persistButtonColor(Session.getInstance().sdkKey, flowConfig.primaryColor);
+			const sdkKey = Session.getInstance().sdkKey;
+			const gradient = flowConfig.feedbackButtonGradient;
+			const cacheValue = gradient && Array.isArray(gradient.colors) && gradient.colors.length > 0
+				? `linear-gradient(${typeof gradient.angle === "number" ? gradient.angle : 90}deg, ${[flowConfig.primaryColor, ...gradient.colors].join(", ")})`
+				: flowConfig.primaryColor;
+			persistButtonColor(sdkKey, cacheValue);
+			persistButtonIconColor(sdkKey, flowConfig.feedbackButtonIconColor || calculateContrast(flowConfig.primaryColor));
 		}
 
 		var buttonIcon = "";

@@ -23,7 +23,7 @@ const calculateShadeColor = function (col, amt) {
   return `#${rr}${gg}${bb}`;
 };
 
-const calculateContrast = (hex) => {
+export const calculateContrast = (hex) => {
   var r = parseInt(hex.substr(1, 2), 16),
     g = parseInt(hex.substr(3, 2), 16),
     b = parseInt(hex.substr(5, 2), 16),
@@ -42,12 +42,21 @@ export const injectStyledCSS = (
   buttonX,
   buttonY,
   buttonStyle,
-  zIndexBase = 2147483600
+  zIndexBase = 2147483600,
+  feedbackButtonGradient = null,
+  feedbackButtonIconColor = null
 ) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastButtonColor = calculateContrast(buttonColor);
   const contrastBackgroundColor = calculateContrast(backgroundColor);
   const contrastHeaderColor = calculateContrast(headerColor);
+
+  // Launcher-button-specific: build gradient CSS or fall back to solid; use icon override or contrast.
+  const hasGradient = feedbackButtonGradient && Array.isArray(feedbackButtonGradient.colors) && feedbackButtonGradient.colors.length > 0;
+  const launcherBackground = hasGradient
+    ? `linear-gradient(${typeof feedbackButtonGradient.angle === "number" ? feedbackButtonGradient.angle : 90}deg, ${[buttonColor, ...feedbackButtonGradient.colors].join(", ")})`
+    : buttonColor;
+  const launcherIconColor = feedbackButtonIconColor || contrastButtonColor;
   const isDarkMode = contrastBackgroundColor === "#ffffff";
   const headerDarkColor = calculateShadeColor(
     headerColor,
@@ -947,10 +956,13 @@ export const injectStyledCSS = (
       position: fixed;
       bottom: ${buttonY}px;
       right: ${buttonX}px;
+      width: auto;
+      height: auto;
       border-radius: 30px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       background-color: transparent;
+      box-shadow: none;
       color: #000000;
       z-index: ${zIndexBase + 30};
       box-sizing: border-box;
@@ -1773,17 +1785,17 @@ export const injectStyledCSS = (
       border-top-right-radius: ${formItemBorderRadius}px;
     }
     .yy-logo-logo--default path {
-      fill: ${contrastButtonColor};
+      fill: ${launcherIconColor};
     }
     .yy-logo-arrowdown {
-      fill: ${contrastButtonColor};
+      fill: ${launcherIconColor};
     }
     .yy-feedback-button-icon {
-        background-color: ${buttonColor};
+        background: ${launcherBackground};
     }
     .yy-feedback-button-classic {
-      background-color: ${buttonColor};
-      color: ${contrastButtonColor};
+      background: ${launcherBackground};
+      color: ${launcherIconColor};
     }
 
     @media only screen and (max-width: 450px) {
