@@ -81,6 +81,11 @@ export default class ConfigManager {
         ? cachedConfig
         : { flowConfig: cachedConfig };
       this.applyConfig(configToApply);
+      // Stale-while-revalidate: cached config painted instantly above; now fetch
+      // fresh in the background so dashboard changes (colors, position, etc.)
+      // propagate on the next page load instead of being pinned forever in
+      // localStorage. Errors are swallowed — the stale UI keeps working.
+      this.loadConfigFromServer().catch(() => { });
       return Promise.resolve();
     }
 

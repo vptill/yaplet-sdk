@@ -1099,8 +1099,8 @@ export const injectStyledCSS = (
       height: 48px;
       border-radius: 48px;
       background-color: #485bff;
-      transition: box-shadow, transform 0.2s ease-in-out;
-      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease-in-out;
       position: relative;
     }
     
@@ -1211,7 +1211,6 @@ export const injectStyledCSS = (
     }
     
     .yy-feedback-button-icon:hover {
-      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
       transform: scale(1.1);
     }
     

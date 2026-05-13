@@ -102,7 +102,7 @@ const injectCriticalButtonCSS = (sdkKey) => {
     // by UI.js's stylesheet once config loads. We intentionally avoid touching any
     // .yy-feedback-button-icon / inner content styles to let UI.js own those.
     style.textContent = `
-.yy-feedback-button{position:fixed;right:20px;bottom:81px;width:54px;height:54px;border-radius:50%;background:${buttonColor};cursor:pointer;z-index:2147483631;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 30px rgba(0,0,0,.16);transition:background-color .2s ease}
+.yy-feedback-button{position:fixed;right:20px;bottom:81px;width:48px;height:48px;border-radius:50%;background:${buttonColor};cursor:pointer;z-index:2147483631;border:none;display:flex;align-items:center;justify-content:center;transition:background-color .2s ease}
 .yy-feedback-button.yy-feedback-button--bottomleft{right:auto;left:20px}
 .yy-feedback-button--hidden,.yy-feedback-button--disabled{display:none !important}
 `;
