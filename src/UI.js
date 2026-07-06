@@ -101,12 +101,6 @@ export const injectStyledCSS = (
       line-height: 1;
       font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
-    .yaplet-ai-ui-widget {
-      display: none;
-    }
-    .yaplet-input-highlight {
-      box-shadow: 0 0 0 3px ${primaryColor} !important;
-    }
     .yaplet-frame-container {
       right: ${buttonX}px;
       bottom: ${61 + buttonY}px;
@@ -126,169 +120,8 @@ export const injectStyledCSS = (
       transition: max-width 0.3s ease-out;
     }
 
-    .yaplet-admin-highlight {
-      box-shadow: 0px 0px 0px 4px red;
-    }
-
     :root {
       --yaplet-margin-top: 50px;
-    }
-
-    .yaplet-tooltip-anchor {
-      position: relative;
-      display: inline-block;
-      float: left;
-      max-width: 0px;
-      width: 17px;
-    }
-
-    .yaplet-tooltip-hotspot {
-      position: absolute;
-      display: block;
-      width: 17px;
-      height: 17px;
-      cursor: pointer;
-      top: 0px;
-      left: 0px;
-    }
-
-    @keyframes yaplet-pulse {
-      0% {
-        transform: scale(0);
-        opacity: 0.25;
-      }
-      45% {
-        transform: scale(2.5);
-        opacity: 0;
-      }
-      100% {
-        transform: scale(0);
-        opacity: 0;
-      }
-    }
-
-    .yaplet-tooltip-hotspot-animation {
-      position: absolute;
-      border-radius: 17px;
-      opacity: 0.25;
-      display: block;
-      width: 17px;
-      height: 17px;
-      cursor: pointer;
-      top: 0px;
-      left: 0px;
-      animation: yaplet-pulse 5s infinite;
-    }
-
-    .yaplet-tooltip-hotspot svg {
-      width: 17px;
-      height: 17px;
-      object-fit: contain;
-      display: block;
-    }
-
-    .yaplet-tooltip-inner {
-      position: relative;
-      overflow: visible;
-      font-size: 14px;
-      font-weight: normal;
-      color: #000;
-      line-height: 1.3;
-    }
-
-    .yaplet-tooltip {
-      position: absolute;
-      background-color: #fff;
-      color: #000;
-      font-size: 15px;
-      line-height: 18px;
-      padding: 16px;
-      padding-top: 8px;
-      padding-bottom: 8px;
-      border-radius: 4px;
-      max-width: min(350px, 80vw);
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s, visibility 0.2s;
-      z-index: ${zIndexBase + 100};
-    }
-
-    .yaplet-tooltip a {
-      color: ${primaryColor};
-      text-decoration: underline;
-      display: inline !important;
-      margin: 0px !important;
-      padding: 0px !important;
-      word-break: break-word;
-    }
-
-    .yaplet-tooltip ul {
-      padding-left: 16px;
-    }
-
-    .yaplet-tooltip b {
-      font-weight: 600;
-    }
-
-    .yaplet-tooltip h2 {
-      font-size: 18px;
-      line-height: 20px;
-      font-weight: 600;
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-
-    .yaplet-tooltip h3 {
-      font-size: 16px;
-      line-height: 18px;
-      font-weight: 600;
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-
-    .yaplet-tooltip p {
-      padding: 0px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-
-    .yaplet-tooltip img {
-      max-width: 100%;
-      max-height: 300px;
-      width: 100%;
-      height: auto;
-      object-fit: cover;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      border-radius: 4px;
-    }
-
-    .yaplet-tooltip iframe,
-    .yaplet-tooltip video {
-      max-width: 100%;
-      width: 100%;
-      height: auto;
-      min-height: 200px;
-      display: block;
-      border: none;
-      outline: none;
-      padding: 0px;
-      margin-top: 8px;
-      margin-bottom: 8px;
-      border-radius: 4px;
-    }
-
-    .yaplet-tooltip-arrow {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-    }
-
-    .yaplet-tooltip-arrow svg {
-      width: 20px;
-      height: 20px;
-      object-fit: contain;
     }
 
     .yaplet-b-frame {
@@ -643,117 +476,8 @@ export const injectStyledCSS = (
       fill: ${backgroundColor};
     }
 
-    .yaplet-notification-item-checklist-container {
-      display: flex;
-      animation: fadeIn;
-      animation-duration: .45s;
-      background-color: ${backgroundColor};
-      border-radius: ${subTextColor};
-      box-sizing: border-box;
-      cursor: pointer;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
-      border-radius: ${chatRadius}px;
-      margin-bottom: 12px;
-    }
-
-    .yaplet-notification-item-checklist-content {
-      align-items: flex-start;
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
-      width: 100%;
-      width: min(310px, 70vw);
-      max-width: min(310px, 70vw);
-    }
-
-    .yaplet-notification-item-checklist-content-title {
-      color: ${contrastBackgroundColor};
-      font-size: 15px;
-      font-weight: 500;
-      line-height: 21px;
-      margin-bottom: 10px;
-      max-width: 100%;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .yaplet-notification-item-checklist-content-progress {
-      width: 100%;
-      height: 8px;
-      border-radius: 8px;
-      background-color: ${backgroundColorHover};
-    }
-
-    .yaplet-notification-item-checklist-content-progress-inner {
-      height: 100%;
-      border-radius: 8px;
-      background-color: ${primaryColor};
-    }
-
-    .yaplet-notification-item-checklist-content-next {
-      color: ${subTextColor};
-      font-size: 15px;
-      font-weight: normal;
-      line-height: 21px;
-      margin-top: 10px;
-      max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: flex;
-      align-items: center;
-    }
-
-    .yaplet-notification-item-checklist-content-next svg {
-      height: 18px;
-      margin-right: 5px;
-      width: auto;
-    }
-
-    .yaplet-notification-item-checklist-content-next b {
-      font-size: 15px;
-      font-weight: normal;
-      color: ${contrastBackgroundColor};
-    }
-
     .yaplet-notification-item-news {
       width: 100%;
-    }
-
-    .yaplet-news-pagination {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-      width: 100%;
-    }
-
-    .yaplet-news-page-indicator {
-      font-size: 12px;
-      color: ${subTextColor};
-    }
-
-    .yaplet-news-next-button {
-      background-color: ${primaryColor};
-      color: ${contrastColor};
-      border-radius: ${formItemSmallBorderRadius}px;
-      box-sizing: border-box;
-      padding: 5px 10px;
-      font-size: 14px;
-      font-weight: bold;
-      line-height: 21px;
-      border: none;
-      text-align: center;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: none !important;
-      outline: none !important;
     }
 
     .yaplet-notification-item-news-content {
@@ -971,31 +695,6 @@ export const injectStyledCSS = (
       padding: 0px;
     }
 
-    @keyframes yyRedDotPulse {
-      0% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.8;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    .yy-feedback-button--red-dot {
-      position: absolute;
-      top: 0px;
-      right: 0px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background-color: #ff3b30;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: ${zIndexBase + 31};
-      animation: yyRedDotPulse 2s ease-in-out infinite;
-    }
-
     [dir=rtl].yy-feedback-button {
       bottom: ${buttonY}px;
       right: auto;
@@ -1022,58 +721,6 @@ export const injectStyledCSS = (
       display: none !important;
     }
     
-    .yy-feedback-button-text {
-      padding: 8px 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.15);
-      position: relative;
-      z-index: 99;
-    }
-    
-    .yy-feedback-button-text:before {
-      content: "";
-      position: absolute;
-      box-shadow: rgba(0, 0, 0, 0.04) 6px 6px 5px;
-      transform: rotate(315deg);
-      bottom: 16px;
-      right: -4px;
-      border-width: 10px;
-      border-style: solid;
-      border-color: transparent #fff #fff transparent;
-    }
-    
-    .yy-feedback-button--bottomleft .yy-feedback-button-text:before {
-      display: none;
-    }
-    
-    .yy-feedback-button-text:after {
-      content: "";
-      position: absolute;
-      bottom: 12px;
-      right: 0px;
-      background-color: #fff;
-      width: 5px;
-      height: 30px;
-    }
-    
-    .yy-feedback-button-text-title {
-      font-family: sans-serif;
-      font-size: 14px;
-      color: #666;
-      line-height: 18px;
-      max-width: 220px;
-    }
-    
-    .yy-feedback-button-text-title b {
-      color: #000000;
-      font-weight: 600;
-    }
-
     .yy-notification-bubble {
       position: absolute;
       top: -5px;
@@ -1212,10 +859,6 @@ export const injectStyledCSS = (
     
     .yy-feedback-button-icon:hover {
       transform: scale(1.1);
-    }
-    
-    .yy-feedback-button--open .yy-feedback-button-text {
-      animation-name: bbFadeOutDown;
     }
     
     .yy-feedback-button--open .yy-feedback-button-icon {
@@ -1640,14 +1283,6 @@ export const injectStyledCSS = (
       opacity: 1;
     }
     
-    .yy-capture-options {
-      display: none;
-    }
-    
-    .yy-capture-options--active {
-      display: flex;
-    }
-
     @keyframes bbFadeOutRight {
       from {
         opacity: 1;

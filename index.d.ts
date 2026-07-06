@@ -1,5 +1,5 @@
 export namespace Yaplet {
-    function initialize(sdkKey: string, disablePing?: boolean): void;
+    function initialize(sdkKey: string): void;
     function sendSilentCrashReport(
       description: string,
       priority?: "LOW" | "MEDIUM" | "HIGH",
@@ -82,7 +82,6 @@ export namespace Yaplet {
     function disableConsoleLogOverwrite(): void;
     function enableShortcuts(enabled: boolean): void;
     function setLanguage(language: string): void;
-    function preFillForm(data: object): void;
     function setAiTools(tools: {
       name: string;
       description: string;
@@ -107,6 +106,20 @@ export namespace Yaplet {
     function setDisablePageTracking(
       disablePageTracking: boolean
     ): void;
+    /**
+     * Attaches a known identity to the current widget visitor record.
+     *
+     * Field persistence (server `/sdk/identify`):
+     *  - `name`, `email`, `phone`, `value`, `plan` → dedicated visitor columns.
+     *  - `userId` → stored as the visitor's `external_id` (the stable key that
+     *    links a widget visitor back to your own user account — set this).
+     *  - `companyId`, `companyName`, `sla`, `createdAt` and anything under
+     *    `customData` → folded into the visitor's `custom_data` (shown to agents).
+     *
+     * Note: `userHash` is reserved for server-side identity verification. It is
+     * accepted but NOT yet enforced, so identity is currently trust-on-write —
+     * safe for first-party use, not yet for verifying untrusted end users.
+     */
     function identify(
       userId: string,
       customerData: {
@@ -123,6 +136,13 @@ export namespace Yaplet {
       },
       userHash?: string
     ): void;
+    /**
+     * Updates contact data for the current session without a userId.
+     *
+     * Note: the server `/sdk/sessions` endpoint does not currently persist these
+     * contact fields to the visitor record (only session/language state is
+     * updated). To reliably store visitor details, use `identify()`.
+     */
     function updateContact(
       customerData: {
         name?: string | null;
@@ -138,14 +158,10 @@ export namespace Yaplet {
     ): void;
     function getInstance(): any;
     function open(): void;
-    function openChecklists(showBackButton?: boolean): void;
-    function openChecklist(checklistId: string, showBackButton?: boolean): void;
-    function startChecklist(outboundId: string, showBackButton?: boolean): void;
-    function openNews(showBackButton?: boolean): void;
     function openNewsArticle(id: string, showBackButton?: boolean): void;
-    function openConversations(showBackButton?: boolean): void;
     function startProductTour(tourId: string): void;
-    function startProductTourWithConfig(tourId: string, config: any): void;
+    function checkForTourResume(): void;
+    function startProductTourWithConfig(tourId: string, config: any, resumeStepIndex?: number): void;
     function openConversation(
       shareToken?: string,
       showBackButton?: boolean
@@ -153,7 +169,6 @@ export namespace Yaplet {
     function setUrlHandler(
       urlHandler: (url: string, newTab?: boolean) => void
     ): void;
-    function openHelpCenter(showBackButton?: boolean): void;
     function openHelpCenterCollection(
       collectionId: string,
       showBackButton?: boolean
@@ -162,8 +177,6 @@ export namespace Yaplet {
       articleId: string,
       showBackButton?: boolean
     ): void;
-    function searchHelpCenter(term: string, showBackButton?: boolean): void;
-    function openFeatureRequests(showBackButton?: boolean): void;
     function showBanner(data: any): void;
     function showNotification(data: any): void;
     function checkForUrlParams(): void;

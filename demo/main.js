@@ -25,31 +25,39 @@ const DEFAULT_SDK_KEY = "3528f1f0-33a7-43d3-b334-c61ee682447c"; // TEST widget
 const sdkKey = overrideWidget || DEFAULT_SDK_KEY;
 
 if (overrideWidget && overrideVisitorId && overrideToken) {
-    try {
-        // Cache key matches Helper.js's `yaplet-widget-${key}` pattern.
-        localStorage.removeItem(`yaplet-widget-session-${DEFAULT_SDK_KEY}`);
-        localStorage.setItem(
-            `yaplet-widget-session-${sdkKey}`,
-            JSON.stringify({ yapletId: overrideVisitorId, yapletHash: overrideToken }),
-        );
-        // Legacy fallback the SDK still reads on first boot.
-        localStorage.setItem("yaplet-access-token", overrideToken);
-        console.info("[yaplet-demo] impersonating visitor", overrideVisitorId, "on widget", overrideWidget);
-    } catch (exp) {
-        console.error("[yaplet-demo] failed to seed impersonation cache:", exp);
-    }
+	try {
+		// Cache key matches Helper.js's `yaplet-widget-${key}` pattern.
+		localStorage.removeItem(`yaplet-widget-session-${DEFAULT_SDK_KEY}`);
+		localStorage.setItem(
+			`yaplet-widget-session-${sdkKey}`,
+			JSON.stringify({
+				yapletId: overrideVisitorId,
+				yapletHash: overrideToken,
+			}),
+		);
+		// Legacy fallback the SDK still reads on first boot.
+		localStorage.setItem("yaplet-access-token", overrideToken);
+		console.info(
+			"[yaplet-demo] impersonating visitor",
+			overrideVisitorId,
+			"on widget",
+			overrideWidget,
+		);
+	} catch (exp) {
+		console.error("[yaplet-demo] failed to seed impersonation cache:", exp);
+	}
 }
 
 Yaplet.setLanguage("en");
 Yaplet.setFrameUrl("http://localhost:5173");
-Yaplet.setApiUrl("http://localhost:3000/api");
+Yaplet.setApiUrl("http://localhost:3000/api"); // TEMP TEST: main tree (wallet feature) — was :3001 (parallel). Revert after wallet test.
 //Yaplet.setBannerUrl("http://localhost:5173");
-Yaplet.setAdminUrl("http://localhost:3000");
+Yaplet.setAdminUrl("http://localhost:3000"); // TEMP TEST: was :3001. Revert after wallet test.
 
 // Optional WS URL override from the gitignored demo/local-overrides.js loaded
 // before this script. Absent in fresh checkouts → SDK defaults to prod.
 if (window.__YAPLET_DEV_WS_URL) {
-    Yaplet.setWSApiUrl(window.__YAPLET_DEV_WS_URL);
+	Yaplet.setWSApiUrl(window.__YAPLET_DEV_WS_URL);
 }
 
 Yaplet.initialize(sdkKey);

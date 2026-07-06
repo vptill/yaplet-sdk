@@ -17,7 +17,6 @@ import ModuleRegistry from "./ModuleRegistry";
 import MarkerManager from "./MarkerManager";
 import TranslationManager from "./TranslationManager";
 import ShortcutListener from "./ShortcutListener";
-import PreFillManager from "./PreFillManager";
 import NotificationManager from "./NotificationManager";
 import BannerManager from "./BannerManager";
 import AudioManager from "./AudioManager";
@@ -535,22 +534,6 @@ class Yaplet {
 		StreamedEvent.getInstance().logEvent(name, data);
 	}
 
-	/**
-	 * Prefills a specific form field.
-	 * @param {*} key
-	 * @param {*} value
-	 */
-	static preFillForm(data) {
-		const cleanedData = dataParser(data);
-		PreFillManager.getInstance().formPreFill = cleanedData;
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "prefill-form-data",
-				data: cleanedData,
-			},
-			true
-		);
-	}
 
 	/**
 	 * Register events for Yaplet.
@@ -918,24 +901,6 @@ class Yaplet {
 		}
 	}
 
-	/**
-	 * Opens the conversations overview.
-	 */
-	static openConversations(showBackButton = true) {
-		FrameManager.getInstance().setAppMode("widget");
-
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "open-conversations",
-				data: {
-					hideBackButton: !showBackButton,
-				},
-			},
-			true
-		);
-
-		FrameManager.getInstance().showWidget();
-	}
 
 	/**
 	 * Opens a conversation
@@ -1031,48 +996,7 @@ class Yaplet {
 		FrameManager.getInstance().showWidget();
 	}
 
-	/**
-	 * Opens the help center.
-	 */
-	static openHelpCenter(showBackButton = true) {
-		FrameManager.getInstance().setAppMode("widget");
 
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "open-helpcenter",
-				data: {
-					hideBackButton: !showBackButton,
-				},
-			},
-			true
-		);
-
-		FrameManager.getInstance().showWidget();
-	}
-
-	/**
-	 * Search for news articles in the help center
-	 */
-	static searchHelpCenter(term, showBackButton = true) {
-		if (!term) {
-			return;
-		}
-
-		FrameManager.getInstance().setAppMode("widget");
-
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "open-helpcenter-search",
-				data: {
-					term,
-					hideBackButton: !showBackButton,
-				},
-			},
-			true
-		);
-
-		FrameManager.getInstance().showWidget();
-	}
 
 	/**
 	 * Opens a news article
@@ -1098,105 +1022,10 @@ class Yaplet {
 		FrameManager.getInstance().showWidget();
 	}
 
-	/**
-	 * Open the checklists overview.
-	 */
-	static openChecklists(showBackButton = true) {
-		FrameManager.getInstance().setAppMode("widget");
 
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "open-checklists",
-				data: {},
-			},
-			true
-		);
 
-		FrameManager.getInstance().showWidget();
-	}
 
-	/**
-	 * Starts a new checklist and opens it.
-	 */
-	static startChecklist(outboundId, showBackButton = true) {
-		if (!outboundId) {
-			return false;
-		}
 
-		FrameManager.getInstance().setAppMode("widget");
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "start-checklist",
-				data: {
-					outboundId: outboundId,
-				},
-			},
-			true
-		);
-
-		FrameManager.getInstance().showWidget();
-
-		return true;
-	}
-
-	/**
-	 * Open an existing checklist.
-	 */
-	static openChecklist(checklistId, showBackButton = true) {
-		if (!checklistId) {
-			return;
-		}
-
-		FrameManager.getInstance().setAppMode("widget");
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "open-checklist",
-				data: {
-					id: checklistId,
-					hideBackButton: !showBackButton,
-				},
-			},
-			true
-		);
-
-		FrameManager.getInstance().showWidget();
-	}
-
-	/**
-	 * Opens the news overview.
-	 */
-	static openNews(showBackButton = true) {
-		FrameManager.getInstance().setAppMode("widget");
-
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "open-news",
-				data: {
-					hideBackButton: !showBackButton,
-				},
-			},
-			true
-		);
-
-		FrameManager.getInstance().showWidget();
-	}
-
-	/**
-	 * Opens the feature requests overview.
-	 */
-	static openFeatureRequests(showBackButton = true) {
-		FrameManager.getInstance().setAppMode("widget");
-
-		FrameManager.getInstance().sendMessage(
-			{
-				name: "open-feature-requests",
-				data: {},
-			},
-			true
-		);
-
-		FrameManager.getInstance().showWidget();
-	}
 
 	static setFlowConfig(flowConfig) {
 		ConfigManager.getInstance().setFlowConfig(flowConfig);
@@ -1273,12 +1102,8 @@ class Yaplet {
 
 			if (action && action.event) {
 				if (action.event === "NEW_MESSAGE" || action.event === "message") {
-					if (action?.data?.checklist?.popupType === "widget") {
-						Yaplet.openChecklist(action.data.checklist.id, true);
-					} else {
-						if (!this.disableInAppNotifications) {
-							Yaplet.showNotification(action);
-						}
+					if (!this.disableInAppNotifications) {
+						Yaplet.showNotification(action);
 					}
 				} else if (action.event === "banner") {
 					Yaplet.showBanner(action.payload);
@@ -1384,7 +1209,6 @@ export {
 	AudioManager,
 	NotificationManager,
 	BannerManager,
-	PreFillManager,
 	ShortcutListener,
 	MarkerManager,
 	TranslationManager,

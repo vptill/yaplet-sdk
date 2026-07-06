@@ -1,0 +1,450 @@
+{
+  "core.js": {
+    "postMessages": [
+      {
+        "data": {
+          "botId": "bot_1",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "botId": "bot_2",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "botId": "",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "botId": "",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "shareToken": "share_1"
+        },
+        "name": "open-conversation"
+      },
+      {
+        "data": {
+          "hideBackButton": false
+        },
+        "name": "open-conversation"
+      },
+      {
+        "data": {
+          "articleId": "art_1",
+          "hideBackButton": false
+        },
+        "name": "open-help-article"
+      },
+      {
+        "data": {
+          "articleId": "art_2",
+          "hideBackButton": false
+        },
+        "name": "open-help-article"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "id": "news_1"
+        },
+        "name": "open-news-article"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "id": "news_2"
+        },
+        "name": "open-news-article"
+      },
+      {
+        "data": {
+          "format": "survey",
+          "hideBackButton": true,
+          "id": "survey_1"
+        },
+        "name": "start-survey"
+      },
+      {
+        "data": {
+          "format": "survey_full",
+          "hideBackButton": true,
+          "id": "survey_2"
+        },
+        "name": "start-survey"
+      },
+      {
+        "data": {
+          "hideBackButton": true,
+          "id": "bugreporting"
+        },
+        "name": "start-feedbackflow"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "id": "bugreporting"
+        },
+        "name": "start-feedbackflow"
+      },
+      {
+        "data": {
+          "hideBackButton": true,
+          "id": "flow_1"
+        },
+        "name": "start-feedbackflow"
+      },
+      {
+        "data": {
+          "isWidgetOpen": false
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      }
+    ],
+    "xhr": [
+      {
+        "method": "POST",
+        "url": "https://yaplet.com/api/sdk/sessions"
+      }
+    ],
+    "domSurfaces": [
+      "yaplet-frame-container gl-block",
+      "yaplet-notification-container yaplet-font",
+      "yaplet-styles",
+      "yy-feedback-button yaplet-font gl-block yy-feedback-button--open"
+    ]
+  },
+  "full.js": {
+    "postMessages": [
+      {
+        "data": {
+          "botId": "bot_1",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "botId": "bot_2",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "botId": "",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "botId": "",
+          "hideBackButton": false
+        },
+        "name": "start-bot"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "shareToken": "share_1"
+        },
+        "name": "open-conversation"
+      },
+      {
+        "data": {
+          "hideBackButton": false
+        },
+        "name": "open-conversation"
+      },
+      {
+        "data": {
+          "articleId": "art_1",
+          "hideBackButton": false
+        },
+        "name": "open-help-article"
+      },
+      {
+        "data": {
+          "articleId": "art_2",
+          "hideBackButton": false
+        },
+        "name": "open-help-article"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "id": "news_1"
+        },
+        "name": "open-news-article"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "id": "news_2"
+        },
+        "name": "open-news-article"
+      },
+      {
+        "data": {
+          "format": "survey",
+          "hideBackButton": true,
+          "id": "survey_1"
+        },
+        "name": "start-survey"
+      },
+      {
+        "data": {
+          "format": "survey_full",
+          "hideBackButton": true,
+          "id": "survey_2"
+        },
+        "name": "start-survey"
+      },
+      {
+        "data": {
+          "hideBackButton": true,
+          "id": "bugreporting"
+        },
+        "name": "start-feedbackflow"
+      },
+      {
+        "data": {
+          "hideBackButton": false,
+          "id": "bugreporting"
+        },
+        "name": "start-feedbackflow"
+      },
+      {
+        "data": {
+          "hideBackButton": true,
+          "id": "flow_1"
+        },
+        "name": "start-feedbackflow"
+      },
+      {
+        "data": {
+          "isWidgetOpen": false
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      },
+      {
+        "data": {
+          "isWidgetOpen": true
+        },
+        "name": "widget-status-update"
+      }
+    ],
+    "xhr": [
+      {
+        "method": "POST",
+        "url": "https://yaplet.com/api/sdk/sessions"
+      }
+    ],
+    "domSurfaces": [
+      "yaplet-frame-container gl-block",
+      "yaplet-notification-container yaplet-font",
+      "yaplet-styles",
+      "yy-feedback-button yaplet-font gl-block yy-feedback-button--open"
+    ]
+  }
+}

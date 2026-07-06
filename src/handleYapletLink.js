@@ -38,10 +38,6 @@ export function handleYapletLink(href) {
 			yaplet.openNewsArticle(identifier, true);
 		}
 
-		if (type === "checklist") {
-			yaplet.startChecklist(identifier, true);
-		}
-
 		if (type === "tour") {
 			yaplet.startProductTour(identifier);
 		}

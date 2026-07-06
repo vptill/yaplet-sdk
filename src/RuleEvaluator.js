@@ -1,5 +1,3 @@
-import ModuleRegistry from "./ModuleRegistry";
-
 /**
  * Recursively evaluate an Operator/Rule query tree (sync).
  * conditionEvaluator is called for each leaf Rule and must return true/false.
@@ -100,4 +98,3 @@ export function evaluatePageRules(pageQuery, currentUrl) {
 	});
 }
 
-ModuleRegistry.register("RuleEvaluator", { evaluateQueryTreeSync, compareValues, evaluatePageRules });
