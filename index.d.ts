@@ -116,9 +116,12 @@ export namespace Yaplet {
      *  - `companyId`, `companyName`, `sla`, `createdAt` and anything under
      *    `customData` → folded into the visitor's `custom_data` (shown to agents).
      *
-     * Note: `userHash` is reserved for server-side identity verification. It is
-     * accepted but NOT yet enforced, so identity is currently trust-on-write —
-     * safe for first-party use, not yet for verifying untrusted end users.
+     * `userHash` is REQUIRED: an HMAC-SHA256 of `userId`, hex encoded, computed
+     * on YOUR server with the widget's identity secret (Yaplet dashboard →
+     * Widgets → your widget → Embed → Identity verification). Calls without a
+     * valid hash are rejected with a 401 (logged to the console as
+     * "[Yaplet] identify() was rejected") and the visitor stays anonymous.
+     * Never compute it in the browser — the secret would ship to every visitor.
      */
     function identify(
       userId: string,
@@ -134,7 +137,7 @@ export namespace Yaplet {
         customData?: object | null;
         createdAt?: Date | null;
       },
-      userHash?: string
+      userHash: string
     ): void;
     /**
      * Updates contact data for the current session without a userId.

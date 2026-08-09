@@ -50,9 +50,9 @@ if (overrideWidget && overrideVisitorId && overrideToken) {
 
 Yaplet.setLanguage("en");
 Yaplet.setFrameUrl("http://localhost:5173");
-Yaplet.setApiUrl("http://localhost:3000/api"); // TEMP TEST: main tree (wallet feature) — was :3001 (parallel). Revert after wallet test.
+Yaplet.setApiUrl("http://localhost:3000/api"); // main tree (regular) — parallel tree = :3001 + frame :5174
 //Yaplet.setBannerUrl("http://localhost:5173");
-Yaplet.setAdminUrl("http://localhost:3000"); // TEMP TEST: was :3001. Revert after wallet test.
+Yaplet.setAdminUrl("http://localhost:3000"); // main tree (regular) — parallel tree = :3001
 
 // Optional WS URL override from the gitignored demo/local-overrides.js loaded
 // before this script. Absent in fresh checkouts → SDK defaults to prod.

@@ -42,8 +42,11 @@
 		<a href="#" style="color: #fff; text-decoration: none; margin: 0 15px">Features</a>
 		<a href="#" style="color: #fff; text-decoration: none; margin: 0 15px">Pricing</a>
 		<a href="#" style="color: #fff; text-decoration: none; margin: 0 15px">Contact</a>
-		<button onclick="Yaplet.trackEvent('customEvent', { name: 'custom-event' });">
+		<button id="track-event" onclick="Yaplet.trackEvent('customEvent', { name: 'custom-event' });">
 			Track Event
+		</button>
+		<button id="track-other-event" onclick="Yaplet.trackEvent('customEvent', { name: 'other-event' });">
+			Track Other Event
 		</button>
 		<button onclick="clearAllCookies()" style="
 					background-color: #dc3545;

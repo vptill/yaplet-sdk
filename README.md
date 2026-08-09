@@ -33,7 +33,10 @@ Then call it:
 
 ```js
 Yaplet.initialize("YOUR_SDK_KEY");
-Yaplet.identify("user-123", { name: "Ada", email: "ada@example.com" });
+// userHash = HMAC-SHA256 of the user id, computed on YOUR server with the
+// widget's identity secret (dashboard → Widgets → Embed → Identity verification).
+// identify() calls without a valid hash are rejected.
+Yaplet.identify("user-123", { name: "Ada", email: "ada@example.com" }, userHash);
 ```
 
 ### 2. Git dependency (how Yaplet's own frontend consumes it)
@@ -76,7 +79,8 @@ The complete, authoritative signatures live in [`index.d.ts`](./index.d.ts). Gro
 
 - **Lifecycle:** `initialize(sdkKey)`, `destroy()`, `open()`, `close()`, `hide()`,
   `isOpened()`, `getInstance()`.
-- **Identity:** `identify(userId, customerData, userHash?)`, `updateContact(customerData)`,
+- **Identity:** `identify(userId, customerData, userHash)` (userHash required — HMAC of the
+  user id signed server-side with the widget's identity secret), `updateContact(customerData)`,
   `clearIdentity()`, `getIdentity()`, `isUserIdentified()`.
 - **Custom data:** `attachCustomData()`, `setCustomData()`, `setTicketAttribute()`,
   `removeCustomData()`, `clearCustomData()`.

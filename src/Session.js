@@ -543,7 +543,22 @@ export default class Session {
 								reject(exp);
 							}
 						} else {
-							reject();
+							// Surface the server's reason (e.g. identity verification
+							// failed: missing/invalid userHash) so the developer sees
+							// the cause during integration instead of the user just
+							// silently staying anonymous.
+							let serverMessage = "";
+							try {
+								serverMessage =
+									JSON.parse(http.responseText).message || "";
+							} catch (exp) {}
+							const message =
+								"[Yaplet] identify() was rejected" +
+								(serverMessage
+									? ": " + serverMessage
+									: " (HTTP " + http.status + ").");
+							console.error(message);
+							reject(message);
 						}
 					}
 				};
