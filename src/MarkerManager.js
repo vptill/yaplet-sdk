@@ -303,7 +303,8 @@ export default class MarkerManager {
       var isEnter = false;
       if ("key" in evt) {
         isEscape = evt.key === "Escape";
-        isEnter = evt.key === "Enter";
+        // Ignore the Enter that confirms an IME conversion (Japanese/Chinese/Korean input)
+        isEnter = evt.key === "Enter" && !evt.isComposing;
       }
       if (isEscape) {
         self.dismiss();
