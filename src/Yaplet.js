@@ -67,7 +67,6 @@ if (
 
 class Yaplet {
 	static invoked = true;
-	static silentCrashReportSent = false;
 	initialized = false;
 	offlineMode = false;
 	disablePageTracking = false;
@@ -630,37 +629,9 @@ class Yaplet {
 		CustomDataManager.getInstance().setTicketAttribute(key, value);
 	}
 
-	/**
-	 * Set custom data that will be attached to the bug-report.
-	 * @param {*} data
-	 */
-	static attachCustomData(data) {
-		CustomDataManager.getInstance().attachCustomData(data);
-	}
-
-	/**
-	 * Add one key value pair to the custom data object
-	 * @param {*} key The key of the custom data entry you want to add.
-	 * @param {*} value The custom data you want to add.
-	 */
-	static setCustomData(key, value) {
-		CustomDataManager.getInstance().setCustomData(key, value);
-	}
-
-	/**
-	 * Remove one key value pair of the custom data object
-	 * @param {*} key The key of the custom data entry you want to remove.
-	 */
-	static removeCustomData(key) {
-		CustomDataManager.getInstance().removeCustomData(key);
-	}
-
-	/**
-	 * Clear the custom data
-	 */
-	static clearCustomData() {
-		CustomDataManager.getInstance().clearCustomData();
-	}
+	// attachCustomData / setCustomData / removeCustomData / clearCustomData were retired
+	// 2026-08-13 (owner decision): the endpoint never stored the payload, so the calls
+	// silently swallowed data. setTicketAttribute above is the working path.
 
 	/**
 	 * Play or mute the sound.
@@ -750,77 +721,11 @@ class Yaplet {
 		});
 	}
 
-	/**
-	 * Sends a silent feedback report
-	 * @param {*} formData
-	 * @param {*} priority
-	 * @param {*} excludeData
-	 */
-	static sendSilentCrashReport(
-		description = "",
-		priority = "MEDIUM",
-		excludeData = {
-			screenshot: true,
-			replays: true,
-			attachments: true,
-		}
-	) {
-		return Yaplet.sendSilentCrashReportWithFormData(
-			{
-				description,
-			},
-			priority,
-			excludeData
-		);
-	}
-
-	/**
-	 * Sends a silent feedback report
-	 * @param {*} formData
-	 * @param {*} priority
-	 * @param {*} excludeData
-	 */
-	static sendSilentCrashReportWithFormData(
-		formData,
-		priority = "MEDIUM",
-		excludeData = {
-			screenshot: false,
-			replays: false,
-			attachments: true,
-		}
-	) {
-		if (this.silentCrashReportSent) {
-			return;
-		}
-
-		this.silentCrashReportSent = true;
-		setTimeout(() => {
-			this.silentCrashReportSent = false;
-		}, 10000);
-
-		const excludeDataCleaned = excludeData ? dataParser(excludeData) : {};
-		const sessionInstance = Session.getInstance();
-		if (!sessionInstance.ready) {
-			return;
-		}
-
-		var newFormData = formData ? formData : {};
-		if (sessionInstance.session.email) {
-			newFormData.reportedBy = sessionInstance.session.email;
-		}
-
-		const feedback = new Feedback(
-			"CRASH",
-			priority,
-			newFormData,
-			true,
-			excludeDataCleaned
-		);
-		feedback
-			.sendFeedback()
-			.then(() => { })
-			.catch((error) => { });
-	}
+	// sendSilentCrashReport / sendSilentCrashReportWithFormData were retired 2026-08-13
+	// (owner decision). They never filed a ticket once: the constructor call put every
+	// argument in the wrong slot, and the endpoint looked up a board whose ID is the
+	// literal string "CRASH", which 404s. Crash reporting can return as a designed
+	// feature if ever wanted.
 
 	/**
 	 * Shows a survey manually.

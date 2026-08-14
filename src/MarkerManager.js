@@ -192,10 +192,6 @@ export default class MarkerManager {
                   ${loadIcon("recorderoff")}
                   <span class="yy-tooltip yy-tooltip-screen-recording"></span>
                 </div>
-                <div class="yy-capture-toolbar-item yy-capture-item-rec" data-type="mic">
-                  ${loadIcon("mic")}
-                  <span class="yy-tooltip yy-tooltip-audio-recording"></span>
-                </div>
                 <div class="yy-capture-toolbar-item-timer yy-capture-item-rec">2:00</div>
                 <div class="yy-capture-toolbar-item-spacer"></div>
                 <div class="yy-capture-toolbar-item yy-capture-toolbar-drawingitem yy-capture-toolbar-item-tool" data-type="pointer">
@@ -465,10 +461,7 @@ export default class MarkerManager {
           colorpicker.style.display = "none";
         }
 
-        // Mic & recording buttons
-        if (type === "mic") {
-          self.screenRecorder.toggleAudio();
-        }
+        // Recording button
         if (type === "recording") {
           if (self.screenRecorder.isRecording) {
             self.screenRecorder.stopScreenRecording();
@@ -558,9 +551,6 @@ export default class MarkerManager {
     const screenRecordingTooltip = document.querySelector(
       ".yy-tooltip-screen-recording"
     );
-    const audioRecordingTooltip = document.querySelector(
-      ".yy-tooltip-audio-recording"
-    );
     const captureEditor = document.querySelector(".yy-capture-editor");
     const recordingClass = "yy-capture-editor-recording";
     const notRecordingClass = "yy-capture-editor-notrecording";
@@ -584,34 +574,6 @@ export default class MarkerManager {
       const toolbarItem = toolbarItems[i];
       const type = toolbarItem.getAttribute("data-type");
       switch (type) {
-        case "mic":
-          if (
-            this.screenRecorder.audioAvailable &&
-            this.screenRecorder.available
-          ) {
-            toolbarItem.classList.remove(itemInactiveClass);
-            if (!this.screenRecorder.audioMuted) {
-              toolbarItem.classList.remove(
-                "yy-capture-toolbar-item--inactivecross"
-              );
-              audioRecordingTooltip.innerHTML =
-                TranslationManager.translateText("mute");
-            } else {
-              toolbarItem.classList.add(
-                "yy-capture-toolbar-item--inactivecross"
-              );
-              audioRecordingTooltip.innerHTML =
-                TranslationManager.translateText("unmute");
-            }
-          } else {
-            toolbarItem.classList.add(itemInactiveClass);
-            toolbarItem.classList.add("yy-capture-toolbar-item--inactivecross");
-            audioRecordingTooltip.innerHTML = TranslationManager.translateText(
-              "browserNotSupported"
-            );
-          }
-          break;
-
         case "recording":
           if (this.screenRecorder.available) {
             toolbarItem.classList.remove(itemInactiveClass);

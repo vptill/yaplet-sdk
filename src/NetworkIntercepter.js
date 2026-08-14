@@ -53,6 +53,29 @@ class NetworkIntercepter {
       requests = requests.concat(this.externalRequests);
     }
 
+    // Sensitive auth headers are stripped UNCONDITIONALLY — a bug report must
+    // never carry a session token, even on sites that enabled full network
+    // logging (owner decision 2026-08-13). setNetworkLogPropsToIgnore() filters
+    // stack on top of this, they cannot re-enable these headers.
+    var authHeaderBlacklist = [
+      "authorization",
+      "proxy-authorization",
+      "cookie",
+      "set-cookie",
+    ];
+    for (var i = 0; i < requests.length; i++) {
+      var reqHeaders =
+        requests[i] && requests[i].request && requests[i].request.headers;
+      if (reqHeaders) {
+        var headerKeys = Object.keys(reqHeaders);
+        for (var j = 0; j < headerKeys.length; j++) {
+          if (authHeaderBlacklist.indexOf(headerKeys[j].toLowerCase()) > -1) {
+            delete reqHeaders[headerKeys[j]];
+          }
+        }
+      }
+    }
+
     if (this.filters && this.filters.length > 0) {
       // Perform network log filtering.
       for (var i = 0; i < requests.length; i++) {

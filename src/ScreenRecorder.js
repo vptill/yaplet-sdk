@@ -4,8 +4,6 @@ export class ScreenRecorder {
 	rerender;
 	stream;
 	mediaRecorder;
-	audioMuted = false;
-	audioAvailable = true;
 	available = true;
 	isRecording = false;
 	file = null;
@@ -30,11 +28,9 @@ export class ScreenRecorder {
 		// List of MIME types in order of preference
 		const types = [
 			"video/webm",
-			"audio/webm",
 			"video/webm;codecs=vp8",
 			"video/webm;codecs=daala",
 			"video/webm;codecs=h264",
-			"audio/webm;codecs=opus",
 			"video/mp4",
 		];
 
@@ -68,6 +64,9 @@ export class ScreenRecorder {
 		const max_width = 3072;
 		const max_height = 1728;
 
+		// Recordings are deliberately SILENT: no display audio and no getUserMedia
+		// microphone call anywhere in this class — audio capture was removed on
+		// purpose (owner privacy decision, 2026-08-13). Do not add it back.
 		navigator.mediaDevices
 			.getDisplayMedia({
 				video: {
@@ -77,18 +76,11 @@ export class ScreenRecorder {
 					displaySurface: "monitor",
 				},
 				selfBrowserSurface: "include",
-				audio: true,
+				audio: false,
 			})
 			.then(function (displayStream) {
 				self.stream = displayStream;
-
-				if (!self.audioMuted) {
-					self.startAudioRecording();
-				} else {
-					self.audioAvailable = false;
-					self.handleRecord({ stream: displayStream });
-				}
-
+				self.handleRecord({ stream: displayStream });
 				self.rerender();
 			})
 			.catch(function (err) {
@@ -112,49 +104,6 @@ export class ScreenRecorder {
 		});
 
 		this.rerender();
-	};
-
-	startAudioRecording = function () {
-		const self = this;
-
-		if (!this.stream) {
-			return;
-		}
-
-		navigator.mediaDevices
-			.getUserMedia({
-				audio: true,
-				video: false,
-			})
-			.then(function (voiceStream) {
-				for (let i = 0; i < voiceStream.getAudioTracks().length; i++) {
-					self.stream.addTrack(voiceStream.getAudioTracks()[i]);
-				}
-				self.audioMuted = false;
-				self.audioAvailable = true;
-				self.handleRecord({ stream: self.stream });
-				self.rerender();
-			})
-			.catch(function (audioErr) {
-				self.audioAvailable = false;
-				self.handleRecord({ stream: self.stream });
-				self.rerender();
-			});
-	};
-
-	toggleAudio = function () {
-		this.audioMuted = !this.audioMuted;
-		this.rerender();
-
-		if (!this.stream) {
-			return;
-		}
-
-		const audioTracks = this.stream.getAudioTracks();
-		for (var i = 0; i < audioTracks.length; i++) {
-			const audioTrack = audioTracks[i];
-			audioTrack.enabled = !this.audioMuted;
-		}
 	};
 
 	static uploadScreenRecording = function (screenRecordingData) {
@@ -250,7 +199,6 @@ export class ScreenRecorder {
 		);
 		if (previewVideoElement) {
 			previewVideoElement.src = URL.createObjectURL(completeBlob);
-			this.audioAvailable = true;
 			this.isRecording = false;
 			this.rerender();
 		}

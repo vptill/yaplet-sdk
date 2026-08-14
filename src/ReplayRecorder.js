@@ -42,7 +42,9 @@ export default class ReplayRecorder {
     var options = {
       inlineStylesheet: true,
       blockClass: "gl-block",
-      ignoreClass: "gl-ignore",
+      // gl-ignore (rrweb ignoreClass — suppressed typing events only, never content) was
+      // scrapped 2026-08-13, owner decision: nobody used it, and its name misled people
+      // into thinking it protected field contents. gl-mask / gl-block are the real tools.
       maskTextClass: "gl-mask",
       dataURLOptions: {
         quality: 0.7,

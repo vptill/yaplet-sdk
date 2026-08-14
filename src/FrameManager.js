@@ -588,7 +588,6 @@ export default class FrameManager {
 
 			if (data.name === "collect-ticket-data") {
 				var ticketData = {
-					customData: CustomDataManager.getInstance().getCustomData(),
 					metaData: MetaDataManager.getInstance().getMetaData(),
 					consoleLog: ConsoleLogManager.getInstance().getLogs(),
 					networkLogs: NetworkIntercepter.getInstance().getRequests(),

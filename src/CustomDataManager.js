@@ -1,7 +1,8 @@
-import { dataParser } from "./Helper";
-
 export default class CustomDataManager {
-  customData = {};
+  // attachCustomData / setCustomData were retired 2026-08-13 (owner decision): the
+  // bug-report endpoint never stored the payload — board_tickets has no column for it —
+  // so the calls silently swallowed data for their whole life. Ticket attributes are the
+  // one custom-data path that actually reaches the ticket (merged into the form answers).
   ticketAttributes = {};
 
   // CustomDataManager singleton
@@ -11,46 +12,6 @@ export default class CustomDataManager {
       this.instance = new CustomDataManager();
     }
     return this.instance;
-  }
-
-  /**
-   * Returns the custom data object
-   * @returns {*}
-   */
-  getCustomData() {
-    return this.customData;
-  }
-
-  /**
-   * Set custom data that will be attached to the bug-report.
-   * @param {*} data
-   */
-  attachCustomData(data) {
-    this.customData = Object.assign(this.customData, dataParser(data));
-  }
-
-  /**
-   * Add one key value pair to the custom data object
-   * @param {*} key The key of the custom data entry you want to add.
-   * @param {*} value The custom data you want to add.
-   */
-  setCustomData(key, value) {
-    this.customData[key] = value;
-  }
-
-  /**
-   * Remove one key value pair of the custom data object
-   * @param {*} key The key of the custom data entry you want to remove.
-   */
-  removeCustomData(key) {
-    delete this.customData[key];
-  }
-
-  /**
-   * Clear the custom data
-   */
-  clearCustomData() {
-    this.customData = {};
   }
 
   /**

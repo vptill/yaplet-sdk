@@ -13,7 +13,6 @@ export default class Feedback {
   excludeData = {};
   type = "BUG";
   priority = "LOW";
-  customData = {};
   ticketAttributes = {};
   metaData = {};
   consoleLog = [];
@@ -53,7 +52,6 @@ export default class Feedback {
     if (!yapletInstance) {
       return Promise.resolve();
     }
-    this.customData = CustomDataManager.getInstance().getCustomData();
     this.metaData = MetaDataManager.getInstance().getMetaData();
     this.consoleLog = ConsoleLogManager.getInstance().getLogs();
     this.networkLogs = NetworkIntercepter.getInstance().getRequests();
@@ -110,7 +108,6 @@ export default class Feedback {
     var feedbackData = {
       type: this.type,
       priority: this.priority,
-      customData: this.customData,
       metaData: this.metaData,
       consoleLog: this.consoleLog,
       networkLogs: this.networkLogs,

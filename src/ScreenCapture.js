@@ -451,7 +451,10 @@ const deepClone = async (host) => {
 				tagName === "INPUT"
 			) {
 				var val = node.value;
+				// type="password" is ALWAYS masked — the help center promises it
+				// (owner decision 2026-08-13); gl-mask / yaplet-ignore cover the rest.
 				if (
+					node.type === "password" ||
 					node.getAttribute("yaplet-ignore") === "value" ||
 					node.classList.contains("gl-mask")
 				) {
