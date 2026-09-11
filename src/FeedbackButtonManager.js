@@ -12,6 +12,7 @@ export default class FeedbackButtonManager {
 	injectedFeedbackButton = false;
 	buttonHidden = null;
 	lastButtonIcon = null;
+	wasOpened = false;
 
 	// Feedback button types
 	static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -269,9 +270,20 @@ export default class FeedbackButtonManager {
 			this.feedbackButton.classList.add("yy-feedback-button--bottomleft");
 		}
 
-		if (FrameManager.getInstance().isOpened()) {
+		const isOpened = FrameManager.getInstance().isOpened();
+		if (isOpened) {
 			this.feedbackButton.classList.add("yy-feedback-button--open");
+		} else if (this.wasOpened) {
+			// The ring is display:none while the widget is open (UI.js). iOS Safari does not restart
+			// an animation when its element comes back from display:none — the line stays frozen
+			// wherever it was at the moment of opening. A brand-new element always starts its
+			// animation from scratch, so the closed launcher gets a fresh copy of the ring.
+			const ring = this.feedbackButton.querySelector(".yy-launcher-ring");
+			if (ring && ring.parentNode) {
+				ring.parentNode.replaceChild(ring.cloneNode(true), ring);
+			}
 		}
+		this.wasOpened = isOpened;
 
 		const appMode = FrameManager.getInstance().appMode;
 		if (
