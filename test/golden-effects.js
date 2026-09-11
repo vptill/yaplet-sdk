@@ -6,9 +6,11 @@
  * (test/lib/scenario.js), and records the outbound effects: SDK→iframe
  * postMessages, XHR calls, and injected host-page DOM surfaces.
  *
- * Because the scenario only calls methods that survive the cleanup, its
- * transcript must be IDENTICAL before and after every deletion wave. Any diff
- * is a red flag.
+ * The scenario calls only stable public methods, so its transcript must stay
+ * IDENTICAL across refactors. Any diff means the SDK now talks to the widget,
+ * the network or the host page differently than it used to — investigate before
+ * re-recording. Re-record (--update) only once you have verified the new
+ * behaviour by hand; doing it casually throws away the whole guarantee.
  *
  *   node test/golden-effects.js            # check against baseline (exit 1 on fail)
  *   node test/golden-effects.js --update   # (re)capture the baseline

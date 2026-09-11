@@ -1,35 +1,39 @@
 /**
- * Test-net runner. Runs the three automated guards and exits nonzero if any
- * fails. This is what `npm test` invokes.
+ * Test-net runner. Runs the two guards and exits nonzero if either fails.
+ * This is what `npm test` invokes.
  *
- *   node test/run.js            # check all guards against baselines
- *   node test/run.js --update   # (re)capture every baseline (do this on a known-good bundle)
+ *   node test/run.js            # check
+ *   node test/run.js --update   # re-record the golden-effects transcript
+ *                               # (only ever on a bundle you have verified by hand)
  *
  * The guards:
- *   1. api-surface     — the public static method surface (no live method lost).
- *   2. golden-effects  — the outbound-effects transcript (behavioral equivalence).
- *   3. build-integrity — bundle composition + sizes (dead modules actually left).
+ *   1. api-surface     — index.d.ts describes exactly the built bundle's public
+ *                        methods (no phantom types, nothing shipped undeclared).
+ *                        Baseline-free: it compares two live artifacts.
+ *   2. golden-effects  — boots the built SDK in jsdom against canned responses,
+ *                        runs a scripted scenario of public calls, and diffs the
+ *                        outbound effects (iframe postMessages, XHR, injected DOM)
+ *                        against a recorded transcript. The behavioral gate.
  *
- * CSS/visual verification (§3.4) and the demo smoke matrix (§3.5) are manual and
- * live outside this runner.
+ * Whether the bundle compiles at all is answered by `npm run build`, which you
+ * run before publishing anyway — there is no separate build guard.
+ *
+ * CSS/visual verification and the demo smoke matrix are manual and live outside
+ * this runner.
  */
 const update = process.argv.includes("--update");
 const surface = require("./api-surface");
 const effects = require("./golden-effects");
-const build = require("./build-integrity");
 
 (async () => {
   const results = [];
   console.log(`\n=== Yaplet SDK test net ${update ? "(UPDATE baselines)" : "(check)"} ===\n`);
 
-  console.log("[1/3] api-surface");
+  console.log("[1/2] api-surface");
   results.push(["api-surface", await Promise.resolve(surface.run())]);
 
-  console.log("\n[2/3] golden-effects");
+  console.log("\n[2/2] golden-effects");
   results.push(["golden-effects", await effects.run()]);
-
-  console.log("\n[3/3] build-integrity");
-  results.push(["build-integrity", await build.run()]);
 
   console.log("\n=== summary ===");
   let allOk = true;

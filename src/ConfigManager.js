@@ -146,7 +146,19 @@ export default class ConfigManager {
       flowConfig.feedbackButtonPosition,
       Math.max(flowConfig.zIndexBase || 0, 2147483600),
       flowConfig.feedbackButtonGradient || null,
-      flowConfig.feedbackButtonIconColor || null
+      flowConfig.feedbackButtonIconColor || null,
+      // The widget's Home background and its ink, computed by the server from the widget's
+      // theme: what the loading skin is painted with while the widget boots.
+      flowConfig.heroBackground || null,
+      flowConfig.heroTextColor || null,
+      // The launcher bubble's corner, computed by the server from the widget's corner preset.
+      // Absent (no stored preset, an older config) = null = the circle, so a config cached
+      // before the key existed shows today's launcher — the same promise `heroBackground` makes.
+      parseIntWithDefault(flowConfig.launcherRadius, null),
+      // The highlight ring's color, computed by the server from the launcher's own settings.
+      // Absent (the widget has no ring, or a config cached before the key existed) = null = no
+      // ring at all, so the bubble looks exactly as it does today.
+      flowConfig.launcherRing || null
     );
 
     FeedbackButtonManager.getInstance().updateFeedbackButtonState();

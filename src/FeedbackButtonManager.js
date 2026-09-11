@@ -232,7 +232,10 @@ export default class FeedbackButtonManager {
 				}">${flowConfig.widgetButtonText}</div>`;
 		} else {
 			if (buttonIcon !== this.lastButtonIcon) {
-				this.feedbackButton.innerHTML = `<div class="yy-feedback-button-icon">${buttonIcon}${loadIcon(
+				// The ring is always in the DOM and always first, so the glyphs paint over it.
+				// Whether it is actually drawn is decided in CSS by the widget's ring color
+				// (UI.js), which means turning it on or off never needs a re-render here.
+				this.feedbackButton.innerHTML = `<div class="yy-feedback-button-icon"><div class="yy-launcher-ring"><div class="yy-launcher-ring-beam"></div></div>${buttonIcon}${loadIcon(
 					"arrowdown",
 					"#fff"
 				)}</div><div class="yy-notification-bubble yy-notification-bubble--hidden"></div>`;

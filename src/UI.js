@@ -44,9 +44,18 @@ export const injectStyledCSS = (
   buttonStyle,
   zIndexBase = 2147483600,
   feedbackButtonGradient = null,
-  feedbackButtonIconColor = null
+  feedbackButtonIconColor = null,
+  heroBackground = null,
+  heroTextColor = null,
+  launcherRadius = null,
+  launcherRing = null
 ) => {
   const contrastColor = calculateContrast(primaryColor);
+  // The launcher bubble's corner, in px on a 48px box, from the widget's corner preset
+  // (`launcherRadius` on the config, computed by the server from `cornerPreset`). Absent —
+  // a widget with no stored preset, a config cached before the key existed, an older server —
+  // the bubble stays the circle it has always been.
+  const launcherCornerRadius = Number.isFinite(launcherRadius) ? launcherRadius : 48;
   const contrastButtonColor = calculateContrast(buttonColor);
   const contrastBackgroundColor = calculateContrast(backgroundColor);
   const contrastHeaderColor = calculateContrast(headerColor);
@@ -57,6 +66,16 @@ export const injectStyledCSS = (
     ? `linear-gradient(${typeof feedbackButtonGradient.angle === "number" ? feedbackButtonGradient.angle : 90}deg, ${[buttonColor, ...feedbackButtonGradient.colors].join(", ")})`
     : buttonColor;
   const launcherIconColor = feedbackButtonIconColor || contrastButtonColor;
+
+  // The highlight ring: a thin line travelling clockwise around the bubble's rim, over a faint
+  // full-rim track in the same color. A hex color on the config turns it on and is the only thing
+  // that does — a widget that never asked for a ring, and any config cached before this key
+  // existed, sends nothing and gets the plain bubble it has always had.
+  const ringColor = /^#[0-9a-fA-F]{6}$/.test(String(launcherRing)) ? launcherRing : null;
+  // Alpha as an 8-digit hex on the customer's own color rather than color-mix() or a computed
+  // rgba(): supported by every browser that can draw the ring at all, and it keeps the color exactly
+  // as the customer picked it.
+  const ringAlpha = (alpha) => (ringColor ? ringColor + alpha : "transparent");
   const isDarkMode = contrastBackgroundColor === "#ffffff";
   const headerDarkColor = calculateShadeColor(
     headerColor,
@@ -75,6 +94,116 @@ export const injectStyledCSS = (
   var borderRadius = parseInt(borderRadius, 10);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
   const containerRadius = Math.round(borderRadius * 0.8);
+  // Perceived brightness, same formula calculateContrast uses. Lets us check whether
+  // the brand colour is actually visible on the widget background before we paint a
+  // 4px-thin spinner arc in it.
+  const brightness = (hex) => {
+    const r = parseInt(hex.substr(1, 2), 16);
+    const g = parseInt(hex.substr(3, 2), 16);
+    const b = parseInt(hex.substr(5, 2), 16);
+    return (r * 299 + g * 587 + b * 114) / 1000;
+  };
+  let loaderAccent = contrastBackgroundColor;
+  try {
+    if (Math.abs(brightness(primaryColor) - brightness(backgroundColor)) > 55) {
+      loaderAccent = primaryColor;
+    }
+  } catch (e) { }
+
+  // Loading skin. The widget's Home screen is painted with its "hero" — one flat colour or a
+  // gradient, compiled by the server from the widget's theme and handed over on the config as
+  // `heroBackground` ({ colors, angle }) together with `heroTextColor`, the ink the theme solved
+  // to be readable on it. Painting the skin with the very same thing means nothing behind the
+  // spinner changes when the widget takes over. Without the two fields (a config cached before
+  // the server sent them) the skin keeps its old look: a header band over the widget background,
+  // fading out towards the bottom.
+  const isHex = (value) => typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
+  const heroStops =
+    heroBackground && Array.isArray(heroBackground.colors)
+      ? heroBackground.colors.filter(isHex)
+      : [];
+  const hasHeroSkin = heroStops.length > 0;
+  const heroAngle =
+    heroBackground && typeof heroBackground.angle === "number" && isFinite(heroBackground.angle)
+      ? heroBackground.angle
+      : 160;
+  const loaderBackground = !hasHeroSkin
+    ? backgroundColor
+    : heroStops.length > 1
+      ? `linear-gradient(${heroAngle}deg, ${heroStops.join(", ")})`
+      : heroStops[0];
+  if (hasHeroSkin) {
+    // The spinner sits on the hero now, not on the widget background: the brand colour when it
+    // stands out against the hero's average, otherwise the hero's own ink.
+    const averageHex = (stops) => {
+      const sum = [0, 0, 0];
+      for (const hex of stops) {
+        sum[0] += parseInt(hex.substr(1, 2), 16);
+        sum[1] += parseInt(hex.substr(3, 2), 16);
+        sum[2] += parseInt(hex.substr(5, 2), 16);
+      }
+      return (
+        "#" +
+        sum
+          .map((channel) => {
+            const part = Math.round(channel / stops.length).toString(16);
+            return (part.length < 2 ? "0" : "") + part;
+          })
+          .join("")
+      );
+    };
+    const heroMid = averageHex(heroStops);
+    loaderAccent = isHex(heroTextColor) ? heroTextColor : calculateContrast(heroMid);
+    try {
+      if (Math.abs(brightness(primaryColor) - brightness(heroMid)) > 55) {
+        loaderAccent = primaryColor;
+      }
+    } catch (e) { }
+  }
+  // The old skin's header band and its fade — only while there is no hero to paint.
+  const loaderBandCss = hasHeroSkin
+    ? ""
+    : `
+    .yaplet-frame-loader::before {
+      content: " ";
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      height: 100%;
+      max-height: 380px;
+      background: linear-gradient(
+        130deg,
+        ${headerDarkColor} 0%,
+        ${headerColor} 100%
+      );
+    }
+
+    .yaplet-frame-loader::after {
+      content: " ";
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      height: 100%;
+      max-height: 380px;
+      background: linear-gradient(
+        180deg,
+        transparent 60%,
+        ${backgroundColor}1A 70%,
+        ${backgroundColor} 100%
+      );
+    }
+
+    .yaplet-frame-container--loading-nogradient .yaplet-frame-loader::before {
+      max-height: 340px;
+      background: ${headerColor} !important;
+    }
+
+    .yaplet-frame-container--loading-nofade .yaplet-frame-loader::after {
+      display: none !important;
+    }
+`;
   const chatRadius = Math.round(borderRadius * 0.6);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
@@ -112,12 +241,33 @@ export const injectStyledCSS = (
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
       border-radius: ${containerRadius}px;
       overflow: hidden;
-      animation-duration: .3s;
+      transform-origin: bottom right;
+      backface-visibility: hidden;
+      animation-duration: .4s;
+      animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
       animation-fill-mode: both;
       animation-name: yapletFadeInUp;
       user-select: none;
       pointer-events: none;
-      transition: max-width 0.3s ease-out;
+      /* Growing into an article and shrinking back out of one. Same decelerating curve as
+         the open animation above (and as every entrance inside the widget), so the panel
+         and the content that follows it read as one motion. FrameManager tells the widget
+         when this transition is about to land, and the widget keeps its body invisible
+         until then — keep FRAME_RESIZE_MS there in step with this duration. */
+      transition: max-width 240ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    /* The panel grows out of the launcher button, so the scale origin has to sit on
+       the same corner the button does. */
+    [dir=rtl].yaplet-frame-container,
+    .yaplet-frame-container--classic-left,
+    .yaplet-frame-container--modern-left {
+      transform-origin: bottom left;
+    }
+
+    [dir=rtl].yaplet-frame-container--classic-left,
+    [dir=rtl].yaplet-frame-container--modern-left {
+      transform-origin: bottom right;
     }
 
     :root {
@@ -251,49 +401,117 @@ export const injectStyledCSS = (
       bottom: ${61 + buttonY}px;
     }
 
-    .yaplet-frame-container--loading iframe {
+    /* Loading skin. An opaque overlay element (not ::before/::after on the container)
+       painted on top of the still-booting iframe: real elements can be cross-faded
+       out when the widget reports ready, and can carry a spinner above the paint.
+       The paint is the widget's own Home background (see loaderBackground above). */
+    .yaplet-frame-loader {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      bottom: 0px;
+      z-index: 3;
+      background: ${loaderBackground};
       opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.35s ease, visibility 0s linear 0.35s;
     }
 
-    .yaplet-frame-container--loading::before {
-      content: " ";
-      position: fixed;
-      top: 0px;
-      left: 0px;
-      right: 0px;
-      height: 100%;
-      max-height: 380px;
-      background: linear-gradient(
-        130deg,
-        ${headerDarkColor} 0%,
-        ${headerColor} 100%
+    .yaplet-frame-container--loading .yaplet-frame-loader {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.15s ease, visibility 0s linear 0s;
+    }
+
+    .yaplet-frame-container.yaplet-frame-container--loading iframe {
+      pointer-events: none !important;
+    }
+${loaderBandCss}
+    /* Spinner: dead centre of the panel, not of the brand block. Three parts, all in
+       the brand colour — a soft glow that lifts it off the panel, a faint full track
+       ring, and a tapered arc that fades out along its tail. The arc and its gradient
+       rotate together, so the taper always trails the head instead of shimmering. It
+       only fades in after 350ms, so a warm (preloaded) open never flashes a spinner the
+       visitor did not need to see. */
+    .yaplet-frame-loader-spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 1;
+      width: 38px;
+      height: 38px;
+      margin: -19px 0 0 -19px;
+      opacity: 0;
+      /* The SVG gradient's stops are currentColor, so this one declaration colours
+         the whole spinner — glow, track and arc. */
+      color: ${loaderAccent};
+      animation: yapletLoaderFadeIn 0.45s ease-out 0.35s forwards;
+    }
+
+    .yaplet-frame-loader-spin {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transform-origin: 50% 50%;
+      animation: yapletLoaderSpin 1.15s linear infinite;
+    }
+
+    /* The line itself, and nothing behind it — there is no track ring any more. A conic
+       gradient fades the colour around the circle (nothing at the tail, full strength at
+       the head) and a radial mask carves the filled disc down to a 5px band, leaving
+       just the line. The flat background declaration above the gradient is what a
+       browser too old for conic-gradient falls back to: a plain ring, no taper. */
+    .yaplet-frame-loader-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 50%;
+      background: ${loaderAccent};
+      background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        transparent 32%,
+        ${loaderAccent}24 55%,
+        ${loaderAccent}8C 80%,
+        ${loaderAccent} 100%
       );
-    }
-    
-    .yaplet-frame-container--loading::after {
-      content: " ";
-      position: fixed;
-      top: 0px;
-      left: 0px;
-      right: 0px;
-      height: 100%;
-      height: 100%;
-      max-height: 380px;
-      background: linear-gradient(
-        180deg,
-        transparent 60%,
-        ${backgroundColor}1A 70%,
-        ${backgroundColor} 100%
-      );
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 5px));
     }
 
-    .yaplet-frame-container--loading-nogradient::before {
-      max-height: 340px;
-      background: ${headerColor} !important;
+    /* Rounds off the leading end. The conic gradient's own edge is a flat radial cut,
+       which reads as a snapped line rather than the head of a stroke. It sits at 12
+       o'clock, where the gradient reaches full strength. */
+    .yaplet-frame-loader-cap {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      margin-left: -2.5px;
+      border-radius: 50%;
+      background: ${loaderAccent};
     }
 
-    .yaplet-frame-container--loading-nofade::after {
-      display: none !important;
+    @keyframes yapletLoaderSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes yapletLoaderFadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
     }
 
     .yaplet-frame-container--survey {
@@ -377,10 +595,56 @@ export const injectStyledCSS = (
       pointer-events: auto !important;
     }
 
+    /* Closing is the open run backwards: same 0.4s, mirrored keyframes, and the exact
+       inverse of the open's curve. FrameManager leaves the container in the DOM for the
+       length of it and only then swaps in --hidden (display:none), so the panel eases
+       away instead of vanishing in a single frame. */
+    .yaplet-frame-container--closing {
+      animation-name: yapletFadeOutDown;
+      animation-duration: 0.26s;
+      animation-timing-function: cubic-bezier(0.645, 0, 0.785, 0.39);
+      animation-fill-mode: forwards;
+      pointer-events: none !important;
+    }
+
+
+    .yaplet-frame-container.yaplet-frame-container--closing iframe {
+      pointer-events: none !important;
+    }
+
+    /* One motion: fade and scale up out of the launcher corner (transform-origin is
+       pinned to whichever corner the button sits in). No overshoot, no second layer —
+       a single decelerating curve, which is what makes it read as calm rather than
+       springy. The close below is this played backwards: mirrored keyframes and the
+       exact inverse curve, cubic-bezier(1-x2, 1-y2, 1-x1, 1-y1). */
     @keyframes yapletFadeInUp {
       from {
           opacity: 0;
-          transform: translate3d(0, 100%, 0);
+          transform: translate3d(0, 14px, 0) scale(0.92);
+      }
+      to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    @keyframes yapletFadeOutDown {
+      from {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+      }
+      to {
+          opacity: 0;
+          transform: translate3d(0, 14px, 0) scale(0.92);
+      }
+    }
+
+    /* Full-screen on a phone: translate only, mirrored the same way. Scaling a
+       viewport-sized iframe costs far more than it is worth on that hardware. */
+    @keyframes yapletFadeInUpMobile {
+      from {
+          opacity: 0;
+          transform: translate3d(0, 44px, 0);
       }
       to {
           opacity: 1;
@@ -388,14 +652,14 @@ export const injectStyledCSS = (
       }
     }
 
-    @keyframes yapletFadeInUpMobile {
+    @keyframes yapletFadeOutDownMobile {
       from {
-          opacity: 0;
-          transform: translate3d(0, 10%, 0);
-      }
-      to {
           opacity: 1;
           transform: translate3d(0, 0, 0);
+      }
+      to {
+          opacity: 0;
+          transform: translate3d(0, 44px, 0);
       }
     }
 
@@ -744,13 +1008,84 @@ export const injectStyledCSS = (
     .yy-feedback-button-icon {
       width: 48px;
       height: 48px;
-      border-radius: 48px;
+      border-radius: ${launcherCornerRadius}px;
       background-color: #485bff;
       box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
       transition: transform 0.2s ease-in-out;
       position: relative;
     }
-    
+
+    /* ── The highlight ring ─────────────────────────────────────────────────────────────────────
+       ONLY the travelling line is ever visible: there is deliberately no track, ghost or outline
+       under it (owner, 2026-09-10), so the rest of the rim shows the bubble and nothing else.
+
+         .yy-launcher-ring        the wrapper. Off (display:none) unless the widget has a ring
+                                  color, and carries the soft glow the line casts.
+         ...-beam                 the line itself. A conic gradient — transparent for most of the
+                                  turn, ramping up to the full color at its leading edge — on a
+                                  square twice the bubble's size, rotated clockwise. The square is
+                                  oversized so its corners can never enter the visible band, and the
+                                  2px band it shows through is cut out of it by masking the
+                                  element's own padding ring, which is what keeps the shape exact on
+                                  a rounded square.
+
+       A browser that cannot do that mask (several years old) draws no ring at all rather than
+       something the owner did not ask for.
+
+       The ring deliberately overhangs the bubble by 1px on every side (inset -1px, corner +1px so
+       it stays concentric). Sitting exactly ON the edge, both shapes shared the same half-covered
+       anti-aliasing pixels: each got half a pixel of bubble color with half a pixel of line
+       painted over it, which left a hairline of bubble color outside the line — the line looked
+       like it was running inside a groove. Overhanging puts the bubble's soft edge under the
+       line's solid middle, so outside the line there is only the page. */
+    .yy-launcher-ring {
+      position: absolute;
+      inset: -1px;
+      border-radius: ${launcherCornerRadius + 1}px;
+      pointer-events: none;
+      display: ${ringColor ? "block" : "none"};
+      filter: drop-shadow(0 0 3px ${ringAlpha("80")});
+    }
+
+    .yy-launcher-ring-beam {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 2px;
+      overflow: hidden;
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+    }
+
+    .yy-launcher-ring-beam::before {
+      content: "";
+      position: absolute;
+      inset: -50%;
+      background: conic-gradient(from 0deg, ${ringAlpha("00")} 0deg, ${ringAlpha("00")} 238deg, ${ringAlpha("2e")} 292deg, ${ringAlpha("cc")} 342deg, ${ringAlpha("ff")} 356deg, ${ringAlpha("00")} 360deg);
+      animation: yyLauncherRingSpin 4.6s linear infinite;
+    }
+
+    @keyframes yyLauncherRingSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* A line orbiting forever is exactly what a visitor who asked their device for less motion asked
+       to be spared. Since the ring IS that line and nothing else, they get no ring — a stationary
+       outline would be a different look than the one this setting promises. */
+    @media (prefers-reduced-motion: reduce) {
+      .yy-launcher-ring {
+        display: none;
+      }
+    }
+
+    /* While the widget is open the bubble is a close button, and there is nothing left to draw
+       attention to. */
+    .yy-feedback-button--open .yy-launcher-ring {
+      display: none;
+    }
+
     .yy-feedback-button-classic {
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
@@ -1446,7 +1781,12 @@ export const injectStyledCSS = (
         top: 0px;
         bottom: 0px;
         border-radius: 0px;
+        transform-origin: center bottom;
         animation-name: yapletFadeInUpMobile;
+      }
+
+      .yaplet-frame-container--closing {
+        animation-name: yapletFadeOutDownMobile;
       }
 
       .yaplet-frame-container-inner {
@@ -1502,6 +1842,25 @@ export const injectStyledCSS = (
       }
     }
     
+    @media (prefers-reduced-motion: reduce) {
+      .yaplet-frame-container,
+      .yaplet-frame-container--closing {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .yaplet-frame-loader,
+      .yaplet-frame-container--loading .yaplet-frame-loader {
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+      }
+
+      .yaplet-frame-loader-spinner {
+        animation-delay: 0s !important;
+      }
+
+    }
+
     @media print {
       .yy-feedback-button {
         display: none !important;

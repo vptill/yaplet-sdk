@@ -1,46 +1,18 @@
 export namespace Yaplet {
     function initialize(sdkKey: string): void;
-    function sendSilentCrashReport(
-      description: string,
-      priority?: "LOW" | "MEDIUM" | "HIGH",
-      excludeData?: {
-        customData?: Boolean;
-        metaData?: Boolean;
-        attachments?: Boolean;
-        consoleLog?: Boolean;
-        networkLogs?: Boolean;
-        customEventLog?: Boolean;
-        screenshot?: Boolean;
-        replays?: Boolean;
-      }
-    ): void;
-    function sendSilentCrashReportWithFormData(
-      formData: {
-        [key: string]: string;
-      },
-      priority?: "LOW" | "MEDIUM" | "HIGH",
-      excludeData?: {
-        customData: Boolean;
-        metaData: Boolean;
-        attachments: Boolean;
-        consoleLog: Boolean;
-        networkLogs: Boolean;
-        customEventLog: Boolean;
-        screenshot: Boolean;
-        replays: Boolean;
-      }
-    ): void;
     function startClassicForm(
       formId: string,
       showBackButton?: boolean
     ): void;
     function startBot(botId: string, showBackButton?: boolean): void;
     function startConversation(showBackButton?: boolean): void;
-    function attachCustomData(customData: any): void;
+    // attachCustomData / setCustomData / removeCustomData / clearCustomData and
+    // sendSilentCrashReport / sendSilentCrashReportWithFormData were retired 2026-08-13
+    // (owner decision) - see the notes in src/Yaplet.js. setTicketAttribute below is the
+    // one custom-data path that actually reaches the ticket. Do not re-declare the retired
+    // names here unless they come back in the bundle: `npm test` fails on declarations
+    // that do not exist at runtime.
     function setTicketAttribute(key: string, value: string): void;
-    function setCustomData(key: string, value: string): void;
-    function removeCustomData(key: string): void;
-    function clearCustomData(): void;
     function playSound(play: boolean): void;
     function destroy(): void;
     function isOpened(): boolean;
@@ -77,10 +49,44 @@ export namespace Yaplet {
       buttonStyle?: string,
       zIndexBase?: number,
       feedbackButtonGradient?: { colors: string[]; angle: number } | null,
-      feedbackButtonIconColor?: string | null
+      feedbackButtonIconColor?: string | null,
+      /**
+       * The widget's Home background — what the loading skin is painted with while the widget
+       * boots. One colour is a flat paint, more is a gradient. Omitted: the skin falls back to
+       * a header band over `backgroundColor`.
+       */
+      heroBackground?: { colors: string[]; angle: number } | null,
+      /** The text colour readable on `heroBackground`; the spinner uses it when the brand colour would not show. */
+      heroTextColor?: string | null,
+      /**
+       * The launcher bubble's corner in px, on a 48px box (24 = a circle). Computed by the server
+       * from the widget's corner preset. Omitted or null: the bubble stays a circle.
+       */
+      launcherRadius?: number | null,
+      /**
+       * The highlight ring's color: a thin line that travels clockwise around the launcher's rim.
+       * Computed by the server from the launcher's own settings. Omitted or null: no ring at all.
+       */
+      launcherRing?: string | null
     ): void;
     function disableConsoleLogOverwrite(): void;
     function enableShortcuts(enabled: boolean): void;
+    /**
+     * Sets the language Yaplet speaks to this user in.
+     *
+     * As well as the SDK's own texts, this now also switches the CHAT WIDGET's language:
+     * its whole interface, the status lines inside a conversation, and the greeting,
+     * cards and buttons the widget's owner has translated. The widget speaks nine
+     * languages — "en", "de", "es", "fr", "pt", "it", "nl", "pl" and "hu" — and only the
+     * two-letter prefix matters, so "hu" and "hu-HU" are the same request. A language the
+     * widget does not speak leaves it in the brand's own language rather than falling
+     * back to English.
+     *
+     * A visitor who picks a language themselves in the widget's language selector keeps
+     * that choice: it outranks this call.
+     *
+     * @param language two-letter language code, e.g. "hu"
+     */
     function setLanguage(language: string): void;
     function setAiTools(tools: {
       name: string;

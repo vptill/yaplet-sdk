@@ -1,10 +1,11 @@
 /**
  * The scripted LIVE-API scenario driven by the golden-effects harness.
  *
- * IMPORTANT: call ONLY methods that survive the cleanup. The golden transcript
- * these produce must be byte-identical before and after every deletion wave —
- * that identity is the behavioral-equivalence gate. Dead methods are asserted
- * separately (they are removed, not exercised here).
+ * IMPORTANT: call ONLY stable public methods, and only ones whose outbound
+ * effects are deterministic. The transcript these produce must be byte-identical
+ * across refactors — that identity is the behavioral-equivalence gate. Adding a
+ * call here means re-recording the transcript, so add one deliberately, not to
+ * "cover more".
  */
 module.exports = async function liveScenario(Yaplet) {
   // Conversation / bot surface (SDK → iframe commands the widget handles).

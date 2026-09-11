@@ -109,6 +109,28 @@ The complete, authoritative signatures live in [`index.d.ts`](./index.d.ts). Gro
   `checkForUrlParams()`.
 - **Custom actions:** `registerCustomAction()`, `triggerCustomAction()`.
 
+### `setLanguage()` also switches the chat widget
+
+`setLanguage("hu")` sets the language of the SDK's own texts **and of the chat widget
+inside the iframe** — its whole interface, the status lines in a conversation, and
+whatever of the greeting, cards and buttons the widget's owner has translated.
+
+The widget speaks nine languages: `en`, `de`, `es`, `fr`, `pt`, `it`, `nl`, `pl`, `hu`.
+Only the two-letter prefix is read, so `hu` and `hu-HU` are the same request. A language
+the widget does not speak leaves it in the brand's own language rather than dropping it
+to English.
+
+The language reaches the widget two ways, and both are needed. The iframe URL gains
+`&lang=<code>` when the frame is injected — that is what lets the widget open in the
+right language on its very first frame, with no flash of the brand's language.
+`overrideLanguage` on the `config-update` message is the fallback for host pages still
+serving an older SDK bundle, where the language can only arrive after the widget has
+painted. Calling `setLanguage()` on an already-running SDK re-injects the frame, so that
+path uses the URL too.
+
+A visitor who picks a language themselves, in the widget's own selector (the globe on
+its home screen), keeps that choice — it outranks `setLanguage()`.
+
 ---
 
 ## Architecture (short version)
@@ -137,21 +159,30 @@ npm run test:update  # recapture the test-net baselines (only on a known-good bu
 
 ### Test net
 
-`npm test` runs three local guards (jsdom-based, no live backend/iframe, no CI) —
-see [`test/`](./test):
+`npm test` runs two local guards (jsdom-based, no live backend/iframe, no CI) —
+see [`test/`](./test). Run it against a fresh `npm run build`, since both guards
+read `build/cjs/`:
 
-1. **`api-surface`** — loads `core.js`/`full.js` and asserts the public static
-   method surface (no live method lost) and that `index.d.ts` matches it exactly.
+1. **`api-surface`** — loads `core.js`/`full.js` and asserts that
+   [`index.d.ts`](./index.d.ts) declares *exactly* the public static methods the
+   bundle really has: no phantom declaration (typed here, gone from the bundle —
+   TypeScript consumers compile green and crash at runtime) and nothing shipped
+   undeclared. Baseline-free — it compares two live artifacts, so it never needs
+   recapturing. Add or remove a public method and update `index.d.ts` in the same
+   commit.
 2. **`golden-effects`** — boots the SDK against canned responses, completes the
    iframe `ping` handshake so `sendMessage` fires for real, runs a scripted
-   scenario of live methods, and diffs the recorded outbound effects (postMessages,
-   XHR, injected DOM) against a golden baseline. This is the behavioral-equivalence
-   gate for refactors.
-3. **`build-integrity`** — compiles the real webpack config to a temp dir and
-   asserts the expected assets emit, the `./src/*.js` module set matches the
-   baseline (except intended removals), and no asset grew beyond tolerance.
+   scenario of live methods ([`test/lib/scenario.js`](./test/lib/scenario.js)),
+   and diffs the recorded outbound effects (postMessages, XHR, injected DOM)
+   against a golden transcript. This is the behavioral-equivalence gate for
+   refactors, and the one thing to run before publishing.
 
-Baselines live in [`test/__baseline__/`](./test/__baseline__).
+The golden transcript lives in [`test/__baseline__/effects.json`](./test/__baseline__).
+`npm run test:update` rewrites it — only ever do that on a bundle you have
+verified by hand, because re-recording throws away the evidence that nothing broke.
+
+Whether the bundle compiles and emits its assets is answered by `npm run build`,
+which you run before publishing anyway; there is no separate build guard.
 
 ---
 

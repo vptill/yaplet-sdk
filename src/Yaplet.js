@@ -702,7 +702,11 @@ class Yaplet {
 		buttonStyle = FeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT,
 		zIndexBase = 2147483600,
 		feedbackButtonGradient = null,
-		feedbackButtonIconColor = null
+		feedbackButtonIconColor = null,
+		heroBackground = null,
+		heroTextColor = null,
+		launcherRadius = null,
+		launcherRing = null
 	) {
 		runFunctionWhenDomIsReady(() => {
 			injectStyledCSS(
@@ -716,7 +720,11 @@ class Yaplet {
 				buttonStyle,
 				zIndexBase,
 				feedbackButtonGradient,
-				feedbackButtonIconColor
+				feedbackButtonIconColor,
+				heroBackground,
+				heroTextColor,
+				launcherRadius,
+				launcherRing
 			);
 		});
 	}

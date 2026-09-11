@@ -19,6 +19,22 @@ import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./Helper";
 import { getYaplet, getYapletInstance } from "./YapletRuntime";
 
+// How long the widget's close animation runs before the container is taken out of
+// the layout. Keep in sync with .yaplet-frame-container--closing in UI.js.
+const CLOSE_ANIMATION_MS = 280;
+
+// The max-width transition of the panel in UI.js — keep the two in step. The widget is
+// told the panel has landed this many ms before the transition actually ends: by then an
+// ease-out curve has under a percent of the distance left (a pixel or two), and the
+// widget's body fades in from transparent, so that last hair of motion is never seen —
+// while the screen feels like it arrives as the panel lands rather than after it.
+const FRAME_RESIZE_MS = 240;
+const FRAME_REVEAL_LEAD_MS = 50;
+// Upper bound on how long the widget is left waiting for "frame-resized" (see
+// reportFrameSettled); past this the browser never fired transitionend (a background
+// tab, for instance).
+const FRAME_SETTLE_CAP_MS = 700;
+
 export default class FrameManager {
 	frameUrl = "https://embed.yaplet.com";
 	yapletFrameContainer = null;
@@ -31,6 +47,8 @@ export default class FrameManager {
 	markerManager = undefined;
 	escListener = undefined;
 	frameHeight = 0;
+	closeTimeout = null;
+	settleCleanup = null;
 	queue = [];
 	urlHandler = function (url, newTab) {
 		if (url && url.length > 0) {
@@ -145,6 +163,8 @@ export default class FrameManager {
 	}
 
 	destroy() {
+		this.cancelPendingClose();
+		this.cancelPendingSettle();
 		if (this.yapletFrame) {
 			this.yapletFrame.remove();
 		}
@@ -197,12 +217,23 @@ export default class FrameManager {
 					: "yaplet-frame-container--hidden";
 				elem.className =
 					"yaplet-frame-container " + initialHideClass + " gl-block";
+				// Yaplet.setLanguage() also decides which language the chat widget itself
+				// opens in. It has to travel on the iframe URL: the config-update message
+				// that also carries overrideLanguage can only arrive once the widget has
+				// painted, which would show the wrong language for a moment first. The
+				// widget takes the two-letter prefix and ignores anything it cannot speak.
+				const overrideLanguage =
+					TranslationManager.getInstance().getOverrideLanguage();
+				const languageParam = overrideLanguage
+					? "&lang=" + encodeURIComponent(overrideLanguage)
+					: "";
 				elem.innerHTML = `<div class="yaplet-frame-container-inner"><iframe src="${this.frameUrl +
 					"/widget/" +
 					Session.getInstance().sdkKey +
 					"?access_token=" +
-					Session.getInstance().session.yapletHash
-					}" class="yaplet-frame" scrolling="yes" title="Yaplet Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
+					Session.getInstance().session.yapletHash +
+					languageParam
+					}" class="yaplet-frame" scrolling="yes" title="Yaplet Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe><div class="yaplet-frame-loader" aria-hidden="true"><div class="yaplet-frame-loader-spinner" role="status" aria-label="Loading"><div class="yaplet-frame-loader-spin"><div class="yaplet-frame-loader-ring"></div><div class="yaplet-frame-loader-cap"></div></div></div></div></div>`;
 				document.body.appendChild(elem);
 
 				this.yapletFrameContainer = elem;
@@ -357,6 +388,10 @@ export default class FrameManager {
 		const flowConfig = ConfigManager.getInstance().getFlowConfig();
 		const loadingClass = "yaplet-frame-container--loading";
 		if (this.yapletFrameContainer.classList) {
+			// Re-opened while the close animation was still running: drop the closing
+			// state (and its pending hide) so the panel eases back in instead of being
+			// yanked to display:none a moment later.
+			this.cancelPendingClose();
 			this.yapletFrameContainer.classList.remove(
 				"yaplet-frame-container--hidden"
 			);
@@ -392,6 +427,22 @@ export default class FrameManager {
 
 		this.widgetOpened = true;
 		this.updateUI();
+	}
+
+	/**
+	 * Takes the loading skin off without any of showFrameContainer's side effects
+	 * (which mark the widget open and clear notifications). The widget calls this via
+	 * the "widget-ready" message when it has something to show that is NOT the normal
+	 * booted UI — today that means its "couldn't connect, retry" screen, which would
+	 * otherwise sit invisible under our loading overlay forever.
+	 */
+	hideLoadingSkin() {
+		if (!this.yapletFrameContainer || !this.yapletFrameContainer.classList) {
+			return;
+		}
+		this.yapletFrameContainer.classList.remove(
+			"yaplet-frame-container--loading"
+		);
 	}
 
 	runWidgetShouldOpenCallback() {
@@ -459,7 +510,164 @@ export default class FrameManager {
 		}
 	}
 
-	hideWidget() {
+	prefersReducedMotion() {
+		try {
+			return (
+				typeof window !== "undefined" &&
+				typeof window.matchMedia === "function" &&
+				window.matchMedia("(prefers-reduced-motion: reduce)").matches
+			);
+		} catch (e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Drops any in-flight close animation and the timer that would have hidden the
+	 * container when it finished. Safe to call at any time.
+	 */
+	cancelPendingClose() {
+		if (this.closeTimeout) {
+			clearTimeout(this.closeTimeout);
+			this.closeTimeout = null;
+		}
+		if (this.yapletFrameContainer && this.yapletFrameContainer.classList) {
+			this.yapletFrameContainer.classList.remove(
+				"yaplet-frame-container--closing"
+			);
+		}
+	}
+
+	/**
+	 * Tells the widget when the panel has finished changing size.
+	 *
+	 * Opening an article widens the frame (the "extended" mode) and leaving one narrows
+	 * it again. Text laid out during that motion reflows on every frame, so the widget
+	 * keeps its body blank from the moment it asks for the change until this message
+	 * arrives, and only then lets the new screen fade in. The message goes out a few
+	 * frames before the container's max-width transition ends (FRAME_REVEAL_LEAD_MS — the
+	 * panel is within a pixel or two of its final size by then), or almost at once when no
+	 * transition begins at all: on phones the panel is full-width either way, under
+	 * reduced motion the change is instant, and a page change that keeps the same mode
+	 * moves nothing. The widget also watches its own viewport for stillness, so a message
+	 * that never arrives costs it a beat, never a blank screen.
+	 */
+	reportFrameSettled(seq) {
+		this.cancelPendingSettle();
+		const container = this.yapletFrameContainer;
+		if (!container) {
+			return;
+		}
+
+		let started = false;
+		let landingTimer = null;
+		const finish = () => {
+			this.cancelPendingSettle();
+			this.sendMessage({ name: "frame-resized", data: { seq } });
+		};
+		const isOurs = (event) =>
+			event.target === container && event.propertyName === "max-width";
+		const onRun = (event) => {
+			if (isOurs(event) && !started) {
+				started = true;
+				// Report the landing a few frames early; transitionend below is the backstop
+				// for a transition that runs slower than FRAME_RESIZE_MS says.
+				landingTimer = setTimeout(
+					finish,
+					Math.max(0, FRAME_RESIZE_MS - FRAME_REVEAL_LEAD_MS)
+				);
+			}
+		};
+		const onEnd = (event) => {
+			if (isOurs(event)) {
+				finish();
+			}
+		};
+		container.addEventListener("transitionrun", onRun);
+		container.addEventListener("transitionend", onEnd);
+		container.addEventListener("transitioncancel", onEnd);
+
+		// A transition that is going to happen has begun within two or three frames of
+		// the class change; none by then means the panel is not moving.
+		const noTransitionTimer = setTimeout(() => {
+			if (!started) {
+				finish();
+			}
+		}, 50);
+		const capTimer = setTimeout(finish, FRAME_SETTLE_CAP_MS);
+
+		this.settleCleanup = () => {
+			clearTimeout(noTransitionTimer);
+			clearTimeout(capTimer);
+			clearTimeout(landingTimer);
+			container.removeEventListener("transitionrun", onRun);
+			container.removeEventListener("transitionend", onEnd);
+			container.removeEventListener("transitioncancel", onEnd);
+		};
+	}
+
+	/**
+	 * Drops the listeners and timers of a settle report that has not gone out yet. A
+	 * newer page change supersedes it: the widget waits for whichever resize is the
+	 * current one.
+	 */
+	cancelPendingSettle() {
+		if (this.settleCleanup) {
+			this.settleCleanup();
+			this.settleCleanup = null;
+		}
+	}
+
+	/**
+	 * Plays the close animation, then takes the container out of the layout. The
+	 * container has to stay displayed for the length of the animation — adding
+	 * --hidden (display: none) straight away is what used to make the widget
+	 * disappear in a single frame.
+	 */
+	animateFrameContainerOut(instant = false) {
+		const container = this.yapletFrameContainer;
+		if (!container || !container.classList) {
+			return;
+		}
+
+		this.cancelPendingClose();
+
+		// Cases that never animate: full-screen surveys (CSS disables the animation),
+		// a container that is only preloading or already hidden, and visitors who
+		// asked their OS for reduced motion.
+		const hideImmediately =
+			instant ||
+			this.prefersReducedMotion() ||
+			this.appMode === "survey_full" ||
+			this.appMode === "survey_web" ||
+			container.classList.contains("yaplet-frame-container--hidden") ||
+			container.classList.contains("yaplet-frame-container--preloading");
+
+		if (hideImmediately) {
+			container.classList.add("yaplet-frame-container--hidden");
+			return;
+		}
+
+		container.classList.add("yaplet-frame-container--closing");
+		this.closeTimeout = setTimeout(() => {
+			this.closeTimeout = null;
+			// Re-opened mid-animation — showFrameContainer already removed --closing,
+			// so this hide is stale and must not run.
+			if (!container.classList.contains("yaplet-frame-container--closing")) {
+				return;
+			}
+			container.classList.add("yaplet-frame-container--hidden");
+			container.classList.remove("yaplet-frame-container--closing");
+		}, CLOSE_ANIMATION_MS);
+	}
+
+	/**
+	 * @param {boolean} instant Skip the close animation and take the widget out of
+	 *   the layout in the same frame. Used when something else is about to draw over
+	 *   the page (screen drawing / screen recording) and must not catch the widget
+	 *   still fading out.
+	 */
+	hideWidget(instant = false) {
 		// Prevent for survey web.
 		if (this.appMode === "survey_web") {
 			return;
@@ -467,10 +675,10 @@ export default class FrameManager {
 
 		this.hideMarkerManager();
 		if (this.yapletFrameContainer) {
-			this.yapletFrameContainer.classList.add("yaplet-frame-container--hidden");
 			this.yapletFrameContainer.classList.remove(
 				"yaplet-frame-container--animate"
 			);
+			this.animateFrameContainerOut(instant);
 		}
 		this.widgetOpened = false;
 		this.updateWidgetStatus();
@@ -527,7 +735,7 @@ export default class FrameManager {
 	}
 
 	showDrawingScreen(type) {
-		this.hideWidget();
+		this.hideWidget(true);
 
 		// Show screen drawing.
 		this.markerManager = new MarkerManager(type);
@@ -565,6 +773,14 @@ export default class FrameManager {
 				}
 			}
 
+			// The widget has something to show that is not the normal booted UI (its
+			// connection-error screen). Reveal the iframe without treating this as an
+			// "open" — the visitor may not even have the widget open right now.
+			if (data.name === "widget-ready") {
+				this.comReady = true;
+				this.hideLoadingSkin();
+			}
+
 			if (data.name === "play-ping") {
 				AudioManager.ping();
 			}
@@ -584,6 +800,10 @@ export default class FrameManager {
 						this.setAppMode("widget");
 					}
 				}
+				// Every page change is answered, whether or not the panel actually moved:
+				// the widget holds its body blank until it hears back. The number it sent
+				// travels back with the answer so it can tell a stale reply from a current one.
+				this.reportFrameSettled(data.data ? data.data.seq : undefined);
 			}
 
 			if (data.name === "collect-ticket-data") {
