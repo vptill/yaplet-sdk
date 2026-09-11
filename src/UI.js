@@ -1798,6 +1798,21 @@ ${loaderBandCss}
         max-height: calc(var(--glvh, 1vh) * 100) !important;
       }
 
+      /* Where the browser knows 100dvh, the container above already follows the visible
+         screen exactly. The --glvh cap (the screen height at the last resize event) can
+         then only lag behind it and leave a strip of page showing under the widget. */
+      @supports (height: 100dvh) {
+        .yaplet-frame-container:not(.yaplet-frame-container--survey):not(.yaplet-frame-container--survey-full) .yaplet-frame-container-inner {
+          max-height: 100% !important;
+        }
+      }
+
+      /* The open widget fills the whole screen here and has its own close button, so the
+         launcher could only ever peek out from under it. */
+      .yy-feedback-button--open {
+        display: none !important;
+      }
+
       .yaplet-frame-container--survey {
         height: auto !important;
         top: initial !important;

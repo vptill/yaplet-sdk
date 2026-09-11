@@ -18,6 +18,11 @@ import BannerManager from "./BannerManager";
 import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./Helper";
 import { getYaplet, getYapletInstance } from "./YapletRuntime";
+import { lockPageScroll, unlockPageScroll } from "./PageScrollLock";
+
+// The screens on which UI.js lays the open widget out full-screen — its
+// "max-width: 450px" media queries. Keep the two in step.
+const FULL_SCREEN_QUERY = "only screen and (max-width: 450px)";
 
 // How long the widget's close animation runs before the container is taken out of
 // the layout. Keep in sync with .yaplet-frame-container--closing in UI.js.
@@ -49,6 +54,7 @@ export default class FrameManager {
 	frameHeight = 0;
 	closeTimeout = null;
 	settleCleanup = null;
+	fullScreenQuery = null;
 	queue = [];
 	urlHandler = function (url, newTab) {
 		if (url && url.length > 0) {
@@ -109,6 +115,19 @@ export default class FrameManager {
 				window.addEventListener("resize", appHeight);
 				appHeight();
 			} catch (e) { }
+
+			// Turning a phone sideways can take the screen past the full-screen width (and
+			// back), which decides whether the page behind the open widget has to be frozen.
+			try {
+				this.fullScreenQuery = window.matchMedia(FULL_SCREEN_QUERY);
+				const onLayoutChange = () => this.updatePageScrollLock();
+				if (typeof this.fullScreenQuery.addEventListener === "function") {
+					this.fullScreenQuery.addEventListener("change", onLayoutChange);
+				} else if (typeof this.fullScreenQuery.addListener === "function") {
+					// Safari before 14 only knows the older name.
+					this.fullScreenQuery.addListener(onLayoutChange);
+				}
+			} catch (e) { }
 		}
 	}
 
@@ -127,6 +146,7 @@ export default class FrameManager {
 	setAppMode(appMode) {
 		this.appMode = appMode;
 		this.updateFrameStyle();
+		this.updatePageScrollLock();
 
 		const innerContainer = document.querySelector(
 			".yaplet-frame-container-inner"
@@ -176,10 +196,31 @@ export default class FrameManager {
 		this.markerManager = undefined;
 		this.yapletFrameContainer = null;
 		this.yapletFrame = null;
+		this.updatePageScrollLock();
 	}
 
 	isOpened() {
 		return this.widgetOpened || this.markerManager != null;
+	}
+
+	/**
+	 * Freezes the page behind the widget while the widget covers the whole screen, and
+	 * lets it go again as soon as that stops being true: on close, for a survey that only
+	 * takes the bottom of the screen, or when turning the phone sideways makes the screen
+	 * wide enough for the floating panel.
+	 */
+	updatePageScrollLock() {
+		const coversScreen =
+			this.widgetOpened &&
+			this.yapletFrameContainer !== null &&
+			this.appMode !== "survey" &&
+			this.fullScreenQuery !== null &&
+			this.fullScreenQuery.matches;
+		if (coversScreen) {
+			lockPageScroll();
+		} else {
+			unlockPageScroll();
+		}
 	}
 
 	autoWhiteListCookieManager = () => {
@@ -426,6 +467,7 @@ export default class FrameManager {
 		}
 
 		this.widgetOpened = true;
+		this.updatePageScrollLock();
 		this.updateUI();
 	}
 
@@ -681,6 +723,7 @@ export default class FrameManager {
 			this.animateFrameContainerOut(instant);
 		}
 		this.widgetOpened = false;
+		this.updatePageScrollLock();
 		this.updateWidgetStatus();
 		FeedbackButtonManager.getInstance().updateFeedbackButtonState();
 		EventManager.notifyEvent("close");
