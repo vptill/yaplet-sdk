@@ -76,16 +76,21 @@ export namespace Yaplet {
      *
      * As well as the SDK's own texts, this now also switches the CHAT WIDGET's language:
      * its whole interface, the status lines inside a conversation, and the greeting,
-     * cards and buttons the widget's owner has translated. The widget speaks nine
-     * languages — "en", "de", "es", "fr", "pt", "it", "nl", "pl" and "hu" — and only the
-     * two-letter prefix matters, so "hu" and "hu-HU" are the same request. A language the
-     * widget does not speak leaves it in the brand's own language rather than falling
-     * back to English.
+     * cards and buttons the widget's owner has translated. The widget speaks 38
+     * languages: "en", "de", "fr", "es", "zh", "pt", "it", "nl", "ja", "hi", "sv", "da",
+     * "hu", "pl", "cs", "fi", "ru", "tr", "id", "no", "sk", "hr", "bg", "ko", "th", "vi",
+     * "ro", "el", "uk", "ms", "fil", "et", "ga", "lv", "lt", "mt", "sl" and "sr". Only the
+     * language part of a tag matters, so "hu" and "hu-HU" are the same request, and so are
+     * "fil" and "fil-PH" (Filipino keeps all three letters). A few other tags are read as
+     * the language they name: "nb" and "nn" as Norwegian ("no"), "tl" as Filipino, "in" as
+     * Indonesian. Chinese is Simplified ("zh-TW" also gets it) and Serbian is written in
+     * Latin script. A language the widget does not speak leaves it in the brand's own
+     * language rather than falling back to English.
      *
      * A visitor who picks a language themselves in the widget's language selector keeps
      * that choice: it outranks this call.
      *
-     * @param language two-letter language code, e.g. "hu"
+     * @param language language code or BCP-47 tag, e.g. "hu", "hu-HU" or "fil"
      */
     function setLanguage(language: string): void;
     function setAiTools(tools: {
