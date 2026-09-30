@@ -1015,6 +1015,13 @@ class Yaplet {
 
 			if (action && action.event) {
 				if (action.event === "NEW_MESSAGE" || action.event === "message") {
+					// An outreach message (event "message") is also written into the
+					// visitor conversation, so a pop-up next to an already open widget
+					// would only repeat what the visitor can already read in the thread.
+					// A live agent reply (NEW_MESSAGE) keeps its pop-up in every state.
+					if (action.event === "message" && FrameManager.getInstance().isOpened()) {
+						continue;
+					}
 					if (!this.disableInAppNotifications) {
 						Yaplet.showNotification(action);
 					}

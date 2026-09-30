@@ -889,7 +889,7 @@ ${loaderBandCss}
       overflow: hidden;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 6;
     }
 
     .yaplet-frame-container-inner {
