@@ -9,6 +9,57 @@ import { loadFromYapletCache, saveToYapletCache } from "./Helper";
 import { loadIcon } from "./UI";
 import { getYaplet } from "./YapletRuntime";
 
+// Local copies of the helpers in Tours.js: importing Tours.js here would pull the whole tour
+// engine out of its lazily loaded chunk into the main bundle.
+// Escapes the five HTML-special characters so a value written into innerHTML shows as text.
+function escapeHtml(value) {
+	return String(value == null ? "" : value)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+// The server cleans plain-text fields with sanitize-html, which stores & < > " as entities.
+// Decode those four once before escapeHtml, so a name is not shown as "Tom &amp; Jerry".
+const SANITIZER_ENTITIES = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"' };
+function decodeSanitizerEntities(value) {
+	return String(value == null ? "" : value).replace(
+		/&(?:amp|lt|gt|quot);/g,
+		(entity) => SANITIZER_ENTITIES[entity]
+	);
+}
+
+// An image is shown only from an http: or https: address. Relative addresses resolve against
+// the current page; javascript:, data: and every other scheme are refused.
+function isSafeNavigationUrl(value) {
+	if (typeof value !== "string" || value.trim() === "") {
+		return false;
+	}
+	try {
+		const protocol = new URL(value, window.location.href).protocol;
+		return protocol === "http:" || protocol === "https:";
+	} catch (e) {
+		return false;
+	}
+}
+
+// A text value written into the pop-up: decoded once, then escaped, so it always shows as text.
+function plainTextHtml(value) {
+	return escapeHtml(decodeSanitizerEntities(value));
+}
+
+// An <img> tag, or "" when the address is missing or not http(s). escapeHtml keeps the address
+// inside src="..." whatever it contains.
+function imageTagHtml(url, className) {
+	if (!isSafeNavigationUrl(url)) {
+		return "";
+	}
+	const classAttribute = className ? ` class="${className}"` : "";
+	return `<img${classAttribute} src="${escapeHtml(url)}" />`;
+}
+
 export default class NotificationManager {
 	notificationContainer = null;
 	notifications = [];
@@ -141,8 +192,10 @@ export default class NotificationManager {
 
 			var content = notification.payload.message;
 
-			// Try replacing the session name.
-			content = content.replaceAll("{{name}}", Session.getInstance().getName());
+			// Try replacing the session name. The name is text (typed by the visitor or an agent),
+			// so it is escaped before it goes into the HTML below.
+			const nameHtml = plainTextHtml(Session.getInstance().getName());
+			content = content.replaceAll("{{name}}", nameHtml);
 
 			const elem = document.createElement("div");
 			elem.onclick = () => {
@@ -174,55 +227,69 @@ export default class NotificationManager {
 			};
 
 			if (notification.payload.news) {
+				// The news pop-up is drawn on the customer's own page, not inside Yaplet's frame:
+				// every field is text or an http(s) image address, escaped here whatever arrives.
+				const news = notification.data || {};
+				const titleHtml = plainTextHtml(notification.payload.message).replaceAll(
+					"{{name}}",
+					nameHtml
+				);
+
 				const renderDescription = () => {
-					if (
-						notification.data.previewText &&
-						notification.data.previewText.length > 0
-					) {
-						return `<div class="yaplet-notification-item-news-preview">${notification.data.previewText}</div>`;
+					if (news.previewText && news.previewText.length > 0) {
+						return `<div class="yaplet-notification-item-news-preview">${plainTextHtml(
+							news.previewText
+						)}</div>`;
 					}
 
 					return `${
-						notification.data.sender
+						news.sender
 							? `
           <div class="yaplet-notification-item-news-sender">
-            ${
-							notification.data.sender.profileImageUrl &&
-							`<img src="${notification.data.sender.profileImageUrl}" />`
-						} ${notification.data.sender.name}</div>`
+            ${imageTagHtml(news.sender.profileImageUrl)} ${plainTextHtml(
+									news.sender.name
+							  )}</div>`
 							: ""
 					}`;
 				};
+
+				const coverImageHtml =
+					typeof news.coverImageUrl === "string" &&
+					!news.coverImageUrl.includes("NewsImagePlaceholder")
+						? imageTagHtml(
+								news.coverImageUrl,
+								"yaplet-notification-item-news-image"
+						  )
+						: "";
 
 				// News preview
 				elem.className = "yaplet-notification-item-news";
 				elem.innerHTML = `
         <div class="yaplet-notification-item-news-container">
-          ${
-						notification.data.coverImageUrl &&
-						notification.data.coverImageUrl !== "" &&
-						!notification.data.coverImageUrl.includes("NewsImagePlaceholder")
-							? `<img class="yaplet-notification-item-news-image" src="${notification.data.coverImageUrl}" />`
-							: ""
-					}
+          ${coverImageHtml}
           <div class="yaplet-notification-item-news-content">
-          <div class="yaplet-notification-item-news-content-title">${content}</div>
+          <div class="yaplet-notification-item-news-content-title">${titleHtml}</div>
           ${renderDescription()}
           </div>
         </div>`;
 			} else {
 				// Notification item.
 				elem.className = "yaplet-notification-item";
+				// The agent's picture is a storage path; the finished address is escaped like any image.
 				elem.innerHTML = `
             ${
 							notification.payload.agent && notification.payload.agent.picture
-								? `<img src="https://api.yaplet.com/storage/v1/object/public/profile-picture/${notification.payload.agent.picture}" />`
+								? imageTagHtml(
+										`https://api.yaplet.com/storage/v1/object/public/profile-picture/${notification.payload.agent.picture}`
+								  )
 								: ""
 						}
             <div class="yaplet-notification-item-container">
                 ${
 									notification.payload.agent
-										? `<div  class="yaplet-notification-item-sender">${notification.payload.agent.username}</div>`
+										? `<div  class="yaplet-notification-item-sender">${escapeHtml(
+													decodeSanitizerEntities(notification.payload.agent.username)
+											  )}</div>`
 										: ""
 								}
                 <div class="yaplet-notification-item-content">${content}</div>

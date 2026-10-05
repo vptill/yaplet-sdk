@@ -1,5 +1,9 @@
 import { loadIcon } from "./UI";
-import Tours from "./Tours";
+import Tours, {
+	isSafeNavigationUrl,
+	escapeHtml,
+	decodeSanitizerEntities,
+} from "./Tours";
 import AdminManager from "./AdminManager";
 import TourStateManager from "./TourStateManager";
 
@@ -52,9 +56,23 @@ export default class ProductTours {
 
 			if (config.sender && config.sender.firstName) {
 				hasSender = true;
+				// Image only from an http(s) address. ' and ) are URL-encoded so the value cannot
+				// leave the CSS url('...'); escapeHtml then keeps it inside the style="..." attribute.
+				const senderImageUrl = isSafeNavigationUrl(config.sender.profileImageUrl)
+					? escapeHtml(
+							config.sender.profileImageUrl
+								.replace(/'/g, "%27")
+								.replace(/\)/g, "%29")
+					  )
+					: "";
+				const senderImageStyle = senderImageUrl
+					? ` style="background-image: url('${senderImageUrl}');"`
+					: "";
 				senderHTML = `<div class="yaplet-tour-sender">
-                <div class="yaplet-tour-sender-image" style="background-image: url('${config.sender.profileImageUrl}');"></div>
-                <div class="yaplet-tour-sender-name">${config.sender.firstName}</div>
+                <div class="yaplet-tour-sender-image"${senderImageStyle}></div>
+                <div class="yaplet-tour-sender-name">${escapeHtml(
+									decodeSanitizerEntities(config.sender.firstName)
+								)}</div>
               </div>`;
 			}
 

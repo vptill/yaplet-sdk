@@ -1,5 +1,41 @@
 import TourStateManager from "./TourStateManager";
 
+// A tour may only send the browser to (or show an image from) an http: or https: address.
+// Relative addresses resolve against the current page; javascript:, data: and every other
+// scheme are refused, even if such a value reaches the tour config.
+export function isSafeNavigationUrl(value) {
+	if (typeof value !== "string" || value.trim() === "") {
+		return false;
+	}
+	try {
+		const protocol = new URL(value, window.location.href).protocol;
+		return protocol === "http:" || protocol === "https:";
+	} catch (e) {
+		return false;
+	}
+}
+
+// Escapes the five HTML-special characters so a value written into innerHTML shows as text.
+export function escapeHtml(value) {
+	return String(value == null ? "" : value)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+// The server cleans plain-text fields with sanitize-html, which stores & < > " as entities.
+// Decode those four once before escapeHtml, so "Tom & Jerry" is not shown as "Tom &amp; Jerry".
+// Safe in any order of input: escapeHtml always runs afterwards.
+const SANITIZER_ENTITIES = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"' };
+export function decodeSanitizerEntities(value) {
+	return String(value == null ? "" : value).replace(
+		/&(?:amp|lt|gt|quot);/g,
+		(entity) => SANITIZER_ENTITIES[entity]
+	);
+}
+
 const Tours = (function () {
 	"use strict";
 	let currentConfig = {};
@@ -1314,6 +1350,12 @@ const Tours = (function () {
 			// Multi-page: if step belongs to a different page, save state and navigate
 			const stepPageUrl = steps[stepIndex].pageUrl;
 			if (stepPageUrl && !TourStateManager.urlMatchesCurrent(stepPageUrl)) {
+				// Never navigate to a non-http(s) address: end the tour instead.
+				if (!isSafeNavigationUrl(stepPageUrl)) {
+					TourStateManager.clear();
+					destroy();
+					return;
+				}
 				TourStateManager.save({
 					tourId: getConfig("__tourId"),
 					config: getConfig("__fullConfig"),
@@ -1329,7 +1371,10 @@ const Tours = (function () {
 			// "link" type redirect — end-of-tour
 			if (steps[stepIndex].url) {
 				TourStateManager.clear();
-				window.location.href = steps[stepIndex].url;
+				// An unsafe (non-http(s)) address ends the tour without navigating.
+				if (isSafeNavigationUrl(steps[stepIndex].url)) {
+					window.location.href = steps[stepIndex].url;
+				}
 				destroy();
 				return;
 			}

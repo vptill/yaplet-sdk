@@ -21,7 +21,7 @@ const overrideWidget = params.get("yaplet_w");
 const overrideVisitorId = params.get("yaplet_id");
 const overrideToken = params.get("yaplet_token");
 
-const DEFAULT_SDK_KEY = "3528f1f0-33a7-43d3-b334-c61ee682447c"; // TEST widget
+const DEFAULT_SDK_KEY = "65e90fd7-2cb3-47e8-b070-18cdf9bed8fc"; // TEST widget
 const sdkKey = overrideWidget || DEFAULT_SDK_KEY;
 
 if (overrideWidget && overrideVisitorId && overrideToken) {
