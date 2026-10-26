@@ -6,7 +6,7 @@ import AudioManager from "./AudioManager";
 import TranslationManager from "./TranslationManager";
 import EventManager from "./EventManager";
 import { loadFromYapletCache, saveToYapletCache } from "./Helper";
-import { loadIcon } from "./UI";
+import { loadIcon, mascotSvg, calculateContrast } from "./UI";
 import { getYaplet } from "./YapletRuntime";
 
 // Local copies of the helpers in Tours.js: importing Tours.js here would pull the whole tour
@@ -60,6 +60,108 @@ function imageTagHtml(url, className) {
 	return `<img${classAttribute} src="${escapeHtml(url)}" />`;
 }
 
+// A message pop-up (the quiet toast) tucks itself away this long after the newest one arrived; the count stays on
+// the launcher. Hovering the pop-ups holds them.
+const TOAST_TUCK_MS = 10000;
+const TOAST_TUCK_AFTER_HOVER_MS = 4000;
+
+// "AI assistant" in every language the widget speaks — the same words as the widget's "Vex · AI assistant" row
+// (widget-solidjs/src/locales/*.json, `aiAssistantRole`; keep the two in step). EU AI Act Art. 50: the visitor is
+// told in words that Vex is an AI before they answer it.
+const AI_ASSISTANT_LABEL = {
+	bg: "AI асистент", cs: "AI asistent", da: "AI-assistent", de: "AI-Assistent", el: "Βοηθός AI", en: "AI assistant",
+	es: "Asistente AI", et: "AI-assistent", fi: "AI-avustaja", fil: "AI assistant", fr: "Assistant AI", ga: "Cúntóir AI",
+	hi: "AI सहायक", hr: "AI asistent", hu: "AI asszisztens", id: "Asisten AI", it: "Assistente AI", ja: "AIアシスタント",
+	ko: "AI 어시스턴트", lt: "AI asistentas", lv: "AI asistents", ms: "Pembantu AI", mt: "Assistent AI", nl: "AI-assistent",
+	no: "AI-assistent", pl: "Asystent AI", pt: "Assistente AI", ro: "Asistent AI", ru: "AI-ассистент", sk: "AI asistent",
+	sl: "AI asistent", sr: "AI asistent", sv: "AI-assistent", th: "ผู้ช่วย AI", tr: "AI asistan", uk: "AI-асистент",
+	vi: "Trợ lý AI", zh: "AI助手",
+};
+const LANGUAGE_ALIASES = { nb: "no", nn: "no", tl: "fil" };
+
+function aiAssistantLabel() {
+	const language = String(TranslationManager.getInstance().getActiveLanguage() || "en").toLowerCase();
+	const base = language.split(/[-_]/)[0];
+	return AI_ASSISTANT_LABEL[language] || AI_ASSISTANT_LABEL[LANGUAGE_ALIASES[base] || base] || AI_ASSISTANT_LABEL.en;
+}
+
+// A message as one line of plain text: the stored HTML (an AI answer, an outreach message) without its tags, with
+// block ends turned into spaces so "Hi!<br>Sure" does not read "Hi!Sure". DOMParser builds an inert document: no
+// script runs and nothing loads. Hidden product data lives in an attribute, so it never shows as text.
+function plainTextOf(html) {
+	const spaced = String(html == null ? "" : html).replace(/<(br|\/p|\/div|\/li|\/h[1-6]|\/tr)\b[^>]*>/gi, " $&");
+	let text = "";
+	try {
+		text = new DOMParser().parseFromString(spaced, "text/html").body.textContent || "";
+	} catch (e) {
+		text = spaced.replace(/<[^>]*>/g, " ");
+	}
+	return text.replace(/\s+/g, " ").trim();
+}
+
+function initialsOf(name) {
+	const words = String(name || "").trim().split(/\s+/).filter(Boolean);
+	return words.slice(0, 2).map((word) => word.charAt(0).toUpperCase()).join("") || "?";
+}
+
+// Who wrote a message pop-up: a teammate (photo or initials, and their name), Vex (nobody human — an AI reply, a
+// workflow message, an outreach message: the widget's thread shows these as Vex too), or nobody named (a pop-up a
+// site raises itself through Yaplet.showNotification()).
+function senderOf(notification) {
+	const payload = notification.payload || {};
+	if (payload.agent) {
+		return { kind: "agent", key: "agent:" + (payload.agent.id || payload.agent.username || ""), agent: payload.agent };
+	}
+	if (!payload.visitor_id && (notification.event === "NEW_MESSAGE" || notification.event === "message")) {
+		return { kind: "vex", key: "vex" };
+	}
+	return { kind: "none", key: "none" };
+}
+
+// Vex's face: the blob in the launcher's own paint, the same colors the mascot launcher and the widget's thread give it.
+function vexFaceHtml() {
+	const flowConfig = ConfigManager.getInstance().getFlowConfig() || {};
+	const launcherColor = flowConfig.primaryColor || "#485BFF";
+	return mascotSvg(
+		launcherColor,
+		flowConfig.feedbackButtonGradient || null,
+		flowConfig.feedbackButtonIconColor || calculateContrast(launcherColor),
+		"avatar"
+	);
+}
+
+function faceHtml(sender) {
+	if (sender.kind === "vex") {
+		return vexFaceHtml();
+	}
+	if (sender.kind === "agent") {
+		// The agent's picture is a storage path; the finished address is escaped like any image.
+		const photo = sender.agent.picture
+			? imageTagHtml(
+					`https://api.yaplet.com/storage/v1/object/public/profile-picture/${sender.agent.picture}`,
+					"yaplet-notification-toast-face"
+			  )
+			: "";
+		return (
+			photo ||
+			`<span class="yaplet-notification-toast-face yaplet-notification-toast-initials" aria-hidden="true">${escapeHtml(
+				initialsOf(decodeSanitizerEntities(sender.agent.username))
+			)}</span>`
+		);
+	}
+	return "";
+}
+
+function nameLineHtml(sender) {
+	if (sender.kind === "vex") {
+		return `<div class="yaplet-notification-toast-name"><b>Vex</b> · ${escapeHtml(aiAssistantLabel())}</div>`;
+	}
+	if (sender.kind === "agent") {
+		return `<div class="yaplet-notification-toast-name"><b>${plainTextHtml(sender.agent.username)}</b></div>`;
+	}
+	return "";
+}
+
 export default class NotificationManager {
 	notificationContainer = null;
 	notifications = [];
@@ -67,6 +169,10 @@ export default class NotificationManager {
 	unreadNotificationsKey = "unread-notifications";
 	isTabActive = true;
 	showNotificationBadge = true;
+	// Pop-ups already slid in once in this page view; a re-render draws them without the slide.
+	shownToasts = new WeakSet();
+	tuckTimer = null;
+	pointerOnToasts = false;
 
 	// NotificationManager singleton
 	static instance;
@@ -93,6 +199,15 @@ export default class NotificationManager {
 
 		var elem = document.createElement("div");
 		elem.className = "yaplet-notification-container yaplet-font";
+		// While the pointer is on the pop-ups they stay; they tuck away a little after it leaves.
+		elem.addEventListener("mouseenter", () => {
+			this.pointerOnToasts = true;
+			clearTimeout(this.tuckTimer);
+		});
+		elem.addEventListener("mouseleave", () => {
+			this.pointerOnToasts = false;
+			this.scheduleTuck(TOAST_TUCK_AFTER_HOVER_MS);
+		});
 		document.body.appendChild(elem);
 		this.notificationContainer = elem;
 
@@ -139,6 +254,19 @@ export default class NotificationManager {
 			return;
 		}
 
+		if (notification.event === "NEW_MESSAGE") {
+			// Only a real message from our side pops up. The realtime server also sends status lines ("Patrick
+			// joined", a rating request: type EVENT) and the visitor's own messages; neither is news to the visitor.
+			if ((notification.payload.type && notification.payload.type !== "MESSAGE") || notification.payload.visitor_id) {
+				return;
+			}
+			// A message with no words (an image only) counts on the launcher but gets no empty pop-up.
+			if (!plainTextOf(notification.payload.message)) {
+				this.setNotificationCount(this.unreadCount + 1);
+				return;
+			}
+		}
+
 		const notificationsForOutbound = this.notifications.find(
 			(e) => notification.payload.outbound === e.outbound
 		);
@@ -172,14 +300,18 @@ export default class NotificationManager {
 		// Clear the existing notifications.
 		this.clearAllNotifications(true);
 
-		// Append close button.
-		const clearElem = document.createElement("div");
-		clearElem.onclick = () => {
-			this.clearAllNotifications();
-		};
-		clearElem.className = "yaplet-notification-close";
-		clearElem.innerHTML = loadIcon("dismiss");
-		this.notificationContainer.appendChild(clearElem);
+		// The round close button above the list is for news pop-ups only; every message pop-up has its own.
+		if (this.notifications.some((n) => n.payload && n.payload.news)) {
+			const clearElem = document.createElement("div");
+			clearElem.onclick = () => {
+				this.clearAllNotifications();
+			};
+			clearElem.className = "yaplet-notification-close";
+			clearElem.innerHTML = loadIcon("dismiss");
+			this.notificationContainer.appendChild(clearElem);
+		}
+		let previousSenderKey = null;
+		let hasToasts = false;
 
 		// Render the notifications.
 		for (var i = 0; i < this.notifications.length; i++) {
@@ -190,12 +322,9 @@ export default class NotificationManager {
 				notification.shownAt = Date.now();
 			}
 
-			var content = notification.payload.message;
-
-			// Try replacing the session name. The name is text (typed by the visitor or an agent),
-			// so it is escaped before it goes into the HTML below.
+			// The session name for "{{name}}". It is text (typed by the visitor or an agent), so it is escaped
+			// before it goes into the news pop-up's HTML.
 			const nameHtml = plainTextHtml(Session.getInstance().getName());
-			content = content.replaceAll("{{name}}", nameHtml);
 
 			const elem = document.createElement("div");
 			elem.onclick = () => {
@@ -273,31 +402,82 @@ export default class NotificationManager {
           </div>
         </div>`;
 			} else {
-				// Notification item.
-				elem.className = "yaplet-notification-item";
-				// The agent's picture is a storage path; the finished address is escaped like any image.
-				elem.innerHTML = `
-            ${
-							notification.payload.agent && notification.payload.agent.picture
-								? imageTagHtml(
-										`https://api.yaplet.com/storage/v1/object/public/profile-picture/${notification.payload.agent.picture}`
-								  )
-								: ""
-						}
-            <div class="yaplet-notification-item-container">
-                ${
-									notification.payload.agent
-										? `<div  class="yaplet-notification-item-sender">${escapeHtml(
-													decodeSanitizerEntities(notification.payload.agent.username)
-											  )}</div>`
-										: ""
-								}
-                <div class="yaplet-notification-item-content">${content}</div>
-            </div>`;
+				// A message pop-up: the quiet toast (UI.js). Plain text only; the face, the name and the close button
+				// carry the rest.
+				const sender = senderOf(notification);
+				const repeat = sender.kind !== "none" && sender.key === previousSenderKey;
+				previousSenderKey = sender.key;
+				hasToasts = true;
+				const text = plainTextOf(notification.payload.message).replaceAll(
+					"{{name}}",
+					Session.getInstance().getName() || ""
+				);
+				const slideIn = !this.shownToasts.has(notification);
+				this.shownToasts.add(notification);
+
+				elem.className =
+					"yaplet-notification-item yaplet-notification-toast" + (slideIn ? " yaplet-notification-toast--enter" : "");
+				// A second message from the same sender keeps the face's column but not the face and the name.
+				const face = repeat
+					? '<span class="yaplet-notification-toast-face" aria-hidden="true"></span>'
+					: faceHtml(sender);
+				elem.innerHTML = `${face}<div class="yaplet-notification-toast-body">${
+					repeat ? "" : nameLineHtml(sender)
+				}<div class="yaplet-notification-toast-text">${escapeHtml(
+					text
+				)}</div></div><button type="button" class="yaplet-notification-toast-close" aria-label="Close">${loadIcon(
+					"dismiss"
+				)}</button>`;
+				elem.querySelector(".yaplet-notification-toast-close").onclick = (event) => {
+					event.stopPropagation();
+					this.dismissNotification(notification);
+				};
 			}
 
 			this.notificationContainer.appendChild(elem);
 		}
+
+		if (hasToasts) {
+			this.scheduleTuck(TOAST_TUCK_MS);
+		}
+	}
+
+	/** Closes one message pop-up (its own close button); the others stay. */
+	dismissNotification(notification) {
+		this.notifications = this.notifications.filter((n) => n !== notification);
+		saveToYapletCache(this.unreadNotificationsKey, this.notifications);
+		this.renderNotifications();
+	}
+
+	scheduleTuck(delay) {
+		clearTimeout(this.tuckTimer);
+		if (
+			this.pointerOnToasts ||
+			!this.notificationContainer ||
+			!this.notificationContainer.querySelector(".yaplet-notification-toast")
+		) {
+			return;
+		}
+		this.tuckTimer = setTimeout(() => this.tuckAway(), delay);
+	}
+
+	/** The message pop-ups slide away and are forgotten (news pop-ups stay); the count stays on the launcher. */
+	tuckAway() {
+		if (!this.notificationContainer) {
+			return;
+		}
+		const toasts = this.notificationContainer.querySelectorAll(".yaplet-notification-toast");
+		if (!toasts.length) {
+			return;
+		}
+		for (let i = 0; i < toasts.length; i++) {
+			toasts[i].classList.add("yaplet-notification-toast--leave");
+		}
+		setTimeout(() => {
+			this.notifications = this.notifications.filter((n) => n.payload && n.payload.news);
+			saveToYapletCache(this.unreadNotificationsKey, this.notifications);
+			this.renderNotifications();
+		}, 350);
 	}
 
 	clearAllNotifications(uiOnly = false) {

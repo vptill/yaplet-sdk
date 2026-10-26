@@ -3,7 +3,7 @@ import ConfigManager from "./ConfigManager";
 import NotificationManager from "./NotificationManager";
 import TranslationManager from "./TranslationManager";
 import Session from "./Session";
-import { loadIcon } from "./UI";
+import { loadIcon, mascotSvg } from "./UI";
 import { persistButtonColor, persistButtonIconColor } from "./CriticalAssets";
 import { calculateContrast } from "./UI";
 
@@ -199,9 +199,24 @@ export default class FeedbackButtonManager {
 			persistButtonIconColor(sdkKey, flowConfig.feedbackButtonIconColor || calculateContrast(flowConfig.primaryColor));
 		}
 
+		// The mascot launcher: Vex's blob is the button itself. The server sends it as
+		// `launcherMascot: true` next to an ordinary `buttonIcon`; an older server sends the stored
+		// `buttonIcon: "mascot"` unchanged, so both forms count.
+		const isMascot = flowConfig?.launcherMascot === true || flowConfig?.buttonIcon === "mascot";
+
 		var buttonIcon = "";
-		const iconName = flowConfig?.buttonIcon || "button";
-		buttonIcon = loadIcon(iconName, "#fff");
+		if (isMascot) {
+			// The same paint the launcher bubble gets (ConfigManager.applyStylesFromConfig → injectStyledCSS).
+			const launcherColor = flowConfig.primaryColor ? flowConfig.primaryColor : "#485BFF";
+			buttonIcon = mascotSvg(
+				launcherColor,
+				flowConfig.feedbackButtonGradient || null,
+				flowConfig.feedbackButtonIconColor || calculateContrast(launcherColor)
+			);
+		} else {
+			const iconName = flowConfig?.buttonIcon || "button";
+			buttonIcon = loadIcon(iconName, "#fff");
+		}
 
 		this.feedbackButton.className = "yy-feedback-button yaplet-font gl-block";
 		this.feedbackButton.setAttribute(
@@ -232,14 +247,25 @@ export default class FeedbackButtonManager {
 					: ""
 				}">${flowConfig.widgetButtonText}</div>`;
 		} else {
+			if (isMascot) {
+				this.feedbackButton.classList.add("yy-feedback-button--mascot");
+			}
 			if (buttonIcon !== this.lastButtonIcon) {
-				// The ring is always in the DOM and always first, so the glyphs paint over it.
-				// Whether it is actually drawn is decided in CSS by the widget's ring color
-				// (UI.js), which means turning it on or off never needs a re-render here.
-				this.feedbackButton.innerHTML = `<div class="yy-feedback-button-icon"><div class="yy-launcher-ring"><div class="yy-launcher-ring-beam"></div></div>${buttonIcon}${loadIcon(
-					"arrowdown",
-					"#fff"
-				)}</div><div class="yy-notification-bubble yy-notification-bubble--hidden"></div>`;
+				if (isMascot) {
+					// No ring element: the mascot never has a ring or a bubble behind it (UI.js).
+					this.feedbackButton.innerHTML = `<div class="yy-feedback-button-icon"><span class="yy-launcher-mascot">${buttonIcon}</span>${loadIcon(
+						"arrowdown",
+						"#fff"
+					)}</div><div class="yy-notification-bubble yy-notification-bubble--hidden"></div>`;
+				} else {
+					// The ring is always in the DOM and always first, so the glyphs paint over it.
+					// Whether it is actually drawn is decided in CSS by the widget's ring color
+					// (UI.js), which means turning it on or off never needs a re-render here.
+					this.feedbackButton.innerHTML = `<div class="yy-feedback-button-icon"><div class="yy-launcher-ring"><div class="yy-launcher-ring-beam"></div></div>${buttonIcon}${loadIcon(
+						"arrowdown",
+						"#fff"
+					)}</div><div class="yy-notification-bubble yy-notification-bubble--hidden"></div>`;
+				}
 			}
 		}
 
@@ -277,10 +303,15 @@ export default class FeedbackButtonManager {
 			// The ring is display:none while the widget is open (UI.js). iOS Safari does not restart
 			// an animation when its element comes back from display:none — the line stays frozen
 			// wherever it was at the moment of opening. A brand-new element always starts its
-			// animation from scratch, so the closed launcher gets a fresh copy of the ring.
-			const ring = this.feedbackButton.querySelector(".yy-launcher-ring");
-			if (ring && ring.parentNode) {
-				ring.parentNode.replaceChild(ring.cloneNode(true), ring);
+			// animation from scratch, so the closed launcher gets a fresh copy of the ring. The
+			// mascot is hidden the same way while the widget is open, and its idle loop would
+			// freeze the same way, so it gets a fresh copy too.
+			const moving = this.feedbackButton.querySelectorAll(".yy-launcher-ring, .yy-launcher-mascot");
+			for (let i = 0; i < moving.length; i++) {
+				const element = moving[i];
+				if (element.parentNode) {
+					element.parentNode.replaceChild(element.cloneNode(true), element);
+				}
 			}
 		}
 		this.wasOpened = isOpened;

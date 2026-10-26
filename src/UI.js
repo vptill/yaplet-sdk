@@ -827,69 +827,176 @@ ${loaderBandCss}
       color: ${primaryColor};
     }
 
-    .yaplet-notification-item {
+    /* ── Message pop-ups: the quiet toast (owner pick, 2026-10-26) ─────────────────────────────────────────
+       One slim row per message beside the launcher: the sender's face, their name, up to four lines of plain text and a
+       close button that is always visible (phones have no hover). Vex's face is the blob in the launcher's paint
+       and its name line says "AI assistant" in words. A second message from the same sender keeps the row but drops
+       the face and name. New rows slide in from the launcher's side; the rows tuck themselves away after ten
+       seconds (NotificationManager.js) while the count stays on the launcher. Colors and corner follow the widget:
+       its background, its text, and the corner preset through chatRadius. The dashboard's outreach chat message
+       editor draws a copy of this (pages/dashboard/outreach/messages/[id]/edit.vue): keep the two in step. */
+    .yaplet-notification-toast {
       display: flex;
-      align-items: flex-end;
-      cursor: pointer;
-    }
-
-    .yaplet-notification-item img {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      border-radius: 100%;
-      object-fit: cover;
-      margin-right: 8px;
-      margin-bottom: 12px;
-      cursor: pointer;
-    }
-
-    [dir=rtl] .yaplet-notification-item img {
-      margin-left: 8px;
-      margin-right: 0px !important;
-    }
-
-    .yaplet-notification-item-container {
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
+      align-items: flex-start;
+      gap: 10px;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 0 8px;
+      padding: 10px;
       border-radius: ${chatRadius}px;
-      border-bottom-left-radius: 0px;
-      padding: 20px;
+      border: 1px solid ${isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(20, 18, 40, 0.08)"};
       background-color: ${backgroundColor};
-      margin-bottom: 12px;
+      color: ${contrastBackgroundColor};
+      box-shadow: ${isDarkMode ? "0 8px 22px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3)" : "0 8px 22px rgba(20, 18, 50, 0.16), 0 1px 2px rgba(0, 0, 0, 0.05)"};
+      font-size: 14px;
+      line-height: 19px;
+      text-align: left;
       cursor: pointer;
-      font-size: 15px;
-      line-height: 21px;
+      animation: none;
+    }
+
+    .yaplet-notification-toast:last-child {
+      margin-bottom: 12px;
+    }
+
+    [dir=rtl] .yaplet-notification-toast {
+      text-align: right;
+    }
+
+    .yaplet-notification-toast-face {
+      flex: none;
+      display: block;
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      max-width: none;
+      margin: 0;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .yaplet-notification-toast-mascot {
+      border-radius: 0;
+      overflow: visible;
+    }
+
+    .yaplet-notification-toast-initials {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: ${isDarkMode ? "rgba(255, 255, 255, 0.12)" : "rgba(20, 18, 40, 0.08)"};
       color: ${contrastBackgroundColor};
-      position: relative;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
     }
 
-    .yaplet-notification-item-container::after {
-      content: " ";
-      position: absolute;
-      bottom: 0px;
-      width: 0px;
-      height: 0px;
-      left: -6px;
-      border-style: solid;
-      border-width: 0px 0px 10px 6px;
-      border-color: transparent transparent ${backgroundColor};
+    .yaplet-notification-toast-body {
+      flex: 1;
+      min-width: 0;
     }
 
-    .yaplet-notification-item-sender {
+    .yaplet-notification-toast-name {
+      font-size: 12px;
+      line-height: 16px;
       color: ${subTextColor};
-      line-height: 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .yaplet-notification-item-content {
-      line-height: 20px;
+    .yaplet-notification-toast-name b {
       color: ${contrastBackgroundColor};
-      min-width: min(200px, 50vw);
-      word-wrap: break-word;
-      word-break: break-word;
+      font-weight: 600;
+    }
+
+    .yaplet-notification-toast-text {
+      margin-top: 1px;
       overflow: hidden;
+      overflow-wrap: anywhere;
+      word-break: break-word;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 6;
+      -webkit-line-clamp: 4;
+    }
+
+    .yaplet-notification-toast-close {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      margin: -2px -2px 0 0;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    [dir=rtl] .yaplet-notification-toast-close {
+      margin: -2px 0 0 -2px;
+    }
+
+    .yaplet-notification-toast-close:hover {
+      background-color: ${backgroundColorHover};
+    }
+
+    .yaplet-notification-toast-close svg {
+      width: 10px;
+      height: 10px;
+      fill: ${subTextColor};
+    }
+
+    .yaplet-notification-toast--enter {
+      animation: yyToastIn 0.45s cubic-bezier(0.2, 1.1, 0.4, 1) both;
+    }
+
+    .yaplet-notification-container--left .yaplet-notification-toast--enter {
+      animation-name: yyToastInLeft;
+    }
+
+    .yaplet-notification-toast--leave {
+      animation: yyToastOut 0.35s ease forwards;
+      pointer-events: none;
+    }
+
+    @keyframes yyToastIn {
+      from {
+        opacity: 0;
+        transform: translateX(28px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes yyToastInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-28px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes yyToastOut {
+      to {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .yaplet-notification-toast--enter,
+      .yaplet-notification-toast--leave {
+        animation: none;
+      }
     }
 
     .yaplet-frame-container-inner {
@@ -1084,6 +1191,118 @@ ${loaderBandCss}
        attention to. */
     .yy-feedback-button--open .yy-launcher-ring {
       display: none;
+    }
+
+    /* ── The mascot launcher (owner, 2026-10-22) ────────────────────────────────────────────────
+       The widget's "mascot" button icon: Vex's blob IS the button. No bubble, no ring and no
+       corner shape behind it, and it always plays its idle loop (float, blink, glance: the same
+       keyframes as the dashboard's vex/components/Mascot.vue). This is the only Vex that moves:
+       every mascot inside the open widget stays still. The blob itself is plain SVG drawn by
+       mascotSvg() below, never a CSS mask or a data: URL, which a host page's security policy
+       could block.
+
+       While the widget is open the blob steps aside for today's close bubble: 48px, round, in the
+       launcher paint, with the arrow. The 2px margin keeps the bubble centered where the 52px
+       blob was.
+
+       The outer button drops its whole background: on a return visit the first-paint placeholder
+       (CriticalAssets.js) paints it with the cached launcher paint through the background
+       shorthand, and the rule above resets only background-color, so a gradient launcher would
+       keep a gradient disc behind the blob. The bubble launchers cover it; the mascot does not. */
+    .yy-feedback-button.yy-feedback-button--mascot {
+      background: none;
+    }
+
+    .yy-feedback-button--mascot .yy-feedback-button-icon {
+      width: 52px;
+      height: 52px;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .yy-launcher-mascot {
+      position: absolute;
+      inset: 0;
+      display: block;
+      animation: bbZoomIn 0.3s both;
+    }
+
+    .yy-launcher-mascot-svg {
+      display: block;
+      width: 52px;
+      height: 52px;
+      max-width: none;
+      overflow: visible;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+      transform-origin: 50% 94%;
+      animation: yyMascotFloat 3.2s ease-in-out infinite;
+    }
+
+    .yy-launcher-mascot-eyes {
+      animation: yyMascotGlance 6.4s ease-in-out infinite;
+    }
+
+    .yy-launcher-mascot-eye {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: yyMascotBlink 4.2s infinite;
+    }
+
+    /* Floats up and down without changing shape: 5 of the view box's 100 units. */
+    @keyframes yyMascotFloat {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-5%);
+      }
+    }
+
+    @keyframes yyMascotBlink {
+      0%,
+      90%,
+      100% {
+        transform: scaleY(1);
+      }
+      93% {
+        transform: scaleY(0.1);
+      }
+    }
+
+    @keyframes yyMascotGlance {
+      0%,
+      62%,
+      100% {
+        transform: translate(0, 0);
+      }
+      68%,
+      82% {
+        transform: translate(5px, -2px);
+      }
+    }
+
+    .yy-feedback-button--mascot.yy-feedback-button--open .yy-feedback-button-icon {
+      width: 48px;
+      height: 48px;
+      margin: 2px;
+      border-radius: 50%;
+      background: ${launcherBackground};
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .yy-feedback-button--mascot.yy-feedback-button--open .yy-launcher-mascot {
+      display: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .yy-launcher-mascot,
+      .yy-launcher-mascot-svg,
+      .yy-launcher-mascot-eyes,
+      .yy-launcher-mascot-eye {
+        animation: none;
+      }
     }
 
     .yy-feedback-button-classic {
@@ -2416,6 +2635,69 @@ ${loaderBandCss}
   node.innerHTML = colorStyleSheet;
   node.className = "yaplet-styles";
   document.body.appendChild(node);
+};
+
+// Vex's blob for the mascot launcher: the same geometry as the widget's UI/VexMascot.jsx and the
+// dashboard's vex/components/Mascot.vue (view box 0 0 100 100: the body, a white gloss, two tilted
+// rounded-rect eyes; keep the copies in step). Plain SVG shapes only: this runs on customers' own
+// pages, whose security policy (CSP) may block a CSS mask image or a data: URL.
+const MASCOT_BODY_PATH = "M52 6C78 6 95 27 93 53C91 79 72 95 47 94C22 93 6 75 7 50C8 25 26 6 52 6Z";
+// One gradient id per page load, with a random tail so it can never clash with an id the host
+// page uses. It stays the same for the whole visit, so redrawing the button with the same colors
+// gives the same markup and the button is not rebuilt for nothing.
+const MASCOT_GRADIENT_ID = `yy-launcher-mascot-paint-${Math.random().toString(36).slice(2, 10)}`;
+
+const escapeSvgAttribute = (value) =>
+  String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+/**
+ * Vex's blob as an SVG string: the mascot launcher, or the face next to an AI message preview.
+ * @param {string} buttonColor the launcher color (the widget's primary color)
+ * @param {{ colors?: string[], angle?: number } | null} feedbackButtonGradient the launcher gradient, if any
+ * @param {string} iconColor the ink readable on the launcher paint, used for the eyes
+ * @param {"launcher" | "avatar"} [variant] "launcher" (the default) is the moving 52px button; "avatar" is the still
+ *   30px face of a message pop-up. The avatar has its own gradient id: one shared with a launcher that is hidden
+ *   (display: none) would paint nothing.
+ */
+export const mascotSvg = function (buttonColor, feedbackButtonGradient, iconColor, variant) {
+  const isAvatar = variant === "avatar";
+  const gradientId = isAvatar ? `${MASCOT_GRADIENT_ID}-avatar` : MASCOT_GRADIENT_ID;
+  const baseColor = buttonColor || "#485BFF";
+  const eyeColor = escapeSvgAttribute(iconColor || calculateContrast(baseColor));
+
+  // The body takes the launcher's own paint, built exactly like launcherBackground in
+  // injectStyledCSS: the solid color, or a gradient from it through the gradient's colors at the
+  // gradient's angle (CSS degrees, 90 when absent).
+  const hasGradient =
+    feedbackButtonGradient && Array.isArray(feedbackButtonGradient.colors) && feedbackButtonGradient.colors.length > 0;
+  let defs = "";
+  let bodyFill = escapeSvgAttribute(baseColor);
+  if (hasGradient) {
+    const stops = [baseColor, ...feedbackButtonGradient.colors].map(escapeSvgAttribute);
+    const angle = Number.isFinite(feedbackButtonGradient.angle) ? feedbackButtonGradient.angle : 90;
+    // A CSS gradient line runs through the box's center at the angle (0deg points up, turning
+    // clockwise) and is just long enough for the far corners to sit at 0% and 100%. The same line
+    // on the 100x100 view box:
+    const rad = (angle * Math.PI) / 180;
+    const dx = Math.sin(rad);
+    const dy = -Math.cos(rad);
+    const half = 50 * (Math.abs(dx) + Math.abs(dy));
+    const round = (n) => Math.round(n * 100) / 100;
+    const stopTags = stops
+      .map((stop, i) => `<stop offset="${round(i / (stops.length - 1))}" stop-color="${stop}"/>`)
+      .join("");
+    defs = `<defs><linearGradient id="${gradientId}" gradientUnits="userSpaceOnUse" x1="${round(50 - dx * half)}" y1="${round(50 - dy * half)}" x2="${round(50 + dx * half)}" y2="${round(50 + dy * half)}">${stopTags}</linearGradient></defs>`;
+    // The first color after the reference is what the body gets if the reference cannot be resolved.
+    bodyFill = `url(#${gradientId}) ${stops[0]}`;
+  }
+
+  // Only the launcher's parts carry the animation classes: the avatar never moves.
+  const svgClass = isAvatar ? "yaplet-notification-toast-face yaplet-notification-toast-mascot" : "yy-launcher-mascot-svg";
+  const size = isAvatar ? 30 : 52;
+  const eyesClass = isAvatar ? "" : ' class="yy-launcher-mascot-eyes"';
+  const eyeClass = isAvatar ? "" : ' class="yy-launcher-mascot-eye"';
+
+  return `<svg class="${svgClass}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" overflow="visible" aria-hidden="true" focusable="false">${defs}<path d="${MASCOT_BODY_PATH}" fill="${bodyFill}"/><g transform="rotate(-32 30 25)"><ellipse cx="30" cy="25" rx="12" ry="6.5" fill="#fff" fill-opacity="0.38"/></g><g${eyesClass} fill="${eyeColor}"><g transform="rotate(-18 40 50)"><rect${eyeClass} x="35" y="39" width="10" height="22" rx="5"/></g><g transform="rotate(-18 62 46)"><rect${eyeClass} x="57" y="35" width="10" height="22" rx="5"/></g></g></svg>`;
 };
 
 export const loadIcon = function (name, color) {
