@@ -2640,7 +2640,9 @@ ${loaderBandCss}
 // Vex's blob for the mascot launcher: the same geometry as the widget's UI/VexMascot.jsx and the
 // dashboard's vex/components/Mascot.vue (view box 0 0 100 100: the body, a white gloss, two tilted
 // rounded-rect eyes; keep the copies in step). Plain SVG shapes only: this runs on customers' own
-// pages, whose security policy (CSP) may block a CSS mask image or a data: URL.
+// pages, whose security policy (CSP) may block a CSS mask image or a data: URL. Over the body lies
+// the dashboard's shading layer (owner, 2026-10-26): lighter top left, darker bottom right, so any
+// launcher color reads as a ball.
 const MASCOT_BODY_PATH = "M52 6C78 6 95 27 93 53C91 79 72 95 47 94C22 93 6 75 7 50C8 25 26 6 52 6Z";
 // One gradient id per page load, with a random tail so it can never clash with an id the host
 // page uses. It stays the same for the whole visit, so redrawing the button with the same colors
@@ -2662,6 +2664,7 @@ const escapeSvgAttribute = (value) =>
 export const mascotSvg = function (buttonColor, feedbackButtonGradient, iconColor, variant) {
   const isAvatar = variant === "avatar";
   const gradientId = isAvatar ? `${MASCOT_GRADIENT_ID}-avatar` : MASCOT_GRADIENT_ID;
+  const shadeId = `${gradientId}-shade`;
   const baseColor = buttonColor || "#485BFF";
   const eyeColor = escapeSvgAttribute(iconColor || calculateContrast(baseColor));
 
@@ -2670,7 +2673,7 @@ export const mascotSvg = function (buttonColor, feedbackButtonGradient, iconColo
   // gradient's angle (CSS degrees, 90 when absent).
   const hasGradient =
     feedbackButtonGradient && Array.isArray(feedbackButtonGradient.colors) && feedbackButtonGradient.colors.length > 0;
-  let defs = "";
+  let paintDef = "";
   let bodyFill = escapeSvgAttribute(baseColor);
   if (hasGradient) {
     const stops = [baseColor, ...feedbackButtonGradient.colors].map(escapeSvgAttribute);
@@ -2686,10 +2689,14 @@ export const mascotSvg = function (buttonColor, feedbackButtonGradient, iconColo
     const stopTags = stops
       .map((stop, i) => `<stop offset="${round(i / (stops.length - 1))}" stop-color="${stop}"/>`)
       .join("");
-    defs = `<defs><linearGradient id="${gradientId}" gradientUnits="userSpaceOnUse" x1="${round(50 - dx * half)}" y1="${round(50 - dy * half)}" x2="${round(50 + dx * half)}" y2="${round(50 + dy * half)}">${stopTags}</linearGradient></defs>`;
+    paintDef = `<linearGradient id="${gradientId}" gradientUnits="userSpaceOnUse" x1="${round(50 - dx * half)}" y1="${round(50 - dy * half)}" x2="${round(50 + dx * half)}" y2="${round(50 + dy * half)}">${stopTags}</linearGradient>`;
     // The first color after the reference is what the body gets if the reference cannot be resolved.
     bodyFill = `url(#${gradientId}) ${stops[0]}`;
   }
+  // The shading: a circle of light up and left of the middle that fades out halfway, then a
+  // darkening toward the far edge. Without the reference it is simply not drawn.
+  const shadeDef = `<radialGradient id="${shadeId}" gradientUnits="userSpaceOnUse" cx="38" cy="31" r="70"><stop offset="0" stop-color="#fff" stop-opacity="0.32"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.22"/></radialGradient>`;
+  const defs = `<defs>${paintDef}${shadeDef}</defs>`;
 
   // Only the launcher's parts carry the animation classes: the avatar never moves.
   const svgClass = isAvatar ? "yaplet-notification-toast-face yaplet-notification-toast-mascot" : "yy-launcher-mascot-svg";
@@ -2697,7 +2704,7 @@ export const mascotSvg = function (buttonColor, feedbackButtonGradient, iconColo
   const eyesClass = isAvatar ? "" : ' class="yy-launcher-mascot-eyes"';
   const eyeClass = isAvatar ? "" : ' class="yy-launcher-mascot-eye"';
 
-  return `<svg class="${svgClass}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" overflow="visible" aria-hidden="true" focusable="false">${defs}<path d="${MASCOT_BODY_PATH}" fill="${bodyFill}"/><g transform="rotate(-32 30 25)"><ellipse cx="30" cy="25" rx="12" ry="6.5" fill="#fff" fill-opacity="0.38"/></g><g${eyesClass} fill="${eyeColor}"><g transform="rotate(-18 40 50)"><rect${eyeClass} x="35" y="39" width="10" height="22" rx="5"/></g><g transform="rotate(-18 62 46)"><rect${eyeClass} x="57" y="35" width="10" height="22" rx="5"/></g></g></svg>`;
+  return `<svg class="${svgClass}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" overflow="visible" aria-hidden="true" focusable="false">${defs}<path d="${MASCOT_BODY_PATH}" fill="${bodyFill}"/><path d="${MASCOT_BODY_PATH}" fill="url(#${shadeId}) none"/><g transform="rotate(-32 30 25)"><ellipse cx="30" cy="25" rx="12" ry="6.5" fill="#fff" fill-opacity="0.38"/></g><g${eyesClass} fill="${eyeColor}"><g transform="rotate(-18 40 50)"><rect${eyeClass} x="35" y="39" width="10" height="22" rx="5"/></g><g transform="rotate(-18 62 46)"><rect${eyeClass} x="57" y="35" width="10" height="22" rx="5"/></g></g></svg>`;
 };
 
 export const loadIcon = function (name, color) {
