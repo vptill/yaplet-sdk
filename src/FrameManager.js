@@ -19,6 +19,7 @@ import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./Helper";
 import { getYaplet, getYapletInstance } from "./YapletRuntime";
 import { lockPageScroll, unlockPageScroll } from "./PageScrollLock";
+import WidgetResume from "./WidgetResume";
 
 // The screens on which UI.js lays the open widget out full-screen — its
 // "max-width: 450px" media queries. Keep the two in step.
@@ -56,6 +57,8 @@ export default class FrameManager {
 	settleCleanup = null;
 	fullScreenQuery = null;
 	queue = [];
+	// The widget's current screen needs the wide panel (a help article or news post).
+	widgetPageExtended = false;
 	urlHandler = function (url, newTab) {
 		if (url && url.length > 0) {
 			// Basic protocol validation to prevent javascript: or data: URIs
@@ -114,6 +117,17 @@ export default class FrameManager {
 			try {
 				window.addEventListener("resize", appHeight);
 				appHeight();
+			} catch (e) { }
+
+			// Following a link with the widget open: remember that (for this tab), so the
+			// next page opens it again on the same screen — see resumeIfWasOpen().
+			try {
+				window.addEventListener("pagehide", () => {
+					if (this.widgetOpened && !this.isSurvey()) {
+						WidgetResume.setOpen(true);
+						WidgetResume.touchScreen();
+					}
+				});
 			} catch (e) { }
 
 			// Turning a phone sideways can take the screen past the full-screen width (and
@@ -268,12 +282,20 @@ export default class FrameManager {
 				const languageParam = overrideLanguage
 					? "&lang=" + encodeURIComponent(overrideLanguage)
 					: "";
+				// The screen the visitor left the widget on (within the last 30 minutes),
+				// so it reopens there instead of on the start screen. On the URL for the
+				// same reason as the language: known before the first paint, no flash.
+				const resumeScreen = WidgetResume.loadScreen();
+				const resumeParam = resumeScreen
+					? "&resume=" + encodeURIComponent(JSON.stringify(resumeScreen))
+					: "";
 				elem.innerHTML = `<div class="yaplet-frame-container-inner"><iframe src="${this.frameUrl +
 					"/widget/" +
 					Session.getInstance().sdkKey +
 					"?access_token=" +
 					Session.getInstance().session.yapletHash +
-					languageParam
+					languageParam +
+					resumeParam
 					}" class="yaplet-frame" scrolling="yes" title="Yaplet Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe><div class="yaplet-frame-loader" aria-hidden="true"><div class="yaplet-frame-loader-spinner" role="status" aria-label="Loading"><div class="yaplet-frame-loader-spin"><div class="yaplet-frame-loader-ring"></div><div class="yaplet-frame-loader-cap"></div></div></div></div></div>`;
 				document.body.appendChild(elem);
 
@@ -510,6 +532,42 @@ export default class FrameManager {
 
 		EventManager.notifyEvent("open");
 		this.registerEscListener();
+
+		if (!this.isSurvey()) {
+			WidgetResume.setOpen(true);
+		}
+	}
+
+	/**
+	 * Called once the SDK has started on a page. The visitor had the widget open on the
+	 * previous page of this tab (they followed a link, within the last 30 minutes): open it
+	 * again — the iframe picks up the remembered screen on its own.
+	 *
+	 * Not on phones: there the widget covers the whole screen, and the visitor who just
+	 * tapped a link (say, a product the AI suggested) wants to see that page, not the
+	 * widget on top of it. Their next tap on the button still lands on the same screen.
+	 */
+	resumeIfWasOpen() {
+		if (!WidgetResume.wasOpen()) {
+			return;
+		}
+		if (this.isOpened() || (this.fullScreenQuery && this.fullScreenQuery.matches)) {
+			WidgetResume.setOpen(false);
+			return;
+		}
+		this.useWidgetMode();
+		this.showWidget();
+	}
+
+	/**
+	 * Back to the widget (from a survey, say) for an open that does not change the screen:
+	 * the launcher, Yaplet.open(), the reopen after a link. The widget keeps the screen it
+	 * was closed on, so the panel takes the width that screen needs — wide for a help
+	 * article or news post, normal otherwise. Forcing "widget" here showed a reopened
+	 * article squeezed into the narrow panel.
+	 */
+	useWidgetMode() {
+		this.setAppMode(this.widgetPageExtended ? "extended" : "widget");
 	}
 
 	updateUI() {
@@ -727,6 +785,8 @@ export default class FrameManager {
 		this.updateWidgetStatus();
 		FeedbackButtonManager.getInstance().updateFeedbackButtonState();
 		EventManager.notifyEvent("close");
+		WidgetResume.setOpen(false);
+		WidgetResume.touchScreen();
 		NotificationManager.getInstance().reloadNotificationsFromCache();
 
 		this.unregisterEscListener();
@@ -824,6 +884,12 @@ export default class FrameManager {
 				this.hideLoadingSkin();
 			}
 
+			// The widget moved to another screen: remember it, so the widget reopens there
+			// (this page or the next one, within the next 30 minutes).
+			if (data.name === "screen-state") {
+				WidgetResume.saveScreen(data.data);
+			}
+
 			if (data.name === "play-ping") {
 				AudioManager.ping();
 			}
@@ -833,10 +899,11 @@ export default class FrameManager {
 			}
 
 			if (data.name === "page-changed") {
-				if (
+				this.widgetPageExtended = !!(
 					data.data &&
 					(data.data.name === "newsdetails" || data.data.name === "appextended")
-				) {
+				);
+				if (this.widgetPageExtended) {
 					this.setAppMode("extended");
 				} else {
 					if (this.appMode === "extended") {

@@ -53,7 +53,7 @@ export default class FeedbackButtonManager {
 		if (frameManager.isOpened()) {
 			frameManager.hideWidget();
 		} else {
-			frameManager.setAppMode("widget");
+			frameManager.useWidgetMode();
 			frameManager.showWidget();
 		}
 	}

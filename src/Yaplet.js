@@ -248,6 +248,15 @@ class Yaplet {
 				// Check for multi-page tour resume.
 				Yaplet.checkForTourResume();
 
+				// The widget was open on the previous page of this tab: open it again. Not
+				// while a tour runs, nor when the URL itself asks for a widget, form or survey.
+				const urlAsksForWidget =
+					typeof window !== "undefined" &&
+					/[?&]yaplet_/.test(window.location.search || "");
+				if (!TourStateManager.isActive() && !urlAsksForWidget) {
+					FrameManager.getInstance().resumeIfWasOpen();
+				}
+
 				// Notify event.
 				EventManager.notifyEvent("initialized");
 			});
@@ -510,7 +519,7 @@ class Yaplet {
 	 * Starts the Yaplet flow.
 	 */
 	static open() {
-		FrameManager.getInstance().setAppMode("widget");
+		FrameManager.getInstance().useWidgetMode();
 		FrameManager.getInstance().showWidget();
 	}
 
