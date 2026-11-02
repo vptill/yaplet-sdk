@@ -65,9 +65,9 @@ function imageTagHtml(url, className) {
 const TOAST_TUCK_MS = 10000;
 const TOAST_TUCK_AFTER_HOVER_MS = 4000;
 
-// "AI assistant" in every language the widget speaks — the same words as the widget's "Vex · AI assistant" row
+// "AI assistant" in every language the widget speaks — the same words as the widget's "<name> · AI assistant" row
 // (widget-solidjs/src/locales/*.json, `aiAssistantRole`; keep the two in step). EU AI Act Art. 50: the visitor is
-// told in words that Vex is an AI before they answer it.
+// told in words that the sender is an AI before they answer it.
 const AI_ASSISTANT_LABEL = {
 	bg: "AI асистент", cs: "AI asistent", da: "AI-assistent", de: "AI-Assistent", el: "Βοηθός AI", en: "AI assistant",
 	es: "Asistente AI", et: "AI-assistent", fi: "AI-avustaja", fil: "AI assistant", fr: "Assistant AI", ga: "Cúntóir AI",
@@ -104,22 +104,37 @@ function initialsOf(name) {
 	return words.slice(0, 2).map((word) => word.charAt(0).toUpperCase()).join("") || "?";
 }
 
-// Who wrote a message pop-up: a teammate (photo or initials, and their name), Vex (nobody human — an AI reply, a
-// workflow message, an outreach message: the widget's thread shows these as Vex too), or nobody named (a pop-up a
-// site raises itself through Yaplet.showNotification()).
+// The name the AI signs with: the config's `aiName` (the server's answer: "Yaplet", or the workspace's own name with
+// "Your own branding"). A config cached before the field existed has none: "Yaplet".
+function aiNameOf() {
+	const flowConfig = ConfigManager.getInstance().getFlowConfig() || {};
+	const name = typeof flowConfig.aiName === "string" ? flowConfig.aiName.trim() : "";
+	return name || "Yaplet";
+}
+
+// Who wrote a message pop-up: a teammate (photo or initials, and their name), the AI (nobody human — an AI reply, a
+// workflow message, an outreach message: the widget's thread signs these with the AI's name too), the brand itself
+// (the same messages when the brand has no AI agent: the widget's thread signs them with the brand's name, so the
+// server says so with `hasAiAgent: false` and `brandName`; a config without them keeps the AI's name), or nobody
+// named (a pop-up a site raises itself through Yaplet.showNotification()).
 function senderOf(notification) {
 	const payload = notification.payload || {};
 	if (payload.agent) {
 		return { kind: "agent", key: "agent:" + (payload.agent.id || payload.agent.username || ""), agent: payload.agent };
 	}
 	if (!payload.visitor_id && (notification.event === "NEW_MESSAGE" || notification.event === "message")) {
-		return { kind: "vex", key: "vex" };
+		const flowConfig = ConfigManager.getInstance().getFlowConfig() || {};
+		const brandName = typeof flowConfig.brandName === "string" ? flowConfig.brandName.trim() : "";
+		if (flowConfig.hasAiAgent === false && brandName) {
+			return { kind: "brand", key: "brand", name: brandName };
+		}
+		return { kind: "ai", key: "ai" };
 	}
 	return { kind: "none", key: "none" };
 }
 
-// Vex's face: the blob in the launcher's own paint, the same colors the mascot launcher and the widget's thread give it.
-function vexFaceHtml() {
+// The bot's face: the blob in the launcher's own paint, the same colors the mascot launcher and the widget's thread give it.
+function aiFaceHtml() {
 	const flowConfig = ConfigManager.getInstance().getFlowConfig() || {};
 	const launcherColor = flowConfig.primaryColor || "#485BFF";
 	return mascotSvg(
@@ -131,8 +146,8 @@ function vexFaceHtml() {
 }
 
 function faceHtml(sender) {
-	if (sender.kind === "vex") {
-		return vexFaceHtml();
+	if (sender.kind === "ai" || sender.kind === "brand") {
+		return aiFaceHtml();
 	}
 	if (sender.kind === "agent") {
 		// The agent's picture is a storage path; the finished address is escaped like any image.
@@ -153,8 +168,14 @@ function faceHtml(sender) {
 }
 
 function nameLineHtml(sender) {
-	if (sender.kind === "vex") {
-		return `<div class="yaplet-notification-toast-name"><b>Vex</b> · ${escapeHtml(aiAssistantLabel())}</div>`;
+	if (sender.kind === "ai") {
+		// The name goes into an HTML string: decoded once if the server stored it as entities, then escaped
+		// (& < > " '), so a name can never add markup.
+		return `<div class="yaplet-notification-toast-name"><b>${plainTextHtml(aiNameOf())}</b> · ${escapeHtml(aiAssistantLabel())}</div>`;
+	}
+	if (sender.kind === "brand") {
+		// Nothing AI here, so no "AI assistant" words (the widget's thread does the same).
+		return `<div class="yaplet-notification-toast-name"><b>${plainTextHtml(sender.name)}</b></div>`;
 	}
 	if (sender.kind === "agent") {
 		return `<div class="yaplet-notification-toast-name"><b>${plainTextHtml(sender.agent.username)}</b></div>`;

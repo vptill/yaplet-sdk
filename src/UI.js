@@ -829,7 +829,7 @@ ${loaderBandCss}
 
     /* ── Message pop-ups: the quiet toast (owner pick, 2026-10-26) ─────────────────────────────────────────
        One slim row per message beside the launcher: the sender's face, their name, up to four lines of plain text and a
-       close button that is always visible (phones have no hover). Vex's face is the blob in the launcher's paint
+       close button that is always visible (phones have no hover). Yaplet's face is the blob in the launcher's paint
        and its name line says "AI assistant" in words. A second message from the same sender keeps the row but drops
        the face and name. New rows slide in from the launcher's side; the rows tuck themselves away after ten
        seconds (NotificationManager.js) while the count stays on the launcher. Colors and corner follow the widget:
@@ -1194,9 +1194,9 @@ ${loaderBandCss}
     }
 
     /* ── The mascot launcher (owner, 2026-10-22) ────────────────────────────────────────────────
-       The widget's "mascot" button icon: Vex's blob IS the button. No bubble, no ring and no
+       The widget's "mascot" button icon: Yaplet's blob IS the button. No bubble, no ring and no
        corner shape behind it, and it always plays its idle loop (float, blink, glance: the same
-       keyframes as the dashboard's vex/components/Mascot.vue). This is the only Vex that moves:
+       keyframes as the dashboard's vex/components/Mascot.vue). This is the only Yaplet that moves:
        every mascot inside the open widget stays still. The blob itself is plain SVG drawn by
        mascotSvg() below, never a CSS mask or a data: URL, which a host page's security policy
        could block.
@@ -2637,7 +2637,7 @@ ${loaderBandCss}
   document.body.appendChild(node);
 };
 
-// Vex's blob for the mascot launcher: the same geometry as the widget's UI/VexMascot.jsx and the
+// Yaplet's blob for the mascot launcher: the same geometry as the widget's UI/VexMascot.jsx and the
 // dashboard's vex/components/Mascot.vue (view box 0 0 100 100: the body, a white gloss, two tilted
 // rounded-rect eyes; keep the copies in step). Plain SVG shapes only: this runs on customers' own
 // pages, whose security policy (CSP) may block a CSS mask image or a data: URL. Over the body lies
@@ -2653,7 +2653,7 @@ const escapeSvgAttribute = (value) =>
   String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 /**
- * Vex's blob as an SVG string: the mascot launcher, or the face next to an AI message preview.
+ * Yaplet's blob as an SVG string: the mascot launcher, or the face next to an AI message preview.
  * @param {string} buttonColor the launcher color (the widget's primary color)
  * @param {{ colors?: string[], angle?: number } | null} feedbackButtonGradient the launcher gradient, if any
  * @param {string} iconColor the ink readable on the launcher paint, used for the eyes

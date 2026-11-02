@@ -199,7 +199,7 @@ export default class FeedbackButtonManager {
 			persistButtonIconColor(sdkKey, flowConfig.feedbackButtonIconColor || calculateContrast(flowConfig.primaryColor));
 		}
 
-		// The mascot launcher: Vex's blob is the button itself. The server sends it as
+		// The mascot launcher: Yaplet's blob is the button itself. The server sends it as
 		// `launcherMascot: true` next to an ordinary `buttonIcon`; an older server sends the stored
 		// `buttonIcon: "mascot"` unchanged, so both forms count.
 		const isMascot = flowConfig?.launcherMascot === true || flowConfig?.buttonIcon === "mascot";
